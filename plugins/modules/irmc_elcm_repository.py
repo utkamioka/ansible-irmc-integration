@@ -8,11 +8,11 @@ DOCUMENTATION = r'''
 ---
 module: irmc_elcm_repository
 
-short_description: configure the eLCM repostory in iRMC
+short_description: configure the eLCM repository in iRMC
 
 description:
     - This module has not been verified on iRMC S6. Verification is planned for a future version.
-    - Ansible module to configure the eLCM repostory in iRMC.
+    - Ansible module to configure the eLCM repository in iRMC.
     - iRMC tests access to specified repository and refuses to accept data in case of failure.
     - Module Version V1.2.
 
@@ -45,7 +45,7 @@ options:
         required:    false
         default:     true
     command:
-        description: How to handle iRMC eLCM respository data.
+        description: How to handle iRMC eLCM repository data.
         required:    false
         default:     get
         choices:     ['get', 'set']
