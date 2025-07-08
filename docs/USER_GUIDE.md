@@ -176,12 +176,12 @@ We will respond in Japanese or English.
 
 (For internal use, etc.) For private contacts or inquiries, please send an email to the following addresses:
 
-- Shinya Hamano (<[hamano.shinya@fujitsu.com](mailto:hamano.shinya@fujitsu.com)>)
-- Yutaka Kamioka (<[yutaka.kamioka@fujitsu.com](mailto:yutaka.kamioka@fujitsu.com)>)
-- Jiajun Guo (<[guo.jiajun@fujitsu.com](mailto:guo.jiajun@fujitsu.com)>)
-- Tomohisa Nakai (<[nakai.tomohisa@fujitsu.com](mailto:nakai.tomohisa@fujitsu.com)>)
+- <fti-autotool-ansible@dl.jp.fujitsu.com>
 
-*Members and email addresses are current as of December 2024.*
+*This email addresses are current as of June 2025.*
+
+Please note that inquiries are limited to those related to this tool only.
+We cannot address questions about Red Hat products, how to use Ansible, or Ansible specifications through this contact point.
 
 #### GitHub Issues
 

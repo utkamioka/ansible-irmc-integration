@@ -54,7 +54,7 @@ $ python -m venv venv && . $_/bin/activate
 (venv) $ python -m pip install ansible pywinrm requests requests_toolbelt urllib3
 ```
 
-仮想環境（venv）にインストールしたAnsbileを使って、
+仮想環境（venv）にインストールしたAnsibleを使って、
 <https://galaxy.ansible.com/>からAnsibleコレクション`fujitsu.primergy`をインストールします：
 
 ```bash
@@ -184,12 +184,12 @@ ansible-playbook -i inventory.ini playbook.yml -vvv
 
 （当社内利用など）非公開のご連絡や問い合わせは、以下のメールアドレスへご送信ください。
 
-- Shinya Hamano (<[hamano.shinya@fujitsu.com](mailto:hamano.shinya@fujitsu.com)>)
-- Yutaka Kamioka (<[yutaka.kamioka@fujitsu.com](mailto:yutaka.kamioka@fujitsu.com)>)
-- Jiajun Guo (<[guo.jiajun@fujitsu.com](mailto:guo.jiajun@fujitsu.com)>)
-- Tomohisa Nakai (<[nakai.tomohisa@fujitsu.com](mailto:nakai.tomohisa@fujitsu.com)>)
+- <fti-autotool-ansible@dl.jp.fujitsu.com>
 
-※*メンバーおよびEmailアドレスは2024年12月現在のものです。*
+※*このEmailアドレスは2025年6月現在のものです。*
+
+お問い合わせは、本ツールに関するものに限らせていただきます。
+Red Hat製品やAnsibleの利用方法、仕様に関するご質問は、本窓口では対応いたしかねます。
 
 #### GitHub Issues
 

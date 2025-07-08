@@ -484,7 +484,7 @@ in [Environment and setting sheet (Windows Server)](#environment-and-setting-she
 ---
 - hosts: windows
   roles:
-    - role: fujitus.primergy.win_hostname
+    - role: fujitsu.primergy.win_hostname
       vars:
         hostname: webserver01
 ```

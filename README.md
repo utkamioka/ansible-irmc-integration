@@ -9,7 +9,7 @@ Fujitsu PRIMERGY servers via iRMC.
 ## Overview
 
 These collection and examples are intended to provide easy-to-follow and understandable solutions to manage
-Fujitsu PRIMERY server settings via iRMC.  
+Fujitsu PRIMERGY server settings via iRMC.  
 See User Guide for more details.
 
 - [User Guide (English)](./docs/USER_GUIDE.md)
@@ -17,7 +17,7 @@ See User Guide for more details.
 - [User Guide (Japanese)](./docs/USER_GUIDE_ja.md)
   (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/USER_GUIDE_ja/))
 
-## Contiributing
+## Contributing
 
 See Contribution Guidelines for more details.
 
@@ -41,11 +41,11 @@ See Contribution Guidelines for more details.
 ## Roles
 
 This collection provides roles for managing both iRMC settings and Windows Server 2022 configurations.  
-See Configuration Gudie for more details.
+See Configuration Guide for more details.
 
-- [Configuration Gudie (English)](./docs/CONFIGURATION.md)
+- [Configuration Guide (English)](./docs/CONFIGURATION.md)
   (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/CONFIGURATION/))
-- [Configuration Gudie (Japanese)](./docs/CONFIGURATION_ja.md)
+- [Configuration Guide (Japanese)](./docs/CONFIGURATION_ja.md)
   (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/CONFIGURATION_ja/))
 
 ### for iRMC
@@ -99,7 +99,7 @@ The following modules are part of this project:
 - [irmc_connectvm](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_connectvm/) - connect iRMC Virtual Media Data
 - [irmc_elcm_offline_update](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_elcm_offline_update/) - offline update a server via iRMC
 - [irmc_elcm_online_update](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_elcm_online_update/) - online update a server via iRMC
-- [irmc_elcm_repository](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_elcm_repository/) - configure the eLCM repostory in iRMC
+- [irmc_elcm_repository](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_elcm_repository/) - configure the eLCM repository in iRMC
 - [irmc_eventlog](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_eventlog/) - handle iRMC eventlogs
 - [irmc_facts](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_facts/) - get or set Fujitsu PRIMERGY server and iRMC facts
 - [irmc_fwbios_update](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_fwbios_update/) - update iRMC Firmware or server BIOS
@@ -132,9 +132,12 @@ Copyright 2018-2024 Fsas Technologies Inc.
 
 GNU General Public License v3.0+ (see [LICENSE.md](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/LICENSE) or <https://www.gnu.org/licenses/gpl-3.0.txt>)
 
-## Authors
+## Contact
+
+- <fti-autotool-ansible@dl.jp.fujitsu.com>
+
+### Authors
 
 - Shinya Hamano (<hamano.shinya@fujitsu.com>)
 - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
-- Jiajun Guo (<guo.jiajun@fujitsu.com>)
 - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)

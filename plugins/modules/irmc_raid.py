@@ -423,7 +423,8 @@ def get_raid_configuration(module, irmc_profile):
                                         break
                                 disk_list = get_disk(pd)
                                 array_list['disks'].append(disk_list)
-                                adapter_list['unused_disks'].remove(disk_list)
+                                if disk_list in adapter_list['unused_disks']:
+                                    adapter_list['unused_disks'].remove(disk_list)
                 adapter_list['logical_drives'].append(array_list)
         raid_configuration.append(adapter_list)
     return raid_configuration

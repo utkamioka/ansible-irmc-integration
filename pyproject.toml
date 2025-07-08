@@ -1,11 +1,10 @@
 [project]
 name = "fujitsu-ansible-irmc-integration"
-version = "2.0.1"
+version = "2.0.2"
 description = "Ansible collection for manage PRIMERGY servers via iRMC"
 authors = [
     {name = "Shinya Hamano", email = "hamano.shinya@fujitsu.com"},
     {name = "Yutaka Kamioka", email = "yutaka.kamioka@fujitsu.com"},
-    {name = "Jiajun Guo", email = "guo.jiajun@fujitsu.com"},
     {name = "Tomohisa Nakai", email = "nakai.tomohisa@fujitsu.com"},
 ]
 dependencies = [
