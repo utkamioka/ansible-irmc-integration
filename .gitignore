@@ -1,3 +1,7 @@
+/ansible.cfg
+/inventory.ini
+/tests/output/
+
 # Created by https://www.toptal.com/developers/gitignore/api/osx,vim,emacs,linux,eclipse,windows,visualstudio,jetbrains+all,visualstudiocode,python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=osx,vim,emacs,linux,eclipse,windows,visualstudio,jetbrains+all,visualstudiocode,python,venv
 

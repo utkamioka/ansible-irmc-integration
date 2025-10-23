@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -12,7 +12,7 @@ short_description: get or set PRIMERGY server and iRMC facts
 
 description:
     - Ansible module to get or set basic iRMC and PRIMERGY server data via iRMC RedFish interface.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -23,6 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -267,7 +268,9 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_patch
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_facts(module):
@@ -289,8 +292,28 @@ def irmc_facts(module):
             result['status'] = 10
             module.fail_json(**result)
 
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger
+    )
+
+    # M8 support: Vendor detection (required)
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
     # Get iRMC OEM system data
-    status, oemdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/Oem/ts_fujitsu/System')
+    oem_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/System'
+    oemdata, _headers, status = irmc.get(oem_path)
+    msg = 'OK' if status == 200 else f'Failed to get OEM data from {oem_path}'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=oemdata)
     elif status != 200:
@@ -298,31 +321,42 @@ def irmc_facts(module):
 
     if module.params['command'] == 'get':
         # Get iRMC system data
-        status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+        sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+        msg = 'OK' if status == 200 else 'Failed to get system data'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=sysdata)
         elif status != 200:
             module.fail_json(msg=msg, status=status)
-        power_state = get_irmc_json(sysdata.json(), 'PowerState')
+        power_state = dig(sysdata, 'PowerState')
 
         # Get iRMC FW data
-        status, fwdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/Oem/ts_fujitsu/FirmwareInventory')
+        fw_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/FirmwareInventory'
+        fwdata, _headers, status = irmc.get(fw_path)
+        msg = 'OK' if status == 200 else f'Failed to get firmware data from {fw_path}'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=fwdata)
         elif status != 200:
             module.fail_json(msg=msg, status=status)
 
-        result['facts'] = setup_resultdata(sysdata, oemdata, fwdata)
-        result = add_system_hw_info(power_state, module, result)
-        result = add_chassis_hw_info(module, result)
-        result = add_irmc_hw_info(module, result)
+        result['facts'] = setup_resultdata(sysdata, oemdata, fwdata, irmc.vendor)
+        result = add_system_hw_info(power_state, module, irmc, result)
+        result = add_chassis_hw_info(module, irmc, result)
+        result = add_irmc_hw_info(module, irmc, result)
         module.exit_json(**result)
 
     # Set iRMC OEM system data
     body = setup_facts(module.params)
-    etag = get_irmc_json(oemdata.json(), '@odata.etag')
-    status, patch, msg = irmc_redfish_patch(module, 'redfish/v1/Systems/0/Oem/ts_fujitsu/System/',
-                                            json.dumps(body), etag)
+    etag = dig(oemdata, '@odata.etag')
+
+    # Validate etag
+    if not etag or not str(etag).isdigit():
+        module.fail_json(msg=f'Invalid etag: {etag}', status=97)
+
+    # PATCH OEM data
+    oem_patch_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/System/'
+    headers = {'If-Match': str(etag)}
+    patch, _headers, status = irmc.patch(oem_patch_path, body, headers=headers)
+    msg = 'OK' if status == 200 else f'Failed to update OEM data at {oem_patch_path}'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=patch)
     elif status != 200:
@@ -332,10 +366,11 @@ def irmc_facts(module):
     module.exit_json(**result)
 
 
-def add_system_hw_info(power_state, module, result):
+def add_system_hw_info(power_state, module, irmc, result):
     # get system hardware
     for hw in ('Memory', 'Processors', 'EthernetInterfaces', 'Storage'):
-        status, hwdata, msg = irmc_redfish_get(module, f'redfish/v1/Systems/0/{hw}?$expand=Members')
+        hwdata, _headers, status = irmc.get(f'redfish/v1/Systems/0/{hw}?$expand=Members')
+        msg = 'OK' if status == 200 else f'Failed to get {hw}'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=hwdata)
         elif status != 200:
@@ -343,33 +378,33 @@ def add_system_hw_info(power_state, module, result):
         items = 0
         hw_dict = {}
         hw_dict['devices'] = []
-        for member in get_irmc_json(hwdata.json(), 'Members'):
+        for member in dig(hwdata, 'Members', default=[]):
             hw_list = {}
-            if get_irmc_json(member, ['Status', 'State']) == 'Enabled':
+            if dig(member, 'Status', 'State') == 'Enabled':
                 if hw == 'Memory':
-                    hw_list['id'] = get_irmc_json(member, ['Id'])
-                    hw_list['name'] = get_irmc_json(member, ['DeviceLocator'])
-                    hw_list['manufacturer'] = get_irmc_json(member, ['Manufacturer'])
-                    hw_list['size'] = get_irmc_json(member, ['CapacityMiB'])
+                    hw_list['id'] = dig(member, 'Id')
+                    hw_list['name'] = dig(member, 'DeviceLocator')
+                    hw_list['manufacturer'] = dig(member, 'Manufacturer')
+                    hw_list['size'] = dig(member, 'CapacityMiB')
                 if hw == 'Processors':
-                    hw_list['id'] = get_irmc_json(member, ['Id'])
-                    hw_list['name'] = get_irmc_json(member, ['Model'])
-                    hw_list['cores'] = get_irmc_json(member, ['TotalCores'])
-                    hw_list['threads'] = get_irmc_json(member, ['TotalThreads'])
+                    hw_list['id'] = dig(member, 'Id')
+                    hw_list['name'] = dig(member, 'Model')
+                    hw_list['cores'] = dig(member, 'TotalCores')
+                    hw_list['threads'] = dig(member, 'TotalThreads')
                 if hw == 'EthernetInterfaces':
-                    hw_list['id'] = get_irmc_json(member, ['Id'])
-                    hw_list['name'] = get_irmc_json(member, ['Description'])
-                    if 'does not exist' in hw_list['name']:
-                        hw_list['name'] = '{0} {1}'.format(get_irmc_json(member, ['Name']), hw_list['id'])
-                    hw_list['macaddress'] = get_irmc_json(member, ['MACAddress'])
+                    hw_list['id'] = dig(member, 'Id')
+                    hw_list['name'] = dig(member, 'Description')
+                    if not hw_list['name']:
+                        hw_list['name'] = f"{dig(member, 'Name')} {hw_list['id']}"
+                    hw_list['macaddress'] = dig(member, 'MACAddress')
                 if hw == 'Storage' and power_state == 'On':
                     # iRMC has each StroageController with its own Storage
-                    for ctrl in get_irmc_json(member, 'StorageControllers'):
-                        hw_list['id'] = get_irmc_json(member, ['Id'])
-                        hw_list['name'] = get_irmc_json(ctrl, ['Model'])
-                        hw_list['firmware'] = get_irmc_json(ctrl, ['FirmwareVersion'])
-                        hw_list['drives'] = get_irmc_json(ctrl, ['Oem', 'ts_fujitsu', 'DriveCount'])
-                        hw_list['volumes'] = get_irmc_json(ctrl, ['Oem', 'ts_fujitsu', 'VolumeCount'])
+                    for ctrl in dig(member, 'StorageControllers', default=[]):
+                        hw_list['id'] = dig(member, 'Id')
+                        hw_list['name'] = dig(ctrl, 'Model')
+                        hw_list['firmware'] = dig(ctrl, 'FirmwareVersion')
+                        hw_list['drives'] = dig(ctrl, 'Oem', irmc.vendor, 'DriveCount')
+                        hw_list['volumes'] = dig(ctrl, 'Oem', irmc.vendor, 'VolumeCount')
                 items += 1
                 if hw_list:
                     hw_dict['devices'].append(hw_list)
@@ -377,19 +412,20 @@ def add_system_hw_info(power_state, module, result):
         if hw == 'Storage':
             hw = 'StorageControllers'
         if hw in ('Memory', 'Processors'):
-            hw_dict['sockets'] = get_irmc_json(hwdata.json(), 'Members@odata.count')
+            hw_dict['sockets'] = dig(hwdata, 'Members@odata.count')
         result['facts']['hardware'][hw.lower()] = hw_dict
     return result
 
 
-def add_chassis_hw_info(module, result):
+def add_chassis_hw_info(module, irmc, result):
     # get chassis hardware
     hw_source = {
         'redfish/v1/Chassis/0/Thermal#/Fans': ['Fans'],
         'redfish/v1/Chassis/0/Power#/PowerSupplies': ['PowerSupplies'],
     }
     for hw_link, hw_list in hw_source.items():
-        status, hwdata, msg = irmc_redfish_get(module, hw_link)
+        hwdata, _headers, status = irmc.get(hw_link)
+        msg = 'OK' if status == 200 else f'Failed to get chassis hardware from {hw_link}'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=hwdata)
         elif status != 200:
@@ -398,40 +434,41 @@ def add_chassis_hw_info(module, result):
             items = 0
             hw_dict = {}
             hw_dict['devices'] = []
-            for member in get_irmc_json(hwdata.json(), hw):
+            for member in dig(hwdata, hw, default=[]):
                 hw_list = {}
-                if get_irmc_json(member, ['Status', 'State']) == 'Enabled':
+                if dig(member, 'Status', 'State') == 'Enabled':
                     if hw == 'PowerSupplies':
-                        hw_list['id'] = get_irmc_json(member, ['MemberId'])
-                        hw_list['name'] = get_irmc_json(member, ['Name'])
-                        hw_list['manufacturer'] = get_irmc_json(member, ['Manufacturer'])
-                        hw_list['model'] = get_irmc_json(member, ['Model'])
+                        hw_list['id'] = dig(member, 'MemberId')
+                        hw_list['name'] = dig(member, 'Name')
+                        hw_list['manufacturer'] = dig(member, 'Manufacturer')
+                        hw_list['model'] = dig(member, 'Model')
                     elif hw == 'Voltages':
-                        hw_list['id'] = get_irmc_json(member, ['MemberId'])
-                        hw_list['name'] = get_irmc_json(member, ['Name'])
+                        hw_list['id'] = dig(member, 'MemberId')
+                        hw_list['name'] = dig(member, 'Name')
                     else:
-                        hw_list['id'] = get_irmc_json(member, ['MemberId'])
-                        hw_list['name'] = get_irmc_json(member, ['Name'])
-                        hw_list['location'] = get_irmc_json(member, ['PhysicalContext'])
+                        hw_list['id'] = dig(member, 'MemberId')
+                        hw_list['name'] = dig(member, 'Name')
+                        hw_list['location'] = dig(member, 'PhysicalContext')
                     items += 1
                     if hw_list:
                         hw_dict['devices'].append(hw_list)
             hw_dict['count'] = items
-            hw_dict['sockets'] = get_irmc_json(hwdata.json(), f'{hw}@odata.count')
+            hw_dict['sockets'] = dig(hwdata, f'{hw}@odata.count')
             result['facts']['hardware'][hw.lower()] = hw_dict
     return result
 
 
-def add_irmc_hw_info(module, result):
+def add_irmc_hw_info(module, irmc, result):
     # get iRMC info
-    status, hwdata, msg = irmc_redfish_get(module, 'redfish/v1/Managers/iRMC/EthernetInterfaces?$expand=Members')
+    hwdata, _headers, status = irmc.get('redfish/v1/Managers/iRMC/EthernetInterfaces?$expand=Members')
+    msg = 'OK' if status == 200 else 'Failed to get iRMC network info'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=hwdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
-    for member in get_irmc_json(hwdata.json(), 'Members'):
-        result['facts']['irmc']['macaddress'] = '{0}'.format(get_irmc_json(member, ['MACAddress']))
-        result['facts']['irmc']['hostname'] = '{0}'.format(get_irmc_json(member, ['HostName']))
+    for member in dig(hwdata, 'Members', default=[]):
+        result['facts']['irmc']['macaddress'] = dig(member, 'MACAddress')
+        result['facts']['irmc']['hostname'] = dig(member, 'HostName')
     return result
 
 
@@ -450,40 +487,40 @@ def setup_facts(data):
     return body
 
 
-def setup_resultdata(data, data2, data3):
+def setup_resultdata(data, data2, data3, vendor):
     data = {
         'system': {
-            'bios_version': get_irmc_json(data.json(), 'BiosVersion'),
-            'idled_state': get_irmc_json(data.json(), 'IndicatorLED'),
-            'asset_tag': get_irmc_json(data2.json(), 'AssetTag'),
-            'host_name': get_irmc_json(data.json(), 'HostName'),
-            'manufacturer': get_irmc_json(data.json(), 'Manufacturer'),
-            'model': get_irmc_json(data.json(), 'Model'),
-            # 'name': get_irmc_json(data.json(), "Name"),
-            'part_number': get_irmc_json(data.json(), 'PartNumber'),
-            'serial_number': get_irmc_json(data.json(), 'SerialNumber'),
-            'uuid': get_irmc_json(data.json(), 'UUID'),
-            'ip': get_irmc_json(data2.json(), 'SystemIP'),
-            'location': get_irmc_json(data2.json(), 'Location'),
-            'description': get_irmc_json(data2.json(), 'Description'),
-            'contact': get_irmc_json(data2.json(), 'Contact'),
-            'helpdesk_message': get_irmc_json(data2.json(), 'HelpdeskMessage'),
-            'power_state': get_irmc_json(data.json(), 'PowerState'),
-            'memory_size': '{0} GB'.format(get_irmc_json(data.json(), ['MemorySummary', 'TotalSystemMemoryGiB'])),
-            'health': get_irmc_json(data.json(), ['Status', 'HealthRollup']),
+            'bios_version': dig(data, 'BiosVersion'),
+            'idled_state': dig(data, 'IndicatorLED'),
+            'asset_tag': dig(data2, 'AssetTag'),
+            'host_name': dig(data, 'HostName'),
+            'manufacturer': dig(data, 'Manufacturer'),
+            'model': dig(data, 'Model'),
+            # 'name': dig(data, "Name"),
+            'part_number': dig(data, 'PartNumber'),
+            'serial_number': dig(data, 'SerialNumber'),
+            'uuid': dig(data, 'UUID'),
+            'ip': dig(data2, 'SystemIP'),
+            'location': dig(data2, 'Location'),
+            'description': dig(data2, 'Description'),
+            'contact': dig(data2, 'Contact'),
+            'helpdesk_message': dig(data2, 'HelpdeskMessage'),
+            'power_state': dig(data, 'PowerState'),
+            'memory_size': f"{dig(data, 'MemorySummary', 'TotalSystemMemoryGiB', default=0)} GB",
+            'health': dig(data, 'Status', 'HealthRollup'),
         },
         'mainboard': {
-            'manufacturer': get_irmc_json(data.json(), ['Oem', 'ts_fujitsu', 'MainBoard', 'Manufacturer']),
-            'dnumber': get_irmc_json(data.json(), ['Oem', 'ts_fujitsu', 'MainBoard', 'Model']),
-            'part_number': get_irmc_json(data.json(), ['Oem', 'ts_fujitsu', 'MainBoard', 'PartNumber']),
-            'serial_number': get_irmc_json(data.json(), ['Oem', 'ts_fujitsu', 'MainBoard', 'SerialNumber']),
-            'version': get_irmc_json(data.json(), ['Oem', 'ts_fujitsu', 'MainBoard', 'Version']),
+            'manufacturer': dig(data, 'Oem', vendor, 'MainBoard', 'Manufacturer'),
+            'dnumber': dig(data, 'Oem', vendor, 'MainBoard', 'Model'),
+            'part_number': dig(data, 'Oem', vendor, 'MainBoard', 'PartNumber'),
+            'serial_number': dig(data, 'Oem', vendor, 'MainBoard', 'SerialNumber'),
+            'version': dig(data, 'Oem', vendor, 'MainBoard', 'Version'),
         },
         'irmc': {
-            'fw_version': get_irmc_json(data3.json(), 'BMCFirmware'),
-            'fw_builddate': get_irmc_json(data3.json(), 'BMCFirmwareBuildDate'),
-            'fw_running': get_irmc_json(data3.json(), 'BMCFirmwareRunning'),
-            'sdrr_version': get_irmc_json(data3.json(), 'SDRRVersion'),
+            'fw_version': dig(data3, 'BMCFirmware'),
+            'fw_builddate': dig(data3, 'BMCFirmwareBuildDate'),
+            'fw_running': dig(data3, 'BMCFirmwareRunning'),
+            'sdrr_version': dig(data3, 'SDRRVersion'),
         },
         'hardware': {
         },

@@ -10,11 +10,11 @@
 #   universal: false
 
 -e file:.
-ansible==8.7.0
+ansible==10.7.0
     # via fujitsu-ansible-irmc-integration
 ansible-compat==24.7.0
     # via ansible-lint
-ansible-core==2.15.12
+ansible-core==2.17.14
     # via ansible
     # via ansible-compat
     # via ansible-lint
@@ -28,7 +28,7 @@ bracex==2.4
     # via wcmatch
 certifi==2024.7.4
     # via requests
-cffi==1.16.0
+cffi==2.0.0
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
@@ -36,12 +36,14 @@ click==8.1.7
     # via black
 colorama==0.4.6
     # via radon
-cryptography==43.0.0
+cryptography==46.0.3
     # via ansible-core
     # via pyspnego
     # via requests-ntlm
 exceptiongroup==1.2.2
     # via pytest
+execnet==2.1.1
+    # via pytest-xdist
 filelock==3.15.4
     # via ansible-lint
 idna==3.7
@@ -50,7 +52,7 @@ importlib-metadata==8.2.0
     # via ansible-lint
 iniconfig==2.0.0
     # via pytest
-jinja2==3.1.4
+jinja2==3.1.6
     # via ansible-core
 jsonschema==4.23.0
     # via ansible-compat
@@ -83,6 +85,8 @@ platformdirs==4.2.2
     # via black
 pluggy==1.5.0
     # via pytest
+py==1.11.0
+    # via pytest-forked
 pycparser==2.22
     # via cffi
 pygments==2.18.0
@@ -90,6 +94,10 @@ pygments==2.18.0
 pyspnego==0.11.1
     # via requests-ntlm
 pytest==8.3.2
+    # via pytest-forked
+    # via pytest-xdist
+pytest-forked==1.6.0
+pytest-xdist==3.8.0
 pywinrm==0.5.0
     # via fujitsu-ansible-irmc-integration
 pyyaml==6.0.1
@@ -101,7 +109,7 @@ radon==6.0.1
 referencing==0.35.1
     # via jsonschema
     # via jsonschema-specifications
-requests==2.32.3
+requests==2.32.5
     # via fujitsu-ansible-irmc-integration
     # via pywinrm
     # via requests-ntlm
@@ -130,9 +138,10 @@ subprocess-tee==0.4.2
 tomli==2.0.1
     # via black
     # via pytest
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via black
-urllib3==2.2.2
+    # via cryptography
+urllib3==2.5.0
     # via fujitsu-ansible-irmc-integration
     # via requests
 wcmatch==8.5.2
