@@ -489,7 +489,7 @@ def setup_facts(data):
 
 def setup_resultdata(data, data2, data3, vendor):
     # メモリサイズを事前取得（default=0でキーが存在しない場合に対応）
-    memory_gib = get_nested(data, 'MemorySummary', 'TotalSystemMemoryGiB', default=0)
+    memory_gib = dig(data, 'MemorySummary', 'TotalSystemMemoryGiB', default=0)
 
     data = {
         'system': {
