@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -12,7 +12,7 @@ short_description: handle iRMC tasks
 
 description:
     - Ansible module to handle iRMC tasks via Restful API.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -24,6 +24,7 @@ version_added: "2.4"
 
 author:
     - Nakamura Takayuki (@nakamura-taka)
+    - Nakai Tomohisa (@tomnakai)
 
 options:
     irmc_url:
@@ -138,73 +139,93 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get
-
-# Global
-result = dict()
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_task(module):
-    # initialize result
-    result['changed'] = False
-    result['status'] = 0
+    result = dict(
+        changed=False,
+        status=0,
+    )
 
     if module.check_mode:
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
-    # preliminary parameter check
-    if (module.params['command'] in ('get', 'remove', 'terminate')) and module.params['id'] is None:
-        result['msg'] = "Command '{0}' requires 'id' parameter to be set!".format(module.params['command'])
+    # parameter check
+    if (module.params['command'] in ('get')) and module.params['id'] is None:
+        result['msg'] = "Command 'get' requires 'id' parameter to be set!"
         result['status'] = 10
         module.fail_json(**result)
 
-    id_found = 0
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    # M8 support: Vendor detection (required)
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    task_path = f"redfish/v1/TaskService/Tasks/{module.params['id']}"
+    tasks_path = 'redfish/v1/TaskService/Tasks'
+
     if module.params['command'] == 'get':
-        id_found = 1
-        result['task'] = get_irmc_task_info(module, '/redfish/v1/TaskService/Tasks/{0}'.
-                                            format(module.params['id']), module.params['id'])
+        result['task'] = get_irmc_task_info(module, task_path, module.params['id'], irmc)
 
     if module.params['command'] == 'list':
-        status, taskdata, msg = irmc_redfish_get(module, 'redfish/v1/TaskService/Tasks')
+        tasksdata, _headers, status = irmc.get(tasks_path)
+        msg = 'OK' if status == 200 else 'Failed to get tasks data'
+
         if status < 100:
-            module.fail_json(msg=msg, status=status, exception=taskdata)
+            module.fail_json(msg=msg, status=status, exception=tasksdata)
         elif status not in (200, 202, 204):
             module.fail_json(msg=msg, status=status)
-        tasks = get_irmc_json(taskdata.json(), ['Members'])
+        tasks = dig(tasksdata, 'Members')
 
         result['tasks'] = []
         for task in tasks:
-            id_found += 1
-            task_url = get_irmc_json(task, '@odata.id')
-            myID = task_url.replace('/redfish/v1/TaskService/Tasks/', '')
-            task_info = get_irmc_task_info(module, task_url, myID)
+            task_url = dig(task, '@odata.id')
+            task_id = task_url.rsplit('/', 1)[-1]
+            task_info = get_irmc_task_info(module, task_url, task_id, irmc)
             result['tasks'].append(task_info)
 
     module.exit_json(**result)
 
 
-def get_irmc_task_info(module, url, task_id):
-    status, sdata, msg = irmc_redfish_get(module, f'{url[1:]}')
+def get_irmc_task_info(module, url, task_id, irmc):
+    taskdata, _headers, status = irmc.get(url)
+    msg = 'OK' if status == 200 else 'Failed to get task data'
+
     if status < 100:
-        module.fail_json(msg=msg, status=status, exception=sdata)
+        module.fail_json(msg=msg, status=status, exception=taskdata)
     elif status not in (200, 202, 204):
         module.fail_json(msg=msg, status=status)
 
     task = {}
     task['Id'] = task_id
-    task['Name'] = get_irmc_json(sdata.json(), 'Name')
-    task['State'] = get_irmc_json(sdata.json(), 'TaskState')
-    task['StateOem'] = get_irmc_json(sdata.json(), ['Oem', 'ts_fujitsu', 'StatusOEM'])
-    task['StateProgressPercent'] = get_irmc_json(sdata.json(), ['Oem', 'ts_fujitsu', 'StateProgressPercent'])
-    task['TotalProgressPercent'] = get_irmc_json(sdata.json(), ['Oem', 'ts_fujitsu', 'TotalProgressPercent'])
-    task['StartTime'] = get_irmc_json(sdata.json(), 'StartTime')
-    task['EndTime'] = get_irmc_json(sdata.json(), 'EndTime')
+    task['Name'] = dig(taskdata, 'Name')
+    task['State'] = dig(taskdata, 'TaskState')
+    task['StateOem'] = dig(taskdata, 'Oem', irmc.vendor, 'StatusOEM')
+    task['StateProgressPercent'] = dig(taskdata, 'Oem', irmc.vendor, 'StateProgressPercent')
+    task['TotalProgressPercent'] = dig(taskdata, 'Oem', irmc.vendor, 'TotalProgressPercent')
+    task['StartTime'] = dig(taskdata, 'StartTime')
+    task['EndTime'] = dig(taskdata, 'EndTime')
     return task
 
 
 def main():
-    # import pdb; pdb.set_trace()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),
