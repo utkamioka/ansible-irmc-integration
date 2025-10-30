@@ -23,8 +23,8 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Nakai Tomohisa (nakai.tomohisa@fujitsu.com)
     - Nakamura Takayuki (@nakamura-taka)
-    - Nakai Tomohisa (@tomnakai)
 
 options:
     irmc_url:
