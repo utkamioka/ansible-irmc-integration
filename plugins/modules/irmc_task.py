@@ -23,7 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
-    - Nakai Tomohisa (nakai.tomohisa@fujitsu.com)
+    - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -137,6 +137,7 @@ details:
             sample: 100
 '''
 
+from pathlib import PurePosixPath
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
@@ -155,7 +156,7 @@ def irmc_task(module):
         module.exit_json(**result)
 
     # parameter check
-    if (module.params['command'] in ('get')) and module.params['id'] is None:
+    if module.params['command'] == 'get' and module.params['id'] is None:
         result['msg'] = "Command 'get' requires 'id' parameter to be set!"
         result['status'] = 10
         module.fail_json(**result)
@@ -178,14 +179,16 @@ def irmc_task(module):
         result['status'] = 20
         module.fail_json(**result)
 
-    task_path = f"redfish/v1/TaskService/Tasks/{module.params['id']}"
-    tasks_path = 'redfish/v1/TaskService/Tasks'
-
     if module.params['command'] == 'get':
-        result['task'] = get_irmc_task_info(module, task_path, module.params['id'], irmc)
+        result['task'] = get_irmc_task_info(
+            module,
+            irmc,
+            f'redfish/v1/TaskService/Tasks/{module.params["id"]}',
+            module.params['id'],
+        )
 
     if module.params['command'] == 'list':
-        tasksdata, _headers, status = irmc.get(tasks_path)
+        tasksdata, _headers, status = irmc.get('redfish/v1/TaskService/Tasks')
         msg = 'OK' if status == 200 else 'Failed to get tasks data'
 
         if status < 100:
@@ -197,14 +200,14 @@ def irmc_task(module):
         result['tasks'] = []
         for task in tasks:
             task_url = dig(task, '@odata.id')
-            task_id = task_url.rsplit('/', 1)[-1]
-            task_info = get_irmc_task_info(module, task_url, task_id, irmc)
+            task_id = PurePosixPath(task_url).name
+            task_info = get_irmc_task_info(module, irmc, task_url, task_id)
             result['tasks'].append(task_info)
 
     module.exit_json(**result)
 
 
-def get_irmc_task_info(module, url, task_id, irmc):
+def get_irmc_task_info(module, irmc, url, task_id):
     taskdata, _headers, status = irmc.get(url)
     msg = 'OK' if status == 200 else 'Failed to get task data'
 
