@@ -10,23 +10,23 @@
 #   universal: false
 
 -e file:.
-ansible==8.7.0
+ansible==10.7.0
     # via fujitsu-ansible-irmc-integration
-ansible-core==2.15.12
+ansible-core==2.17.14
     # via ansible
 certifi==2024.7.4
     # via requests
-cffi==1.16.0
+cffi==2.0.0
     # via cryptography
 charset-normalizer==3.3.2
     # via requests
-cryptography==43.0.0
+cryptography==46.0.3
     # via ansible-core
     # via pyspnego
     # via requests-ntlm
 idna==3.7
     # via requests
-jinja2==3.1.4
+jinja2==3.1.6
     # via ansible-core
 markupsafe==2.1.5
     # via jinja2
@@ -40,7 +40,7 @@ pywinrm==0.5.0
     # via fujitsu-ansible-irmc-integration
 pyyaml==6.0.1
     # via ansible-core
-requests==2.32.3
+requests==2.32.5
     # via fujitsu-ansible-irmc-integration
     # via pywinrm
     # via requests-ntlm
@@ -51,7 +51,9 @@ requests-toolbelt==1.0.0
     # via fujitsu-ansible-irmc-integration
 resolvelib==1.0.1
     # via ansible-core
-urllib3==2.2.2
+typing-extensions==4.15.0
+    # via cryptography
+urllib3==2.5.0
     # via fujitsu-ansible-irmc-integration
     # via requests
 xmltodict==0.13.0
