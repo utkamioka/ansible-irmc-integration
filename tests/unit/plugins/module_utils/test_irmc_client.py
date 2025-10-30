@@ -1028,60 +1028,6 @@ class TestParseIRMCVersionFromServerHeader:
         assert result is None
 
 
-class TestParseIRMCVersionFromServerHeader:
-    """_parse_irmc_version_from_server_header()のテストクラス"""
-
-    def test_standard_format(self):
-        """標準的なフォーマット: "iRMC S6 Server" → "S6" """
-        result = _parse_irmc_version_from_server_header('iRMC S6 Server')
-        assert result == 'S6'
-
-    def test_uppercase(self):
-        """大文字フォーマット: "IRMC S7 SERVER" → "S7" """
-        result = _parse_irmc_version_from_server_header('IRMC S7 SERVER')
-        assert result == 'S7'
-
-    def test_lowercase(self):
-        """小文字フォーマット: "irmc s8 server" → "S8" """
-        result = _parse_irmc_version_from_server_header('irmc s8 server')
-        assert result == 'S8'
-
-    def test_multiple_whitespace(self):
-        """複数の空白を含むフォーマット: "irmc  s10  server" → "S10" """
-        result = _parse_irmc_version_from_server_header('irmc  s10  server')
-        assert result == 'S10'
-
-    def test_multi_digit_version(self):
-        """2桁以上のバージョン番号: "iRMC S12 Server" → "S12" """
-        result = _parse_irmc_version_from_server_header('iRMC S12 Server')
-        assert result == 'S12'
-
-    def test_trailing_chars(self):
-        """後続文字列を含む: "iRMC S6 Server/12345" → "S6" """
-        result = _parse_irmc_version_from_server_header('iRMC S6 Server/12345')
-        assert result == 'S6'
-
-    def test_none_input(self):
-        """None入力 → None"""
-        result = _parse_irmc_version_from_server_header(None)
-        assert result is None
-
-    def test_empty_string(self):
-        """空文字列 → None"""
-        result = _parse_irmc_version_from_server_header('')
-        assert result is None
-
-    def test_no_match(self):
-        """パターンにマッチしない文字列 → None"""
-        result = _parse_irmc_version_from_server_header('Apache/2.4.41')
-        assert result is None
-
-    def test_only_irmc(self):
-        """iRMCのみでバージョン番号なし → None"""
-        result = _parse_irmc_version_from_server_header('iRMC')
-        assert result is None
-
-
 class TestIRMCVersion:
     """iRMC.versionプロパティのテストクラス"""
 
