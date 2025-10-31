@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 ---
 module: irmc_getvm
 
@@ -12,7 +12,7 @@ short_description: get iRMC Virtual Media Data
 
 description:
     - Ansible module to get iRMC Virtual Media Data via iRMC RedFish interface.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -23,6 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -44,9 +45,9 @@ options:
         required:    false
         default:     CDImage
         choices:     ['CDImage', 'HDImage']
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 # Get Virtual CD data
 - block:
   - name: Get Virtual CD data
@@ -80,9 +81,9 @@ EXAMPLES = r'''
       var: hddata.virtual_media_data
   tags:
     - gethd
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 details:
     description:
         The following values are returned by requesting data for e.g. 'CDImage'.
@@ -143,11 +144,13 @@ details:
             returned: always
             type: string
             sample: test
-'''
+"""
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_getvirtualmedia(module):
@@ -160,8 +163,33 @@ def irmc_getvirtualmedia(module):
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
-    # get iRMC system data
-    status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    # M8 support: Vendor detection
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    # M8 support: OEM Prefix Estimation
+    if irmc.oem_prefix is None:
+        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    # Get iRMC system data
+    sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+    msg = 'OK' if status == 200 else 'Failed to get system data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status != 200:
@@ -169,17 +197,15 @@ def irmc_getvirtualmedia(module):
 
     # Evaluate VM connection state
     vm_type = module.params['vm_type'].replace('Image', '')
-    allowedparams = get_irmc_json(
-        sysdata.json(),
-        [
-            'Actions',
-            'Oem',
-            'http://ts.fujitsu.com/redfish-schemas/v1/FTSSchema.v1_0_0#FTSComputerSystem.VirtualMedia',
-            'VirtualMediaAction@Redfish.AllowableValues',
-        ],
+    allowedparams = dig(
+        sysdata,
+        'Actions',
+        'Oem',
+        f'#{irmc.oem_prefix}ComputerSystem.VirtualMedia',
+        f'{irmc.oem_prefix}VirtualMediaAction@Redfish.AllowableValues',
     )
 
-    # determine current connection state
+    # Determine current connection state
     vmdict = dict()
     if 'Connect' + vm_type not in allowedparams:
         if 'Disconnect' + vm_type not in allowedparams:
@@ -189,37 +215,38 @@ def irmc_getvirtualmedia(module):
     else:
         vmdict[module.params['vm_type']] = 'Disconnected'
 
-    # eet iRMC Virtual Media data
-    status, vmdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/Oem/ts_fujitsu/VirtualMedia/')
+    # Get iRMC Virtual Media data
+    vm_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/VirtualMedia/'
+    vmdata, _headers, status = irmc.get(vm_path)
+    msg = 'OK' if status == 200 else f'Failed to get Virtual Media data from {vm_path}'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=vmdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
-    # extract specified Virtual Media data
-    remotemountenabled = get_irmc_json(vmdata.json(), 'RemoteMountEnabled')
-    if not remotemountenabled:
+    # Extract specified Virtual Media data
+    remoteMountEnabled = dig(vmdata, 'RemoteMountEnabled')
+    if not remoteMountEnabled:
         vmdict['remote_mount_disabled'] = 'Remote Mount of Virtual Media is not enabled!'
-    vmdict['usb_attach_mode'] = get_irmc_json(vmdata.json(), 'UsbAttachMode')
-    vmdict['bootsource'] = get_irmc_json(sysdata.json(), ['Boot', 'BootSourceOverrideTarget'])
-    vmdict['bootoverride'] = get_irmc_json(sysdata.json(), ['Boot', 'BootSourceOverrideEnabled'])
-    vmdict['bootmode'] = get_irmc_json(sysdata.json(), ['Boot', 'BootSourceOverrideMode'])
-    maxdevno = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'MaximumNumberOfDevices'])
-    if maxdevno == 0:
+    vmdict['usb_attach_mode'] = dig(vmdata, 'UsbAttachMode')
+    vmdict['bootsource'] = dig(sysdata, 'Boot', 'BootSourceOverrideTarget')
+    vmdict['bootoverride'] = dig(sysdata, 'Boot', 'BootSourceOverrideEnabled')
+    vmdict['bootmode'] = dig(sysdata, 'Boot', 'BootSourceOverrideMode')
+    maxDevNo = dig(vmdata, module.params['vm_type'], 'MaximumNumberOfDevices')
+    if maxDevNo == 0:
         vmdict['no_vm_configured'] = "No Virtual Media of Type '" + module.params['vm_type'] + "' is configured!"
     else:
-        vmdict['image_name'] = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'ImageName'])
-        vmdict['server'] = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'Server'])
-        vmdict['share_name'] = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'ShareName'])
-        vmdict['share_type'] = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'ShareType'])
-        vmdict['user_domain'] = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'UserDomain'])
-        vmdict['user_name'] = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'UserName'])
+        vmdict['image_name'] = dig(vmdata, module.params['vm_type'], 'ImageName')
+        vmdict['server'] = dig(vmdata, module.params['vm_type'], 'Server')
+        vmdict['share_name'] = dig(vmdata, module.params['vm_type'], 'ShareName')
+        vmdict['share_type'] = dig(vmdata, module.params['vm_type'], 'ShareType')
+        vmdict['user_domain'] = dig(vmdata, module.params['vm_type'], 'UserDomain')
+        vmdict['user_name'] = dig(vmdata, module.params['vm_type'], 'UserName')
     result['virtual_media_data'] = vmdict
     module.exit_json(**result)
 
 
 def main():
-    # import pdb; pdb.set_trace()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),
