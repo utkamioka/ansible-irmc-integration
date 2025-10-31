@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -12,7 +12,7 @@ short_description: connect iRMC Virtual Media Data
 
 description:
     - Ansible module to connect iRMC Virtual Media Data via the iRMC RedFish interface.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -23,6 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -103,10 +104,10 @@ details:
 '''
 
 
-import json
-
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_post
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_connectvirtualmedia(module):
@@ -116,50 +117,76 @@ def irmc_connectvirtualmedia(module):
     )
 
     if module.check_mode:
-        result['msg'] = 'module was not run'
-        module.exit_json(**result)
+        module.exit_json(msg='module was not run', **result)
+
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    if irmc.oem_prefix is None:
+        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
 
     # Get iRMC system data
-    status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+    sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+    msg = 'OK' if status == 200 else 'Failed to get system data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
     # Evaluate function params against iRMC
-    irmctype = get_irmc_json(sysdata.headers, 'Server')
-    vmaction_type = 'VirtualMediaAction' if 'S4' in irmctype else 'FTSVirtualMediaAction'
+    if irmc.version and irmc.version.upper() == 'S4':
+        vmaction_type = 'VirtualMediaAction'
+    else:
+        vmaction_type = f'{irmc.oem_prefix}VirtualMediaAction'
+
     vm_type = module.params['command'].replace('Connect', '').replace('Disconnect', '')
     vm_action = module.params['command'].replace(vm_type, '')
     vm_other_state = 'Connect' + vm_type if vm_action == 'Disconnect' else 'Disconnect' + vm_type
-    allowedparams = get_irmc_json(
-        sysdata.json(),
-        ['Actions', 'Oem', '#FTSComputerSystem.VirtualMedia', vmaction_type + '@Redfish.AllowableValues'],
+
+    allowedparams = dig(
+        sysdata,
+        'Actions', 'Oem', f'#{irmc.oem_prefix}ComputerSystem.VirtualMedia', f'{vmaction_type}@Redfish.AllowableValues',
     )
+
+    if not allowedparams:
+        module.fail_json(msg='VirtualMedia license may not be enabled.', status=20)
+
     if module.params['command'] not in allowedparams:
         if vm_other_state in allowedparams:
             result['skipped'] = True
-            result['msg'] = 'iRMC vitual ' + vm_type + " is already in state '" + module.params['command'] + "'"
+            result['msg'] = f'iRMC virtual {vm_type} is already in state {module.params["command"]!r}'
             module.exit_json(**result)
         else:
-            result['warnings'] = (
-                "Parameter '"
-                + module.params['command']
-                + "' cannot be used at this time. "
-                + 'Allowed: '
-                + json.dumps(allowedparams)
-            )
-            module.exit_json(**result)
+            msg = f'Parameter {module.params["command"]} cannot be used at this time. Allowed: {allowedparams}'
+            module.fail_json(warnings=msg, **result)
 
     # Get iRMC Virtual Media data
-    status, vmdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/Oem/ts_fujitsu/VirtualMedia/')
+    vm_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/VirtualMedia/'
+    vmdata, _headers, status = irmc.get(vm_path)
+    msg = 'OK' if status == 200 else f'Failed to get Virtual Media data from {vm_path}'
     if status < 100:
-        module.fail_json(msg=msg, status=status, xception=vmdata)
+        module.fail_json(msg=msg, status=status, exception=vmdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
     # Check Virtual Media Data
-    remotemountenabled = get_irmc_json(vmdata.json(), 'RemoteMountEnabled')
+    remotemountenabled = dig(vmdata, 'RemoteMountEnabled')
     if not remotemountenabled:
         result['msg'] = 'Remote Mount of Virtual Media is not enabled!'
         result['status'] = 20
@@ -167,13 +194,11 @@ def irmc_connectvirtualmedia(module):
 
     # Set iRMC system data
     body = {vmaction_type: module.params['command']}
-    status, sysdata, msg = irmc_redfish_post(
-        module,
-        'redfish/v1/Systems/0/Actions/Oem/FTSComputerSystem.VirtualMedia',
-        json.dumps(body),
-    )
+    action_path = f'redfish/v1/Systems/0/Actions/Oem/{irmc.oem_prefix}ComputerSystem.VirtualMedia'
+    postdata, _headers, status = irmc.post(action_path, body)
+    msg = 'OK' if status in (200, 202, 204) else f'Failed to execute Virtual Media action at {action_path}'
     if status < 100:
-        module.fail_json(msg=msg, status=status, exception=sysdata)
+        module.fail_json(msg=msg, status=status, exception=postdata)
     elif status not in (200, 202, 204):
         module.fail_json(msg=msg, status=status)
 
