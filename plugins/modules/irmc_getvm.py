@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-DOCUMENTATION = r"""
+DOCUMENTATION = r'''
 ---
 module: irmc_getvm
 
@@ -45,9 +45,9 @@ options:
         required:    false
         default:     CDImage
         choices:     ['CDImage', 'HDImage']
-"""
+'''
 
-EXAMPLES = r"""
+EXAMPLES = r'''
 # Get Virtual CD data
 - block:
   - name: Get Virtual CD data
@@ -81,9 +81,9 @@ EXAMPLES = r"""
       var: hddata.virtual_media_data
   tags:
     - gethd
-"""
+'''
 
-RETURN = r"""
+RETURN = r'''
 details:
     description:
         The following values are returned by requesting data for e.g. 'CDImage'.
@@ -144,7 +144,7 @@ details:
             returned: always
             type: string
             sample: test
-"""
+'''
 
 
 from ansible.module_utils.basic import AnsibleModule
