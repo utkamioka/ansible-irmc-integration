@@ -196,7 +196,8 @@ def irmc_getvirtualmedia(module):
         module.fail_json(msg=msg, status=status)
 
     # Evaluate VM connection state
-    vm_type = module.params['vm_type'].replace('Image', '')
+    vm_type_full = module.params['vm_type']
+    vm_type = vm_type_full.replace('Image', '')
     allowedparams = dig(
         sysdata,
         'Actions',
@@ -207,13 +208,13 @@ def irmc_getvirtualmedia(module):
 
     # Determine current connection state
     vmdict = dict()
-    if 'Connect' + vm_type not in allowedparams:
-        if 'Disconnect' + vm_type not in allowedparams:
-            vmdict[module.params['vm_type']] = 'NotConfigured'
+    if f'Connect{vm_type}' not in allowedparams:
+        if f'Disconnect{vm_type}' not in allowedparams:
+            vmdict[vm_type_full] = 'NotConfigured'
         else:
-            vmdict[module.params['vm_type']] = 'Connected'
+            vmdict[vm_type_full] = 'Connected'
     else:
-        vmdict[module.params['vm_type']] = 'Disconnected'
+        vmdict[vm_type_full] = 'Disconnected'
 
     # Get iRMC Virtual Media data
     vm_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/VirtualMedia/'
@@ -225,23 +226,23 @@ def irmc_getvirtualmedia(module):
         module.fail_json(msg=msg, status=status)
 
     # Extract specified Virtual Media data
-    remoteMountEnabled = dig(vmdata, 'RemoteMountEnabled')
-    if not remoteMountEnabled:
+    remote_mount_enabled = dig(vmdata, 'RemoteMountEnabled')
+    if not remote_mount_enabled:
         vmdict['remote_mount_disabled'] = 'Remote Mount of Virtual Media is not enabled!'
     vmdict['usb_attach_mode'] = dig(vmdata, 'UsbAttachMode')
     vmdict['bootsource'] = dig(sysdata, 'Boot', 'BootSourceOverrideTarget')
     vmdict['bootoverride'] = dig(sysdata, 'Boot', 'BootSourceOverrideEnabled')
     vmdict['bootmode'] = dig(sysdata, 'Boot', 'BootSourceOverrideMode')
-    maxDevNo = dig(vmdata, module.params['vm_type'], 'MaximumNumberOfDevices')
-    if maxDevNo == 0:
-        vmdict['no_vm_configured'] = "No Virtual Media of Type '" + module.params['vm_type'] + "' is configured!"
+    max_dev_no = dig(vmdata, vm_type_full, 'MaximumNumberOfDevices')
+    if max_dev_no == 0:
+        vmdict['no_vm_configured'] = f"No Virtual Media of Type '{vm_type_full}' is configured!"
     else:
-        vmdict['image_name'] = dig(vmdata, module.params['vm_type'], 'ImageName')
-        vmdict['server'] = dig(vmdata, module.params['vm_type'], 'Server')
-        vmdict['share_name'] = dig(vmdata, module.params['vm_type'], 'ShareName')
-        vmdict['share_type'] = dig(vmdata, module.params['vm_type'], 'ShareType')
-        vmdict['user_domain'] = dig(vmdata, module.params['vm_type'], 'UserDomain')
-        vmdict['user_name'] = dig(vmdata, module.params['vm_type'], 'UserName')
+        vmdict['image_name'] = dig(vmdata, vm_type_full, 'ImageName')
+        vmdict['server'] = dig(vmdata, vm_type_full, 'Server')
+        vmdict['share_name'] = dig(vmdata, vm_type_full, 'ShareName')
+        vmdict['share_type'] = dig(vmdata, vm_type_full, 'ShareType')
+        vmdict['user_domain'] = dig(vmdata, vm_type_full, 'UserDomain')
+        vmdict['user_name'] = dig(vmdata, vm_type_full, 'UserName')
     result['virtual_media_data'] = vmdict
     module.exit_json(**result)
 
