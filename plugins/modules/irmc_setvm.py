@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -12,7 +12,7 @@ short_description: set iRMC Virtual Media Data
 
 description:
     - Ansible module to set iRMC Virtual Media Data via iRMC RedFish interface.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -23,6 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -122,8 +123,10 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_patch
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
 from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import setup_datadict
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_setvirtualmedia(module):
@@ -136,42 +139,65 @@ def irmc_setvirtualmedia(module):
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    # M8 support: Vendor detection
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    # M8 support: OEM Prefix Estimation
+    if irmc.oem_prefix is None:
+        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
     vmparams, status = setup_datadict(module)
 
     # Get iRMC Virtual Media data
-    status, vmdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/Oem/ts_fujitsu/VirtualMedia/')
+    vm_path = f'redfish/v1/Systems/0/Oem/{irmc.vendor}/VirtualMedia/'
+    vmdata, _headers, status = irmc.get(vm_path)
+    msg = 'OK' if status == 200 else f'Failed to get Virtual Media data from {vm_path}'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=vmdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
     # Evaluate configured Virtual Media Data
-    maxdevno = get_irmc_json(vmdata.json(), [module.params['vm_type'], 'MaximumNumberOfDevices'])
-    if maxdevno == 0:
+    max_dev_no = dig(vmdata, module.params['vm_type'], 'MaximumNumberOfDevices')
+    if max_dev_no == 0:
         if not module.params['force_mediatype_active']:
             result['warnings'] = "No Virtual Media of Type '" + module.params['vm_type'] + "' is configured!"
             result['status'] = 20
             module.fail_json(**result)
         else:
-            new_maxdevno = 1
+            new_max_dev_no = 1
     else:
-        new_maxdevno = maxdevno
+        new_max_dev_no = max_dev_no
 
-    remotemountenabled = get_irmc_json(vmdata.json(), 'RemoteMountEnabled')
-    if not remotemountenabled and not module.params['force_remotemount_enabled']:
+    remote_mount_enabled = dig(vmdata, 'RemoteMountEnabled')
+    if not remote_mount_enabled and not module.params['force_remotemount_enabled']:
         result['msg'] = 'Remote Mount of Virtual Media is not enabled!'
         result['status'] = 30
         module.fail_json(**result)
 
     # Set iRMC system data
-    body = setup_vmdata(vmparams, maxdevno, new_maxdevno)
-    etag = get_irmc_json(vmdata.json(), '@odata.etag')
-    status, patch, msg = irmc_redfish_patch(
-        module,
-        'redfish/v1/Systems/0/Oem/ts_fujitsu/VirtualMedia/',
-        json.dumps(body),
-        etag,
-    )
+    body = setup_vmdata(vmparams, max_dev_no, new_max_dev_no)
+    etag = dig(vmdata, '@odata.etag')
+    headers = {'If-Match': str(etag)}
+    patch, _headers, status = irmc.patch(vm_path, body, headers=headers)
+    msg = 'OK' if status == 200 else f'Failed to update Virtual Media data at {vm_path}'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=patch)
     elif status != 200:
@@ -181,7 +207,7 @@ def irmc_setvirtualmedia(module):
     module.exit_json(**result)
 
 
-def setup_vmdata(data, maxdevno, new_maxdevno):
+def setup_vmdata(data, max_dev_no, new_max_dev_no):
     body = {
         data['vm_type']: {
             'Server': data['server'],
@@ -191,8 +217,8 @@ def setup_vmdata(data, maxdevno, new_maxdevno):
     }
     if data['force_remotemount_enabled']:
         body['RemoteMountEnabled'] = True
-    if maxdevno == 0:
-        body[data['vm_type']]['MaximumNumberOfDevices'] = new_maxdevno
+    if max_dev_no == 0:
+        body[data['vm_type']]['MaximumNumberOfDevices'] = new_max_dev_no
     if data['share_type'] is not None:
         body[data['vm_type']]['ShareType'] = data['share_type']
     if data['vm_domain'] is not None:
@@ -205,7 +231,6 @@ def setup_vmdata(data, maxdevno, new_maxdevno):
 
 
 def main():
-    # import pdb; pdb.set_trace()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),
