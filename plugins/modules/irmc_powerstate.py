@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -13,7 +13,7 @@ short_description: get or set server power state
 
 description:
     - Ansible module to get or set server power state via iRMC RedFish interface.
-    - Module Version V1.2.
+    - Module Version V1.3.0
 
 requirements:
     - The module needs to run locally.
@@ -24,6 +24,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -102,10 +103,10 @@ details:
 '''
 
 
-import json
-
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_post
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_powerstate(module: AnsibleModule) -> None:
@@ -118,51 +119,69 @@ def irmc_powerstate(module: AnsibleModule) -> None:
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
-    # preliminary parameter check
+    # Preliminary parameter check
     if module.params['command'] == 'set' and module.params['state'] is None:
         result['msg'] = "Command 'set' requires 'state' parameter to be set!"
         result['status'] = 10
         module.fail_json(**result)
 
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    # M8 support: OEM Prefix Estimation
+    if irmc.oem_prefix is None:
+        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
     # Get iRMC system data
-    status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+    sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+    msg = 'OK' if status == 200 else 'Failed to get system data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
-    power_state = get_irmc_json(sysdata.json(), 'PowerState')
+    power_state = dig(sysdata, 'PowerState')
     if module.params['command'] == 'get':
         result['power_state'] = power_state
         module.exit_json(**result)
 
-    # Evaluate function params against iRMC
-    if 'Power' + power_state == module.params['state'].replace('Graceful', ''):
+    # Skip: current power state already matches requested state (ignoring 'Graceful' prefix)
+    if f'Power{power_state}' == module.params['state'].replace('Graceful', ''):
         result['skipped'] = True
         result['msg'] = f"PRIMERGY server is already in state '{power_state}'"
         module.exit_json(**result)
 
-    allowedparams = get_irmc_json(
-        sysdata.json(),
-        ['Actions', 'Oem', '#FTSComputerSystem.Reset', 'FTSResetType@Redfish.AllowableValues'],
+    # Validate requested reset/power state against Redfish OEM allowable values
+    allowedparams = dig(
+        sysdata,
+        'Actions',
+        'Oem',
+        f'#{irmc.oem_prefix}ComputerSystem.Reset',
+        f'{irmc.oem_prefix}ResetType@Redfish.AllowableValues',
     )
     if module.params['state'] not in allowedparams:
-        result['msg'] = (
-            f"{module.params['state']!r} is not allowed now. "
-            f"Currently allowed: {allowedparams}"
-        )
+        result['msg'] = f'{module.params["state"]!r} is not allowed now. Currently allowed: {allowedparams}'
         result['status'] = 11
         module.fail_json(**result)
 
-    # Set iRMC system data
-    body = {'FTSResetType': module.params['state']}
-    status, sysdata, msg = irmc_redfish_post(
-        module,
-        'redfish/v1/Systems/0/Actions/Oem/FTSComputerSystem.Reset',
-        json.dumps(body),
-    )
+    # Change iRMC power state
+    body = {f'{irmc.oem_prefix}ResetType': module.params['state']}
+    reset_path = f'redfish/v1/Systems/0/Actions/Oem/{irmc.oem_prefix}ComputerSystem.Reset'
+    postdata, _headers, status = irmc.post(reset_path, body)
+    msg = 'OK' if status in (200, 202, 204) else f'Failed to execute Power state change action at {reset_path}'
     if status < 100:
-        module.fail_json(msg=msg, status=status, exception=sysdata)
+        module.fail_json(msg=msg, status=status, exception=postdata)
     elif status not in (200, 202, 204):
         module.fail_json(msg=msg, status=status)
 
@@ -171,7 +190,6 @@ def irmc_powerstate(module: AnsibleModule) -> None:
 
 
 def main() -> None:
-    # breakpoint()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),
