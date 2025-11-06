@@ -250,12 +250,6 @@ def irmc_eventlog(module):
         result['status'] = 20
         module.fail_json(**result)
 
-    # M8 support: OEM Prefix Estimation
-    if irmc.oem_prefix is None:
-        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
-        result['status'] = 20
-        module.fail_json(**result)
-
     eventlog_type = module.params['eventlog_type']
 
     # Preliminary parameter check
@@ -289,7 +283,7 @@ def irmc_eventlog(module):
 
     # Get specific log
     else:
-        get_log_path = f"redfish/v1/Managers/iRMC/LogServices/{eventlog_type}/Entries/module.params['id']"
+        get_log_path = f'redfish/v1/Managers/iRMC/LogServices/{eventlog_type}/Entries/{module.params["id"]}'
         logsdata, _headers, status = irmc.get(get_log_path)
         msg = 'OK' if status == 200 else f'Failed to get Log data at {get_log_path}'
         if status < 100:
@@ -303,12 +297,11 @@ def irmc_eventlog(module):
 
 
 def get_irmc_eventlog_info(module, irmc, item):
-    item_json = item.json()
     eventlog = {}
-    eventlog['Id'] = item_json['Id']
-    eventlog['Severity'] = item_json['Severity']
-    eventlog['Created'] = item_json['Created']
-    eventlog['Type'] = item_json['EntryType']
+    eventlog['Id'] = item['Id']
+    eventlog['Severity'] = item['Severity']
+    eventlog['Created'] = item['Created']
+    eventlog['Type'] = item['EntryType']
     eventlog['AlertGroup'] = dig(item, 'Oem', irmc.vendor, 'AlertGroup')
     if module.params['eventlog_type'] == 'SystemEventLog':
         eventlog['EventSource'] = dig(item, 'Oem', irmc.vendor, 'EventSource')
