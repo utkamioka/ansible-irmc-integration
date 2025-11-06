@@ -157,12 +157,6 @@ def irmc_setvirtualmedia(module):
         result['status'] = 20
         module.fail_json(**result)
 
-    # M8 support: OEM Prefix Estimation
-    if irmc.oem_prefix is None:
-        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
-        result['status'] = 20
-        module.fail_json(**result)
-
     vmparams, status = setup_datadict(module)
 
     # Get iRMC Virtual Media data
