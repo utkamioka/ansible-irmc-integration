@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -12,7 +12,7 @@ short_description: handle iRMC eventlogs
 
 description:
     - Ansible module to handle iRMC eventlogs via Restful API.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -23,6 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -216,77 +217,101 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_post
-
-# Global
-result = dict()
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_eventlog(module):
-    # initialize result
-    result['changed'] = False
-    result['status'] = 0
+    result = dict(
+        changed=False,
+        status=0,
+    )
 
     if module.check_mode:
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
-    # preliminary parameter check
+    # Initialize logger
+    logger = AnsibleLogger(module)
+
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    # M8 support: Vendor detection
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    eventlog_type = module.params['eventlog_type']
+
+    # Preliminary parameter check
     if module.params['command'] == 'get' and module.params['id'] is None:
         result['msg'] = "Command 'get' requires 'id' parameter to be set!"
         result['status'] = 10
         module.fail_json(**result)
 
     if module.params['command'] == 'list':
-        status, data, msg = irmc_redfish_get(module, 'redfish/v1/Managers/iRMC/LogServices/{0}/Entries'.
-                                             format(module.params['eventlog_type']))
+        logsdata, _headers, status = irmc.get(f'redfish/v1/Managers/iRMC/LogServices/{eventlog_type}/Entries')
+        msg = 'OK' if status == 200 else 'Failed to get Log data'
         if status < 100:
-            module.fail_json(msg=msg, status=status, exception=data)
+            module.fail_json(msg=msg, status=status, exception=logsdata)
         elif status not in (200, 202, 204):
             module.fail_json(msg=msg, status=status)
 
-        eventlogs = get_irmc_json(data.json(), ['Members'])
+        eventlogs = dig(logsdata, 'Members')
         result['eventlog'] = []
         for item in eventlogs:
-            result['eventlog'].append(get_irmc_eventlog_info(module, item))
+            result['eventlog'].append(get_irmc_eventlog_info(module, irmc, item))
+
     elif module.params['command'] == 'clear':
-        url = 'redfish/v1/Managers/iRMC/LogServices/{0}/Actions/LogService.ClearLog'. \
-              format(module.params['eventlog_type'])
-        status, data, msg = irmc_redfish_post(module, url, '')
+        clear_log_path = f'redfish/v1/Managers/iRMC/LogServices/{eventlog_type}/Actions/LogService.ClearLog'
+        clearlogdata, _headers, status = irmc.post(clear_log_path, '')
+        msg = 'OK' if status == 200 else f'Failed to clear Log data at {clear_log_path}'
         if status < 100:
-            module.fail_json(msg=msg, status=status, exception=data)
+            module.fail_json(msg=msg, status=status, exception=clearlogdata)
         elif status not in (200, 202, 204):
             module.fail_json(msg=msg, status=status)
         result['changed'] = True
+
+    # Get specific log
     else:
-        status, data, msg = irmc_redfish_get(module, 'redfish/v1/Managers/iRMC/LogServices/{0}/Entries/{1}'.
-                                             format(module.params['eventlog_type'], module.params['id']))
+        get_log_path = f'redfish/v1/Managers/iRMC/LogServices/{eventlog_type}/Entries/{module.params["id"]}'
+        logsdata, _headers, status = irmc.get(get_log_path)
+        msg = 'OK' if status == 200 else f'Failed to get Log data at {get_log_path}'
         if status < 100:
-            module.fail_json(msg=msg, status=status, exception=data)
+            module.fail_json(msg=msg, status=status, exception=logsdata)
         elif status not in (200, 202, 204):
             module.fail_json(msg=msg, status=status)
 
-        result['eventlog_entry'] = get_irmc_eventlog_info(module, data.json())
+        result['eventlog_entry'] = get_irmc_eventlog_info(module, irmc, logsdata)
 
     module.exit_json(**result)
 
 
-def get_irmc_eventlog_info(module, item):
+def get_irmc_eventlog_info(module, irmc, item):
     eventlog = {}
     eventlog['Id'] = item['Id']
     eventlog['Severity'] = item['Severity']
     eventlog['Created'] = item['Created']
     eventlog['Type'] = item['EntryType']
-    eventlog['AlertGroup'] = get_irmc_json(item, ['Oem', 'ts_fujitsu', 'AlertGroup'])
+    eventlog['AlertGroup'] = dig(item, 'Oem', irmc.vendor, 'AlertGroup')
     if module.params['eventlog_type'] == 'SystemEventLog':
-        eventlog['EventSource'] = get_irmc_json(item, ['Oem', 'ts_fujitsu', 'EventSource'])
-        eventlog['Message'] = get_irmc_json(item, ['Oem', 'ts_fujitsu', 'MessageOEM', 'en'])[0]
-        if get_irmc_json(item, ['Oem', 'ts_fujitsu', 'Cause']) is not None:
-            eventlog['Cause'] = get_irmc_json(item, ['Oem', 'ts_fujitsu', 'Cause', 'en'])[0]
+        eventlog['EventSource'] = dig(item, 'Oem', irmc.vendor, 'EventSource')
+        eventlog['Message'] = dig(item, 'Oem', irmc.vendor, 'MessageOEM', 'en')[0]
+        if dig(item, 'Oem', irmc.vendor, 'Cause') is not None:
+            eventlog['Cause'] = dig(item, 'Oem', irmc.vendor, 'Cause', 'en')[0]
         else:
             eventlog['Cause'] = None
-        if get_irmc_json(item, ['Oem', 'ts_fujitsu', 'Resolutions']) is not None:
-            eventlog['Resolutions'] = get_irmc_json(item, ['Oem', 'ts_fujitsu', 'Resolutions', 'en'])[0]
+        if dig(item, 'Oem', irmc.vendor, 'Resolutions') is not None:
+            eventlog['Resolutions'] = dig(item, 'Oem', irmc.vendor, 'Resolutions', 'en')[0]
         else:
             eventlog['Resolutions'] = None
     else:
@@ -296,16 +321,18 @@ def get_irmc_eventlog_info(module, item):
 
 
 def main():
-    # import pdb; pdb.set_trace()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),
         irmc_password=dict(required=True, type='str', no_log=True),
         validate_certs=dict(required=False, type='bool', default=True),
-        command=dict(required=False, type='str', default='list',
-                     choices=['list', 'get', 'clear']),
-        eventlog_type=dict(required=False, type='str', default='SystemEventLog',
-                           choices=['SystemEventLog', 'InternalEventLog']),
+        command=dict(required=False, type='str', default='list', choices=['list', 'get', 'clear']),
+        eventlog_type=dict(
+            required=False,
+            type='str',
+            default='SystemEventLog',
+            choices=['SystemEventLog', 'InternalEventLog'],
+        ),
         id=dict(required=False, type='int'),
     )
     module = AnsibleModule(
