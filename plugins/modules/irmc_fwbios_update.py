@@ -254,11 +254,13 @@ details:
 
 import time
 from datetime import datetime
+from pathlib import Path
+
+from requests_toolbelt import MultipartEncoder
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
 from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_upload_file import irmc_redfish_post_file
 from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
@@ -327,12 +329,19 @@ def irmc_fwbios_update(module):
 
     if module.params['update_source'] == 'file':
         action_url = get_update_url(module, irmc)
-        # TODO:以下修正必要
-        status, udata, msg = irmc_redfish_post_file(module, get_update_url(module), module.params['file_name'])
+
+        filepath = Path(module.params['file_name'])
+        with filepath.open('rb') as f:
+            filedata = f.read()
+        multipart_data = MultipartEncoder(
+            fields={'data': (filepath.name, filedata, 'application/octet-stream', {'Content-Disposition': 'form-data'})}
+        )
+
+        udata, post_resp_headers, status = irmc.post(action_url, multipart_data)
         msg = 'OK' if status == 200 else f'Failed to update firmware via file at {action_url}'
     elif module.params['update_source'] == 'tftp':
         action_url = get_update_url(module, irmc)
-        udata, _headers, status = irmc.post(action_url, '')
+        udata, post_resp_headers, status = irmc.post(action_url, '')
         msg = 'OK' if status == 200 else f'Failed to update firmware via tftp at {action_url}'
     else:
         module.fail_json(msg=f'{module.params["update_source"]}: unknown update_source')
@@ -346,7 +355,7 @@ def irmc_fwbios_update(module):
             msg = f'{msg} This message might be due to the binary file being invalid for the server.'
         module.fail_json(msg=msg, status=status)
 
-    wait_for_update_to_finish(module, irmc, udata.headers['Location'], dig(sysdata, 'PowerState'), result)
+    wait_for_update_to_finish(module, irmc, post_resp_headers['Location'], dig(sysdata, 'PowerState'), result)
     module.exit_json(**result)
 
 
@@ -405,7 +414,7 @@ def wait_for_update_to_finish(module, irmc, location, power_state, result):
             msg = f'Timeout of {module.params["timeout"]} minutes exceeded. Abort.'
             module.fail_json(msg=msg, status=20)
 
-        sdata, _headers, status = irmc.get(location)
+        sdata, _headers, status = irmc.get(location, use_cache=False)
         msg = 'OK' if status == 200 else f'Failed to retrieve update task data at {location}'
         if status == 99:
             time.sleep(55)
@@ -426,7 +435,7 @@ def wait_for_update_to_finish(module, irmc, location, power_state, result):
             time.sleep(5)
             continue
 
-        if 'Key' in dig(sdata, 'error'):
+        if dig(sdata, 'error') is None:
             rebootDone = False
             oemstate = dig(sdata, 'Oem', irmc.vendor, 'StatusOEM')
             state = dig(sdata, 'TaskState')
@@ -487,7 +496,7 @@ def check_all_tasks_are_finished(module, irmc):
     tasks = dig(taskdata, 'Members')
     for task in tasks:
         url = dig(task, '@odata.id')
-        sdata, _headers, status = irmc.get(url)
+        sdata, _headers, status = irmc.get(url, use_cache=False)
         msg = 'OK' if status == 200 else 'Failed to fetch Redfish task list'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=sdata)
