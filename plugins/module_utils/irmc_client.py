@@ -14,6 +14,10 @@ import json
 import time
 from typing import Dict, Any, Optional, Tuple, Mapping, TYPE_CHECKING
 
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_session_information import SessionInformation
+
+# 型チェック時のみインポート（型ヒント専用、起動速度最適化のため）
+# LoggerはProtocolで実行時にインスタンス化されないため、mypyなどの型チェッカーでのみ必要
 if TYPE_CHECKING:
     from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import Logger
 
@@ -343,7 +347,7 @@ class iRMC:
                 f'Error: {str(e)}, Time: {elapsed_time:.3f}s'
             )
             # エラー時もResponseオブジェクトを返す
-            return Response(body=str(e), headers=CaseInsensitiveDict(), status=999)
+            return Response(body=str(e), headers=CaseInsensitiveDict(), status=99)
 
     def get(
         self,
@@ -373,6 +377,7 @@ class iRMC:
 
         # キャッシュから取得
         if cache_key is not None and cache_key in self._cache:
+            self._debug(f'iRMC Cache Hit: GET {path}')
             return self._cache[cache_key]
 
         # リクエスト送信
@@ -586,3 +591,27 @@ class iRMC:
                 'will retry on next access'
             )
             return None
+
+    @property
+    def sessions(self) -> SessionInformation:
+        """sessionInformation APIを操作するSessionInformationインスタンスを取得します。
+
+        このプロパティは、iRMCのsessionInformation APIにアクセスするための
+        SessionInformationオブジェクトを返します。初回アクセス時にインスタンスが
+        作成され、以降は同じインスタンスが再利用されます。
+
+        戻り値:
+            SessionInformation - sessionInformation API操作クラスのインスタンス
+
+        使用例:
+            # セッションIDを指定して待機
+            session = irmc.sessions.get(session_id)
+            result = session.wait_for_finish()
+
+            # セッション一覧を取得
+            for session in irmc.sessions.list():
+                status = session.get_status()
+        """
+        if not hasattr(self, '_sessions'):
+            self._sessions = SessionInformation(self)
+        return self._sessions

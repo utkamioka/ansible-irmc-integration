@@ -627,7 +627,7 @@ class TestIRMCLogging:
         assert len(logger.messages['warn']) == 1
         assert 'iRMC Request Error' in logger.messages['warn'][0]
         assert 'Connection error' in logger.messages['warn'][0]
-        assert response.status == 999
+        assert response.status == 99
 
     @patch('requests.Session')
     def test_log_levels_on_request(self, mock_session_class):

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -13,7 +13,7 @@ short_description: handle iRMC RAID
 description:
     - Ansible module to configure a PRIMERGY server's RAID via iRMC.
     - Using this module may force the server into several reboots.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -24,6 +24,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 options:
@@ -47,8 +48,8 @@ options:
         choices:     ['get', 'create', 'delete']
     adapter:
         description: The logical number of the adapter to create/delete RAID arrays on/from.
-                     The logical number is the value at the end of the id (ex. “RAIDAdapter0”)
-                     obtained by command=“get”.
+                     The logical number is the value at the end of the id (ex. "RAIDAdapter0")
+                     obtained by command="get".
         required:    false
     array:
         description: The logical number of the RAID array to delete. Use -1 for all arrays. Ignored for 'create'.
@@ -168,13 +169,8 @@ details_for_all:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import (
-    get_irmc_json,
-    irmc_redfish_delete,
-    irmc_redfish_get,
-    irmc_redfish_post,
-    waitForSessionToFinish,
-)
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
 
 # Global
 result = dict()
@@ -189,34 +185,49 @@ def irmc_raid(module):
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
+    # initialize iRMC client
+    irmc = iRMC(
+        module.params['irmc_url'],
+        module.params['irmc_username'],
+        module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+    )
+
+    # M8 support: Vendor detection (required)
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
     # preliminary parameter check
-    preliminary_parameter_check(module)
+    preliminary_parameter_check(module, irmc)
 
     # get current RAID configuration
-    irmc_profile = get_raid_data(module)
-    raid_configuration = get_raid_configuration(module, irmc_profile)
+    raidadapter_profile = get_raidadapter_profile(module, irmc)
+    raid_configuration = get_raid_configuration(module, irmc, raidadapter_profile)
 
     if module.params['command'] == 'get':
         result['configuration'] = raid_configuration
 
     if module.params['command'] == 'create':
-        create_array(module, raid_configuration)
+        create_array(module, irmc, raid_configuration)
 
     if module.params['command'] == 'delete':
-        delete_array(module, raid_configuration)
+        delete_array(module, irmc, raid_configuration)
 
     module.exit_json(**result)
 
 
-def preliminary_parameter_check(module):
+def preliminary_parameter_check(module, irmc):
     if module.params['command'] != 'get':
         # Get server power state
-        status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+        sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+        msg = 'OK' if status == 200 else 'Failed to get system data'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=sysdata)
         elif status != 200:
             module.fail_json(msg=msg, status=status)
-        if get_irmc_json(sysdata.json(), 'PowerState') == 'On':
+        if dig(sysdata, 'PowerState') == 'On':
             result['msg'] = 'Server is powered on. Cannot continue.'
             result['status'] = 10
             module.fail_json(**result)
@@ -231,20 +242,20 @@ def preliminary_parameter_check(module):
         module.fail_json(**result)
 
 
-def create_array(module, raid_configuration):
+def create_array(module, irmc, raid_configuration):
     for adapter in raid_configuration:
         if adapter['id'].replace('RAIDAdapter', '') != module.params['adapter']:
             continue
         else:
             disk_data = adapter['unused_disks']
             if not disk_data:
-                result['msg'] = 'No un-used disks available on controller {0}'.format(module.params['adapter'])
+                result['msg'] = f"No un-used disks available on controller {module.params['adapter']}"
                 result['status'] = 41
                 module.fail_json(**result)
 
             if module.params['level'] not in adapter['level']:
-                result['msg'] = 'Adapter {0} does not support RAID level {1}. Supported: {2}'. \
-                                format(module.params['adapter'], module.params['level'], adapter['level'])
+                result['msg'] = (f"Adapter {module.params['adapter']} does not support RAID level {module.params['level']}. "
+                                 f"Supported: {adapter['level']}")
                 result['status'] = 42
                 module.fail_json(**result)
 
@@ -274,15 +285,15 @@ def create_array(module, raid_configuration):
             }
 
             # Set new configuration
-            apply_raid_configuration(module, body)
+            apply_raid_configuration(module, irmc, body)
             return
 
-    result['msg'] = 'Specified adapter {0} does not exist.'.format(module.params['adapter'])
+    result['msg'] = f"Specified adapter {module.params['adapter']} does not exist."
     result['status'] = 40
     module.fail_json(**result)
 
 
-def delete_array(module, raid_configuration):
+def delete_array(module, irmc, raid_configuration):
     for adapter in raid_configuration:
         if adapter['id'].replace('RAIDAdapter', '') != module.params['adapter']:
             continue
@@ -290,7 +301,7 @@ def delete_array(module, raid_configuration):
             logical_drives = adapter['logical_drives']
 
             if not logical_drives:
-                result['msg'] = 'There are no logical drives on adapter {0}.'.format(module.params['adapter'])
+                result['msg'] = f"There are no logical drives on adapter {module.params['adapter']}."
                 if module.params['array'] == '-1':
                     result['skipped'] = True
                     module.exit_json(**result)
@@ -300,7 +311,7 @@ def delete_array(module, raid_configuration):
 
             lds = []
             for array in logical_drives:
-                if module.params['array'] != '-1' and '{0}'.format(array['id']) != module.params['array']:
+                if module.params['array'] != '-1' and str(array['id']) != module.params['array']:
                     ld = {'@Number': array['id'], '@Action': 'None'}
                     continue
                 else:
@@ -308,7 +319,7 @@ def delete_array(module, raid_configuration):
                 lds.append(ld)
 
             if not lds:
-                result['msg'] = 'Specified array {0} does not exist.'.format(module.params['array'])
+                result['msg'] = f"Specified array {module.params['array']} does not exist."
                 result['status'] = 52
                 module.fail_json(**result)
 
@@ -332,27 +343,33 @@ def delete_array(module, raid_configuration):
             }
 
             # Set new configuration
-            apply_raid_configuration(module, body)
+            apply_raid_configuration(module, irmc, body)
             return
 
-    result['msg'] = 'Specified adapter {0} does not exist.'.format(module.params['adapter'])
+    result['msg'] = f"Specified adapter {module.params['adapter']} does not exist."
     result['status'] = 40
     module.fail_json(**result)
 
 
-def apply_raid_configuration(module, body):
-    status, sysdata, msg = irmc_redfish_post(module, 'rest/v1/Oem/eLCM/ProfileManagement/set', json.dumps(body))
+def apply_raid_configuration(module, irmc, body):
+    sysdata, _headers, status = irmc.post('rest/v1/Oem/eLCM/ProfileManagement/set', body)
+    msg = 'OK' if status in (200, 202, 204) else 'Failed to apply RAID configuration'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status == 406:
-        result['msg'] = 'Raid Configuration cannot be {0}d.'.format(module.params['command'])
+        result['msg'] = f"Raid Configuration cannot be {module.params['command']}d."
         module.fail_json(msg=msg, status=status)
     elif status not in (200, 202, 204):
         module.fail_json(msg=msg, status=status)
 
     if module.params['wait_for_finish'] is True:
         # check that current session is terminated
-        status, data, msg = waitForSessionToFinish(module, get_irmc_json(sysdata.json(), ['Session', 'Id']))
+        session_id = dig(sysdata, 'Session', 'Id')
+        session = irmc.sessions.get(session_id)
+        response = session.wait_for_finish()
+        data, _headers, status = response
+        msg = 'OK' if status in (200, 202, 204) else 'Session finished with error'
+
         if status > 30 and status < 100:
             module.fail_json(msg=msg, status=status, exception=data)
         elif status not in (200, 202, 204):
@@ -361,119 +378,125 @@ def apply_raid_configuration(module, body):
     result['changed'] = True
 
 
-def get_raid_data(module):
+def get_raidadapter_profile(module, irmc):
+    """Remake RAIDAdapter Profile, then fetch it.
+    """
     # make sure RAIDAdapter profile is up-to-date
-    status, sysdata, msg = irmc_redfish_delete(module, '/rest/v1/Oem/eLCM/ProfileManagement/RAIDAdapter')
+    sysdata, _headers, status = irmc.delete('/rest/v1/Oem/eLCM/ProfileManagement/RAIDAdapter')
+    msg = 'OK' if status in (200, 202, 204, 404) else 'Failed to delete RAIDAdapter profile'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status not in (200, 202, 204, 404):
         module.fail_json(msg=msg, status=status)
 
     url = 'rest/v1/Oem/eLCM/ProfileManagement/get?PARAM_PATH=Server/HWConfigurationIrmc/Adapters/RAIDAdapter'
-    status, sysdata, msg = irmc_redfish_post(module, url, '')
+    sysdata, _headers, status = irmc.post(url, '')
+    msg = 'OK' if status in (200, 202, 204) else 'Failed to get RAID profile'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status == 404:
-        result['msg'] = "Requested profile 'HWConfigurationIrmc/Adapters/RAIDAdapter' cannot be created."
+        msg = "Requested profile 'HWConfigurationIrmc/Adapters/RAIDAdapter' cannot be created."
         module.fail_json(msg=msg, status=status)
     elif status == 409:
-        result['msg'] = "Requested profile 'HWConfigurationIrmc/Adapters/RAIDAdapter' already exists."
+        msg = "Requested profile 'HWConfigurationIrmc/Adapters/RAIDAdapter' already exists."
         module.fail_json(msg=msg, status=status)
     elif status not in (200, 202, 204):
         module.fail_json(msg=msg, status=status)
 
     if module.params['wait_for_finish'] is True:
         # check that current session is terminated
-        status, data, msg = waitForSessionToFinish(module, get_irmc_json(sysdata.json(), ['Session', 'Id']))
+        session_id = dig(sysdata, 'Session', 'Id')
+        data, _headers, status = irmc.sessions.get(session_id).wait_for_finish()
+        msg = 'OK' if status in (200, 202, 204) else 'Session finished with error'
         if status > 30 and status < 100:
             module.fail_json(msg=msg, status=status, exception=data)
         elif status not in (200, 202, 204):
             module.fail_json(msg=msg, log=data, status=status)
 
-    status, sysdata, msg = irmc_redfish_get(module, '/rest/v1/Oem/eLCM/ProfileManagement/RAIDAdapter')
+    sysdata, _headers, status = irmc.get('/rest/v1/Oem/eLCM/ProfileManagement/RAIDAdapter', use_cache=False)
+    msg = 'OK' if status == 200 else 'Failed to get RAIDAdapter profile'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status == 404:
-        module.fail_json(msg="Requested profile 'HWConfigurationIrmc/Adapters/RAIDAdapter' does not exist.",
-                         status=status)
+        msg = "Requested profile 'HWConfigurationIrmc/Adapters/RAIDAdapter' does not exist."
+        module.fail_json(msg=msg, status=status)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
-    return sysdata.json()
+    return sysdata
 
 
-def get_raid_configuration(module, irmc_profile):
+def get_raid_configuration(module, irmc, raidadapter_profile):
     raid_configuration = []
-    for adapter in get_irmc_json(irmc_profile, ['Server', 'HWConfigurationIrmc', 'Adapters', 'RAIDAdapter']):
-        adapter_list = get_adapter(module, adapter)
-        disk_data = get_irmc_json(adapter, ['PhysicalDisks', 'PhysicalDisk'])
-        ld_data = get_irmc_json(adapter, ['LogicalDrives', 'LogicalDrive'])
-        for pd in disk_data:
+    for adapter in dig(raidadapter_profile, 'Server', 'HWConfigurationIrmc', 'Adapters', 'RAIDAdapter', default=[]):
+        adapter_list = get_adapter(module, irmc, adapter)
+        physical_disks = dig(adapter, 'PhysicalDisks', 'PhysicalDisk', default=[])
+        logical_drives = dig(adapter, 'LogicalDrives', 'LogicalDrive', default=[])
+        for pd in physical_disks:
             disk_list = get_disk(pd)
             adapter_list['unused_disks'].append(disk_list)
-        if 'Key' not in ld_data:
-            for ld in ld_data:
-                array_list = get_logicaldrive(ld)
-                for ref in get_irmc_json(ld, ['ArrayRefs', 'ArrayRef']):
-                    for array in get_irmc_json(adapter, ['Arrays', 'Array']):
-                        if get_irmc_json(ref, ['@Number']) == get_irmc_json(array, ['@Number']):
-                            for disk in get_irmc_json(array, ['PhysicalDiskRefs', 'PhysicalDiskRef']):
-                                for pd in disk_data:
-                                    if get_irmc_json(disk, ['@Number']) == get_irmc_json(pd, ['@Number']):
-                                        break
-                                disk_list = get_disk(pd)
-                                array_list['disks'].append(disk_list)
-                                if disk_list in adapter_list['unused_disks']:
-                                    adapter_list['unused_disks'].remove(disk_list)
-                adapter_list['logical_drives'].append(array_list)
+        for ld in logical_drives:
+            array_list = get_logicaldrive(ld)
+            for ref in dig(ld, 'ArrayRefs', 'ArrayRef', default=[]):
+                for array in dig(adapter, 'Arrays', 'Array', default=[]):
+                    if dig(ref, '@Number') == dig(array, '@Number'):
+                        for disk in dig(array, 'PhysicalDiskRefs', 'PhysicalDiskRef', default=[]):
+                            for pd in physical_disks:
+                                if dig(disk, '@Number') == dig(pd, '@Number'):
+                                    break
+                            disk_list = get_disk(pd)
+                            array_list['disks'].append(disk_list)
+                            if disk_list in adapter_list['unused_disks']:
+                                adapter_list['unused_disks'].remove(disk_list)
+            adapter_list['logical_drives'].append(array_list)
         raid_configuration.append(adapter_list)
     return raid_configuration
 
 
-def get_adapter(module, adapter):
+def get_adapter(module, irmc, adapter):
     ctrl = {}
-    ctrl['id'] = get_irmc_json(adapter, ['@AdapterId'])
+    ctrl['id'] = dig(adapter, '@AdapterId')
     ctrl['name'] = ctrl['id']
-    ctrl['level'] = get_irmc_json(adapter, ['Features', 'RaidLevel'])
+    ctrl['level'] = dig(adapter, 'Features', 'RaidLevel')
     ctrl['logical_drives'] = []
     ctrl['unused_disks'] = []
-    status, hwdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/Storage?$expand=Members')
+    hwdata, _headers, status = irmc.get('redfish/v1/Systems/0/Storage?$expand=Members')
+    msg = 'OK' if status == 200 else 'Failed to get Storage data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=hwdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
-    for member in get_irmc_json(hwdata.json(), 'Members'):
+    for member in dig(hwdata, 'Members', default=[]):
         # iRMC has each StroageController with its own Storage
-        for sc in get_irmc_json(member, 'StorageControllers'):
-            if get_irmc_json(adapter, ['@AdapterId']).replace('RAIDAdapter', '') == get_irmc_json(sc, ['MemberId']):
-                ctrl['name'] = get_irmc_json(sc, ['Model'])
-                ctrl['firmware'] = get_irmc_json(sc, ['FirmwareVersion'])
-                ctrl['drives'] = get_irmc_json(sc, ['Oem', 'ts_fujitsu', 'DriveCount'])
-                ctrl['volumes'] = get_irmc_json(sc, ['Oem', 'ts_fujitsu', 'VolumeCount'])
+        for sc in dig(member, 'StorageControllers', default=[]):
+            if dig(adapter, '@AdapterId').replace('RAIDAdapter', '') == dig(sc, 'MemberId'):
+                ctrl['name'] = dig(sc, 'Model')
+                ctrl['firmware'] = dig(sc, 'FirmwareVersion')
+                ctrl['drives'] = dig(sc, 'Oem', irmc.vendor, 'DriveCount')
+                ctrl['volumes'] = dig(sc, 'Oem', irmc.vendor, 'VolumeCount')
                 break
     return(ctrl)
 
 
 def get_logicaldrive(ld):
     logicaldrive = {}
-    logicaldrive['id'] = get_irmc_json(ld, ['@Number'])
-    logicaldrive['level'] = get_irmc_json(ld, ['RaidLevel'])
-    logicaldrive['name'] = get_irmc_json(ld, ['Name'])
+    logicaldrive['id'] = dig(ld, '@Number')
+    logicaldrive['level'] = dig(ld, 'RaidLevel')
+    logicaldrive['name'] = dig(ld, 'Name')
     logicaldrive['disks'] = []
     return(logicaldrive)
 
 
 def get_disk(pd):
     disk = {}
-    disk['id'] = get_irmc_json(pd, ['@Number'])
-    disk['slot'] = get_irmc_json(pd, ['Slot'])
-    disk['name'] = get_irmc_json(pd, ['Product'])
-    disk['size'] = '{0} {1}'.format(get_irmc_json(pd, ['Size', '#text']), get_irmc_json(pd, ['Size', '@Unit']))
+    disk['id'] = dig(pd, '@Number')
+    disk['slot'] = dig(pd, 'Slot')
+    disk['name'] = dig(pd, 'Product')
+    disk['size'] = f"{dig(pd, 'Size', '#text')} {dig(pd, 'Size', '@Unit')}"
     return(disk)
 
 
 def main():
-    # import pdb; pdb.set_trace()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),
