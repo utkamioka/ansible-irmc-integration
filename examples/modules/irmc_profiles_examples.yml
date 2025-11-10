@@ -48,7 +48,7 @@
           irmc_password: "{{ irmc_password }}"
           validate_certs: "{{ validate_certificate }}"
           command: "get"
-          profile: "HWConfigurationIrmc"
+          profile: "{{ profile_name }}"
         delegate_to: localhost
         register: get_profile
       - name: Show specific profile
@@ -65,7 +65,7 @@
         irmc_password: "{{ irmc_password }}"
         validate_certs: "{{ validate_certificate }}"
         command: "create"
-        profile: "HWConfigurationIrmc"
+        profile: "{{ profile_name }}"
         wait_for_finish: "True"
       delegate_to: localhost
       tags:
@@ -79,7 +79,7 @@
         irmc_password: "{{ irmc_password }}"
         validate_certs: "{{ validate_certificate }}"
         command: "delete"
-        profile: "HWConfigurationIrmc"
+        profile: "{{ profile_name }}"
       delegate_to: localhost
       tags:
         - delete_profile
