@@ -47,9 +47,11 @@
         irmc_password: "{{ irmc_password }}"
         validate_certs: "{{ validate_certificate }}"
         command: "set"
-        time_mode: "System RTC"
-        time_zone_location: "Asia/Tokyo"
-        rtc_mode: "local time"
+        time_mode: "{{ time_mode | default(omit) }}"
+        rtc_mode: "{{ rtc_mode | default(omit) }}"
+        time_zone_location: "{{ time_zone_location | default(omit) }}"
+        ntp_server_primary: "{{ ntp_server_primary | default(omit) }}"
+        ntp_server_secondary: "{{ ntp_server_secondary | default(omit) }}"
       delegate_to: localhost
       tags:
         - set
