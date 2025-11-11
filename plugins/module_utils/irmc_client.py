@@ -249,29 +249,6 @@ class iRMC:
         headers_key = frozenset(headers.items()) if headers else frozenset()
         return (normalized_path, headers_key)
 
-    def _merge_headers(
-        self, custom_headers: Optional[Mapping[str, str]]
-    ) -> Dict[str, str]:
-        """デフォルトヘッダーとカスタムヘッダーをマージします。
-
-        カスタムヘッダーがデフォルトヘッダーより優先されます。
-        ヘッダー名の大文字小文字は区別されません（HTTP仕様RFC 7230に準拠）。
-
-        引数:
-            custom_headers - カスタムヘッダー（dict, CaseInsensitiveDict等、任意のMapping）
-
-        戻り値:
-            dict - マージされたヘッダー辞書
-        """
-        # CaseInsensitiveDictを使用して大文字小文字を区別しないマージ
-        headers = CaseInsensitiveDict({
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        })
-        if custom_headers:
-            headers.update(custom_headers)
-        return dict(headers)
-
     def _request(
         self,
         method: str,
@@ -291,26 +268,51 @@ class iRMC:
             Response - レスポンスオブジェクト
         """
         url = self._build_url(path)
-        merged_headers = self._merge_headers(headers)
         session = self._get_session()
 
         # リクエスト開始ログ
         start_time = time.time()
         self._debug(f'iRMC Request: {method} {path}')
 
-        # bodyをJSON文字列に変換
+        # デフォルトヘッダーを設定
+        request_headers = CaseInsensitiveDict({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        })
+
+        # bodyを適切な形式に変換し、必要に応じてヘッダーを上書き
         data = None
         if body is not None:
-            if isinstance(body, str):
+            # マルチパートボディ
+            if hasattr(body, 'content_type') and hasattr(body, 'to_string'):
                 data = body
+                request_headers['Content-Type'] = body.content_type
+                # Accept は application/json （iRMCの仕様に準ずる）
+                request_headers['Accept'] = 'application/json'
+
+            # XML文字列
+            elif isinstance(body, str) and body.strip().startswith('<?xml'):
+                data = body
+                request_headers['Content-Type'] = 'application/xml'
+                request_headers['Accept'] = 'application/xml'
+
+            # 普通のstr/bytes
+            elif isinstance(body, (str, bytes)):
+                data = body
+
+            # dict/list → JSON化
             else:
                 data = json.dumps(body)
+
+        # ユーザー指定のヘッダで上書き
+        if headers:
+            request_headers.update(headers)
 
         try:
             response = session.request(
                 method=method,
                 url=url,
-                headers=merged_headers,
+                headers=request_headers,
                 data=data,
                 auth=HTTPBasicAuth(self.username, self.password),
                 verify=self.validate_certs,

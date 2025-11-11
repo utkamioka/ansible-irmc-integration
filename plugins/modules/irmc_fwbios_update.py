@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -13,7 +13,7 @@ short_description: update iRMC Firmware or server BIOS
 description:
     - Ansible module to get current iRMC update settings or update iRMC Firmware or BIOS via iRMC RedFish interface.
     - BIOS or firmware flash can be initiated from TFTP server or local file.
-    - Module Version V1.3.0.
+    - Module Version V1.4.0.
 
 requirements:
     - The module needs to run locally.
@@ -24,6 +24,8 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
+    - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
 known_bugs:
@@ -251,43 +253,70 @@ details:
 '''
 
 
-import json
 import time
 from datetime import datetime
+from pathlib import Path
+
+from requests_toolbelt import MultipartEncoder
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_patch, irmc_redfish_post
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_upload_file import irmc_redfish_post_file
-
-# Global
-result = dict()
+from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_fwbios_update(module):
-    # initialize result
-    result['changed'] = False
-    result['status'] = 0
+    result = dict(
+        changed=False,
+        status=0,
+    )
 
     if module.check_mode:
         result['msg'] = 'module was not run'
         module.exit_json(**result)
 
-    # preliminary parameter check
-    preliminary_parameter_check(module)
+    # Initialize logger
+    logger = AnsibleLogger(module)
 
-    # check that all tasks are finished properly
-    check_all_tasks_are_finished(module)
+    # Initialize iRMC client
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+    )
+
+    # M8 support: Vendor detection
+    if irmc.vendor is None:
+        result['msg'] = 'Failed to detect iRMC vendor. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    # M8 support: OEM Prefix Estimation
+    if irmc.oem_prefix is None:
+        result['msg'] = 'Failed to estimate iRMC OEM prefix. Vendor attribute not found in /redfish/v1'
+        result['status'] = 20
+        module.fail_json(**result)
+
+    # Preliminary parameter check
+    preliminary_parameter_check(module, irmc, result)
+
+    # Check that all tasks are finished properly
+    check_all_tasks_are_finished(module, irmc)
 
     # Get iRMC basic data
-    status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+    sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+    msg = 'OK' if status == 200 else 'Failed to get system data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=sysdata)
     elif status != 200:
         module.fail_json(msg=msg, status=status)
 
     # Get iRMC FW Update data
-    update_url = 'redfish/v1/Managers/iRMC/Oem/ts_fujitsu/iRMCConfiguration/FWUpdate/'
-    status, fwdata, msg = irmc_redfish_get(module, update_url)
+    update_url = f'redfish/v1/Managers/iRMC/Oem/{irmc.vendor}/iRMCConfiguration/FWUpdate/'
+    fwdata, _headers, status = irmc.get(update_url)
+    msg = 'OK' if status == 200 else 'Failed to get FW update data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=fwdata)
     elif status != 200:
@@ -297,12 +326,24 @@ def irmc_fwbios_update(module):
         result['fw_update_configuration'] = setup_resultdata(fwdata, sysdata)
         module.exit_json(**result)
     elif module.params['update_source'] == 'tftp':
-        patch_update_data(module, update_url, get_irmc_json(fwdata.json(), '@odata.etag'))
+        patch_update_data(module, irmc, update_url, dig(fwdata, '@odata.etag'))
 
     if module.params['update_source'] == 'file':
-        status, udata, msg = irmc_redfish_post_file(module, get_update_url(module), module.params['file_name'])
+        action_url = get_update_url(module, irmc)
+
+        filepath = Path(module.params['file_name'])
+        with filepath.open('rb') as f:
+            filedata = f.read()
+        multipart_data = MultipartEncoder(
+            fields={'data': (filepath.name, filedata, 'application/octet-stream', {'Content-Disposition': 'form-data'})}
+        )
+
+        udata, post_resp_headers, status = irmc.post(action_url, multipart_data)
+        msg = 'OK' if status == 200 else f'Failed to update firmware via file at {action_url}'
     elif module.params['update_source'] == 'tftp':
-        status, udata, msg = irmc_redfish_post(module, get_update_url(module), body='')
+        action_url = get_update_url(module, irmc)
+        udata, post_resp_headers, status = irmc.post(action_url, '')
+        msg = 'OK' if status == 200 else f'Failed to update firmware via tftp at {action_url}'
     else:
         module.fail_json(msg=f'{module.params["update_source"]}: unknown update_source')
 
@@ -315,27 +356,30 @@ def irmc_fwbios_update(module):
             msg = f'{msg} This message might be due to the binary file being invalid for the server.'
         module.fail_json(msg=msg, status=status)
 
-    wait_for_update_to_finish(module, udata.headers['Location'], get_irmc_json(sysdata.json(), 'PowerState'))
+    wait_for_update_to_finish(module, irmc, post_resp_headers['Location'], dig(sysdata, 'PowerState'), result)
     module.exit_json(**result)
 
 
-def get_update_url(module):
+def get_update_url(module, irmc):
     if module.params['update_source'] == 'tftp':
         if module.params['update_type'] == 'irmc':
-            url = 'redfish/v1/Managers/iRMC/Actions/FTSManager.FWTFTPUpdate'
+            url = f'redfish/v1/Managers/iRMC/Actions/{irmc.oem_prefix}Manager.FWTFTPUpdate'
         else:
-            url = 'redfish/v1/Systems/0/Bios/Actions/Oem/FTSBios.BiosTFTPUpdate'
+            url = f'redfish/v1/Systems/0/Bios/Actions/Oem/{irmc.oem_prefix}Bios.BiosTFTPUpdate'
     elif module.params['update_type'] == 'irmc':
-        url = 'redfish/v1/Managers/iRMC/Actions/FTSManager.FWUpdate'
+        url = f'redfish/v1/Managers/iRMC/Actions/{irmc.oem_prefix}Manager.FWUpdate'
     else:
-        url = 'redfish/v1/Systems/0/Bios/Actions/Oem/FTSBios.BiosUpdate'
+        url = f'redfish/v1/Systems/0/Bios/Actions/Oem/{irmc.oem_prefix}Bios.BiosUpdate'
     return url
 
 
-def preliminary_parameter_check(module):
+def preliminary_parameter_check(module, irmc, result):
     if module.params['command'] == 'update':
-        if module.params['update_source'] is None or module.params['update_type'] is None or \
-           module.params['file_name'] is None:
+        if (
+            module.params['update_source'] is None
+            or module.params['update_type'] is None
+            or module.params['file_name'] is None
+        ):
             result['msg'] = "Command 'update' requires 'update_source, update_type, file_name' parameters to be set!"
             result['status'] = 10
             module.fail_json(**result)
@@ -346,19 +390,20 @@ def preliminary_parameter_check(module):
 
         if module.params['ignore_power_on'] is False:
             # Get server power state
-            status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
+            sysdata, _headers, status = irmc.get('redfish/v1/Systems/0/')
+            msg = 'OK' if status == 200 else 'Failed to get system data'
             if status < 100:
                 module.fail_json(msg=msg, status=status, exception=sysdata)
             elif status != 200:
                 module.fail_json(msg=msg, status=status)
 
-            if get_irmc_json(sysdata.json(), 'PowerState') == 'On':
+            if dig(sysdata, 'PowerState') == 'On':
                 result['skipped'] = True
                 result['warnings'] = 'Server is powered on. Cannot continue.'
                 module.exit_json(**result)
 
 
-def wait_for_update_to_finish(module, location, power_state):
+def wait_for_update_to_finish(module, irmc, location, power_state, result):
     rebootDone = None
     start_time = time.time()
     while True:
@@ -367,33 +412,34 @@ def wait_for_update_to_finish(module, location, power_state):
         # make sure the module does not get stuck if anything goes wrong
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         if elapsed_time > module.params['timeout'] * 60:
-            msg = 'Timeout of {0} minutes exceeded. Abort.'.format(module.params['timeout'])
+            msg = f'Timeout of {module.params["timeout"]} minutes exceeded. Abort.'
             module.fail_json(msg=msg, status=20)
 
-        status, sdata, msg = irmc_redfish_get(module, f'{location[1:]}')
+        sdata, _headers, status = irmc.get(location, use_cache=False)
+        msg = 'OK' if status == 200 else f'Failed to retrieve update task data at {location}'
         if status == 99:
             time.sleep(55)
             continue
-        elif status == 404:
+        if status == 404:
             if rebootDone is True:
                 result['changed'] = True
                 break
             continue
-        elif status == 503:
+        if status == 503:
             if rebootDone is None:
-                rebootDone = False      # just in case we miss the 'complete' message
+                rebootDone = False  # just in case we miss the 'complete' message
             else:
                 rebootDone = True
             time.sleep(25)
             continue
-        elif status < 100 or (status not in (200, 202, 204)):
+        if status < 100 or (status not in (200, 202, 204)):
             time.sleep(5)
             continue
 
-        if 'Key' in get_irmc_json(sdata.json(), 'error'):
+        if dig(sdata, 'error') is None:
             rebootDone = False
-            oemstate = get_irmc_json(sdata.json(), ['Oem', 'ts_fujitsu', 'StatusOEM'])
-            state = get_irmc_json(sdata.json(), 'TaskState')
+            oemstate = dig(sdata, 'Oem', irmc.vendor, 'StatusOEM')
+            state = dig(sdata, 'TaskState')
             # make sure the process ran through
             if power_state == 'On' and oemstate == 'Pending':
                 msg = 'A BIOS firmware update has been started and a system reboot is required to continue the update.'
@@ -418,7 +464,7 @@ def wait_for_update_to_finish(module, location, power_state):
             break
 
 
-def patch_update_data(module, update_url, etag):
+def patch_update_data(module, irmc, update_url, etag):
     body = {}
     if module.params['update_source'] == 'tftp':
         body['ServerName'] = module.params['server_name']
@@ -432,56 +478,59 @@ def patch_update_data(module, update_url, etag):
         body['iRMCBootSelector'] = module.params['irmc_boot_selector']
 
     if body != {}:
-        status, patch, msg = irmc_redfish_patch(module, update_url, json.dumps(body), etag)
+        headers = {'If-Match': str(etag)}
+        patch, _headers, status = irmc.patch(update_url, body, headers=headers)
+        msg = 'OK' if status == 200 else f'Failed to update OEM data at {update_url}'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=patch)
         elif status != 200:
             module.fail_json(msg=msg, status=status)
 
 
-def check_all_tasks_are_finished(module):
-    status, taskdata, msg = irmc_redfish_get(module, 'redfish/v1/TaskService/Tasks')
+def check_all_tasks_are_finished(module, irmc):
+    taskdata, _headers, status = irmc.get('redfish/v1/TaskService/Tasks')
+    msg = 'OK' if status == 200 else 'Failed to get task data'
     if status < 100:
         module.fail_json(msg=msg, status=status, exception=taskdata)
     elif status not in (200, 202, 204):
         module.fail_json(msg=msg, status=status)
-    tasks = get_irmc_json(taskdata.json(), ['Members'])
+    tasks = dig(taskdata, 'Members')
     for task in tasks:
-        url = get_irmc_json(task, '@odata.id')
-        status, sdata, msg = irmc_redfish_get(module, f'{url[1:]}')
+        url = dig(task, '@odata.id')
+        sdata, _headers, status = irmc.get(url, use_cache=False)
+        msg = 'OK' if status == 200 else 'Failed to fetch Redfish task list'
         if status < 100:
             module.fail_json(msg=msg, status=status, exception=sdata)
         elif status not in (200, 202, 204):
             module.fail_json(msg=msg, status=status)
 
-        task_state = get_irmc_json(sdata.json(), ['Oem', 'ts_fujitsu', 'StatusOEM'])
+        task_state = dig(sdata, 'Oem', irmc.vendor, 'StatusOEM')
         if task_state in ('Pending', 'FlashImageDownloadedSuccessfully'):
             msg = 'Firmware update has already been started, system reboot is required. Cannot continue new update.'
             module.fail_json(msg=msg, status=30)
-        task_progress = get_irmc_json(sdata.json(), ['Oem', 'ts_fujitsu', 'TotalProgressPercent'])
+
+        task_progress = dig(sdata, 'Oem', irmc.vendor, 'TotalProgressPercent')
         if str(task_progress) != '100':
-            msg = "Task '{0}' is still in progress. Cannot continue new update.". \
-                  format(get_irmc_json(sdata.json(), 'Name'))
+            msg = f"Task '{dig(sdata, 'Name')}' is still in progress. Cannot continue new update."
             module.fail_json(msg=msg, status=31)
 
 
 def setup_resultdata(data, sysdata):
     configuration = {
-        'tftp_server_name': get_irmc_json(data.json(), 'ServerName'),
-        'irmc_file_name': get_irmc_json(data.json(), 'iRMCFileName'),
-        'irmc_flash_selector': get_irmc_json(data.json(), 'iRMCFlashSelector'),
-        'irmc_boot_selector': get_irmc_json(data.json(), 'iRMCBootSelector'),
-        'irmc_fw_low': get_irmc_json(data.json(), 'iRMCFwImageLow'),
-        'irmc_fw_high': get_irmc_json(data.json(), 'iRMCFwImageHigh'),
-        'bios_file_name': get_irmc_json(data.json(), 'BiosFileName'),
-        'bios_version': get_irmc_json(sysdata.json(), 'BiosVersion'),
-        'power_state': get_irmc_json(sysdata.json(), 'PowerState'),
+        'tftp_server_name': dig(data, 'ServerName'),
+        'irmc_file_name': dig(data, 'iRMCFileName'),
+        'irmc_flash_selector': dig(data, 'iRMCFlashSelector'),
+        'irmc_boot_selector': dig(data, 'iRMCBootSelector'),
+        'irmc_fw_low': dig(data, 'iRMCFwImageLow'),
+        'irmc_fw_high': dig(data, 'iRMCFwImageHigh'),
+        'bios_file_name': dig(data, 'BiosFileName'),
+        'bios_version': dig(sysdata, 'BiosVersion'),
+        'power_state': dig(sysdata, 'PowerState'),
     }
     return configuration
 
 
 def main():
-    # import pdb; pdb.set_trace()
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),

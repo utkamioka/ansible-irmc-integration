@@ -125,106 +125,6 @@ class TestIRMCCacheKey:
         assert key1 != key2
 
 
-class TestIRMCHeaders:
-    """ヘッダー処理のテスト"""
-
-    def test_merge_headers_default(self):
-        """デフォルトヘッダーのマージ"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers(None)
-        assert headers['Accept'] == 'application/json'
-        assert headers['Content-Type'] == 'application/json'
-
-    def test_merge_headers_custom_overrides(self):
-        """カスタムヘッダーがデフォルトを上書き"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers({'Accept': 'text/plain'})
-        assert headers['Accept'] == 'text/plain'
-        assert headers['Content-Type'] == 'application/json'
-
-    def test_merge_headers_additional(self):
-        """追加のカスタムヘッダー"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers({'X-Custom': 'value'})
-        assert headers['Accept'] == 'application/json'
-        assert headers['X-Custom'] == 'value'
-
-    def test_merge_headers_case_insensitive_uppercase(self):
-        """大文字のACCEPTでデフォルトのAcceptを上書き（重複なし）"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers({'ACCEPT': 'text/html'})
-
-        # 大文字小文字を無視して上書きされることを確認
-        assert headers.get('Accept') == 'text/html' or headers.get('ACCEPT') == 'text/html'
-
-        # 重複したキーが存在しないことを確認
-        accept_keys = [k for k in headers.keys() if k.lower() == 'accept']
-        assert len(accept_keys) == 1
-
-    def test_merge_headers_case_insensitive_lowercase(self):
-        """小文字のacceptでデフォルトのAcceptを上書き"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers({'accept': 'application/xml'})
-
-        # 大文字小文字を無視して上書きされることを確認
-        assert headers.get('Accept') == 'application/xml' or headers.get('accept') == 'application/xml'
-
-        # 重複したキーが存在しないことを確認
-        accept_keys = [k for k in headers.keys() if k.lower() == 'accept']
-        assert len(accept_keys) == 1
-
-    def test_merge_headers_case_insensitive_mixed(self):
-        """CONTENT-TYPEのような混在ケース"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers({'CONTENT-TYPE': 'text/plain'})
-
-        # 大文字小文字を無視して上書きされることを確認
-        content_type_value = headers.get('Content-Type') or headers.get('CONTENT-TYPE')
-        assert content_type_value == 'text/plain'
-
-        # 重複したキーが存在しないことを確認
-        content_type_keys = [k for k in headers.keys() if k.lower() == 'content-type']
-        assert len(content_type_keys) == 1
-
-    def test_merge_headers_no_duplicate_keys(self):
-        """複数の大文字小文字バリエーションでも重複キーなし"""
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-        headers = irmc._merge_headers({
-            'ACCEPT': 'text/html',
-            'content-type': 'text/plain',
-            'X-Custom-Header': 'value1',
-            'x-another-header': 'value2'
-        })
-
-        # すべてのヘッダーが存在することを確認
-        assert len(headers) == 4
-
-        # 各ヘッダーが1つずつ存在することを確認
-        accept_keys = [k for k in headers.keys() if k.lower() == 'accept']
-        content_type_keys = [k for k in headers.keys() if k.lower() == 'content-type']
-        assert len(accept_keys) == 1
-        assert len(content_type_keys) == 1
-
-    def test_merge_headers_accepts_mapping_types(self):
-        """CaseInsensitiveDictやOrderedDictなど、Mappingプロトコルを実装した任意の型を受け入れる"""
-        from collections import OrderedDict
-
-        irmc = iRMC('192.0.2.1', 'admin', 'password')
-
-        # OrderedDictを渡す
-        ordered_headers = OrderedDict([('Accept', 'text/plain'), ('X-Custom', 'value')])
-        headers1 = irmc._merge_headers(ordered_headers)
-        assert headers1['Accept'] == 'text/plain'
-        assert headers1['X-Custom'] == 'value'
-
-        # CaseInsensitiveDictを渡す
-        case_insensitive_headers = CaseInsensitiveDict({'ACCEPT': 'application/xml'})
-        headers2 = irmc._merge_headers(case_insensitive_headers)
-        # 大文字小文字を無視して上書きされる
-        accept_keys = [k for k in headers2.keys() if k.lower() == 'accept']
-        assert len(accept_keys) == 1
-
-
 class TestIRMCGet:
     """GETメソッドのテスト"""
 
@@ -1122,3 +1022,199 @@ class TestIRMCVersion:
 
             # GETは1回のみ実行される（vendorとversionで共有）
             assert mock_session.return_value.request.call_count == 1
+
+
+class TestContentTypeAutoDetection:
+    """Content-Type自動判定のテスト"""
+
+    @patch('requests.Session')
+    def test_post_auto_detect_multipart(self, mock_session_class):
+        """MultipartEncoderでContent-Type自動判定"""
+        from requests_toolbelt import MultipartEncoder
+
+        # モックの設定
+        mock_session = Mock()
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {'status': 'success'}
+        mock_response.headers = {'Content-Type': 'application/json'}
+        mock_response.text = '{"status": "success"}'
+        mock_response.connection = Mock()
+        mock_session.request.return_value = mock_response
+        mock_session_class.return_value = mock_session
+
+        # MultipartEncoderを作成
+        multipart_data = MultipartEncoder(
+            fields={'data': ('test.bin', b'binary data', 'application/octet-stream')}
+        )
+
+        # テスト実行
+        irmc = iRMC('192.0.2.1', 'admin', 'password', validate_certs=False)
+        response = irmc.post('/some/path', multipart_data)
+
+        # 検証: リクエストが送信された
+        assert mock_session.request.called
+        call_kwargs = mock_session.request.call_args[1]
+
+        # Content-Typeが自動設定されている
+        assert 'Content-Type' in call_kwargs['headers']
+        assert call_kwargs['headers']['Content-Type'].startswith('multipart/form-data')
+        assert 'boundary=' in call_kwargs['headers']['Content-Type']
+
+        # AcceptはJSON（iRMC仕様）
+        assert call_kwargs['headers']['Accept'] == 'application/json'
+
+        # bodyがMultipartEncoderのまま渡されている
+        assert call_kwargs['data'] is multipart_data
+
+        # レスポンスの検証
+        assert response.status == 200
+        assert response.body == {'status': 'success'}
+
+    @patch('requests.Session')
+    def test_post_auto_detect_xml(self, mock_session_class):
+        """XML文字列でContent-Type自動判定"""
+        # モックの設定
+        mock_session = Mock()
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = '<?xml version="1.0"?><response>OK</response>'
+        mock_response.json.side_effect = ValueError('Not JSON')  # XMLなのでJSONパースは失敗
+        mock_response.headers = {'Content-Type': 'application/xml'}
+        mock_response.connection = Mock()
+        mock_session.request.return_value = mock_response
+        mock_session_class.return_value = mock_session
+
+        # XML文字列
+        xml_body = '<?xml version="1.0"?><ConfigSpace><Test>value</Test></ConfigSpace>'
+
+        # テスト実行
+        irmc = iRMC('192.0.2.1', 'admin', 'password', validate_certs=False)
+        response = irmc.post('/config', xml_body)
+
+        # 検証: リクエストが送信された
+        assert mock_session.request.called
+        call_kwargs = mock_session.request.call_args[1]
+
+        # Content-TypeとAcceptが自動設定されている
+        assert call_kwargs['headers']['Content-Type'] == 'application/xml'
+        assert call_kwargs['headers']['Accept'] == 'application/xml'
+
+        # bodyがそのまま渡されている
+        assert call_kwargs['data'] == xml_body
+
+        # レスポンスの検証
+        assert response.status == 200
+        assert response.body == '<?xml version="1.0"?><response>OK</response>'
+
+    @patch('requests.Session')
+    def test_post_override_content_type(self, mock_session_class):
+        """ユーザー指定で自動判定を上書き"""
+        # モックの設定
+        mock_session = Mock()
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = 'plain text response'
+        mock_response.json.side_effect = ValueError('Not JSON')
+        mock_response.headers = {'Content-Type': 'text/plain'}
+        mock_response.connection = Mock()
+        mock_session.request.return_value = mock_response
+        mock_session_class.return_value = mock_session
+
+        # XML文字列（通常は application/xml になるはず）
+        xml_body = '<?xml version="1.0"?><Test>value</Test>'
+
+        # ユーザーが明示的にContent-Typeを指定
+        custom_headers = {'Content-Type': 'text/plain'}
+
+        # テスト実行
+        irmc = iRMC('192.0.2.1', 'admin', 'password', validate_certs=False)
+        response = irmc.post('/some/path', xml_body, headers=custom_headers)
+
+        # 検証
+        assert mock_session.request.called
+        call_kwargs = mock_session.request.call_args[1]
+
+        # ユーザー指定のContent-Typeが優先される（自動判定は無視）
+        assert call_kwargs['headers']['Content-Type'] == 'text/plain'
+
+        # レスポンスの検証
+        assert response.status == 200
+
+    @patch('requests.Session')
+    def test_post_dict_uses_default_json(self, mock_session_class):
+        """dictはデフォルトのapplication/jsonを使用（後方互換性）"""
+        # モックの設定
+        mock_session = Mock()
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {'result': 'OK'}
+        mock_response.headers = {'Content-Type': 'application/json'}
+        mock_response.text = '{"result": "OK"}'
+        mock_response.connection = Mock()
+        mock_session.request.return_value = mock_response
+        mock_session_class.return_value = mock_session
+
+        # dictボディ
+        dict_body = {'key': 'value', 'number': 123}
+
+        # テスト実行
+        irmc = iRMC('192.0.2.1', 'admin', 'password', validate_certs=False)
+        response = irmc.post('/some/path', dict_body)
+
+        # 検証
+        assert mock_session.request.called
+        call_kwargs = mock_session.request.call_args[1]
+
+        # デフォルトのapplication/jsonが使用される
+        assert call_kwargs['headers']['Content-Type'] == 'application/json'
+
+        # bodyがJSON文字列化されている
+        import json
+        assert call_kwargs['data'] == json.dumps(dict_body)
+
+        # レスポンスの検証
+        assert response.status == 200
+        assert response.body == {'result': 'OK'}
+
+    @patch('requests.Session')
+    def test_post_lowercase_headers_override(self, mock_session_class):
+        """小文字ヘッダーでも正しく上書き（CaseInsensitiveDict動作確認）"""
+        # モックの設定
+        mock_session = Mock()
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = 'plain text'
+        mock_response.json.side_effect = ValueError('Not JSON')
+        mock_response.headers = {'Content-Type': 'text/plain'}
+        mock_response.connection = Mock()
+        mock_session.request.return_value = mock_response
+        mock_session_class.return_value = mock_session
+
+        # XML文字列（通常はContent-Type: application/xml, Accept: application/xml）
+        xml_body = '<?xml version="1.0"?><Test>value</Test>'
+
+        # ユーザーが小文字でヘッダーを指定
+        custom_headers = {
+            'content-type': 'text/plain',
+            'accept': 'text/html'
+        }
+
+        # テスト実行
+        irmc = iRMC('192.0.2.1', 'admin', 'password', validate_certs=False)
+        response = irmc.post('/some/path', xml_body, headers=custom_headers)
+
+        # 検証
+        assert mock_session.request.called
+        call_kwargs = mock_session.request.call_args[1]
+
+        # 小文字で指定したヘッダーが優先される（CaseInsensitiveDictの動作）
+        # ヘッダー名の大文字小文字は変わる可能性があるが、値は確実に上書きされる
+        headers = call_kwargs['headers']
+        # Content-Typeの値がtext/plain
+        assert headers.get('Content-Type') == 'text/plain' or headers.get('content-type') == 'text/plain'
+        # Acceptの値がtext/html
+        assert headers.get('Accept') == 'text/html' or headers.get('accept') == 'text/html'
+
+        # レスポンスの検証
+        assert response.status == 200
