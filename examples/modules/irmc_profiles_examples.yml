@@ -54,6 +54,11 @@
       - name: Show specific profile
         debug:
           var: get_profile.profile
+      - name: Save profile as JSON file into /tmp directory
+        copy:
+          content: "{{ get_profile.profile | to_nice_json }}"
+          dest: "/tmp/{{ profile_name }}.json"
+        delegate_to: localhost
       tags:
         - get_profile
 
