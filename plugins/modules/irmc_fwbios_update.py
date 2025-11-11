@@ -24,6 +24,7 @@ requirements:
 version_added: "2.4"
 
 author:
+    - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
     - Tomohisa Nakai (<nakai.tomohisa@fujitsu.com>)
     - Nakamura Takayuki (@nakamura-taka)
 
