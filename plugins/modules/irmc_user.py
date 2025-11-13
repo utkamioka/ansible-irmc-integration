@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import annotations
@@ -43,6 +43,11 @@ unresolved_issues_in_iRMC_S6:
     - Even if the `snmpv3_privacy` parameter is set to `"AES"` or `"DES"`,
       the display in the iRMC(GUI) does not change.
     - The `email_type` parameter cannot be set to `"REMCS"`.
+
+known_issues_on_M8:
+    - On some M8 generation devices, this module fails when `command` is set to `"get"` due to an iRMC issue.
+      As a workaround, please use the iRMC Web UI to manage user accounts manually.
+      Automation with this module is not available until a iRMC firmware update is released.
 
 options:
     irmc_url:

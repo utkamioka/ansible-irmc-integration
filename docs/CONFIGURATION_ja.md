@@ -135,6 +135,12 @@ iRMCのSSL証明書とCA証明書を設定します。
   <https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/role/irmc_set_certificate/>
   を参照してください。
 
+**注意**：
+
+- M8世代の一部デバイスでは、証明書の設定が失敗する場合があります。
+  この場合は、iRMC Web UIを使用して手動で証明書を設定してください。
+  詳細は`irmc_certificate`モジュールのドキュメント（`known_issues_on_M8`セクション）を参照してください。
+
 ```yaml
 ---
 - hosts: iRMC_group
@@ -525,7 +531,7 @@ iRMCのSSL証明書とCA証明書を設定します。
   roles:
     - role: fujitsu.primergy.win_dns
       vars:
-        adapter_names: Enthernet
+        adapter_names: Ethernet
         ipv4_addresses:
           - 192.0.2.1
           - 192.0.2.2

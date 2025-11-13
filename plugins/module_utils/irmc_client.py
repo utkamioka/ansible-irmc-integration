@@ -12,6 +12,7 @@ __metaclass__ = type
 
 import json
 import time
+from http import HTTPStatus
 from typing import Dict, Any, Optional, Tuple, Mapping, TYPE_CHECKING
 
 from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_session_information import SessionInformation
@@ -386,7 +387,7 @@ class iRMC:
         response = self._request('GET', path, headers=headers)
 
         # 成功時（200）のみキャッシュに保存
-        if cache_key is not None and response.status == 200:
+        if cache_key is not None and response.status == HTTPStatus.OK:
             self._cache[cache_key] = response
 
         return response
@@ -498,7 +499,7 @@ class iRMC:
         """
         response = self.get('/redfish/v1')
 
-        if response.status == 200 and isinstance(response.body, dict):
+        if response.status == HTTPStatus.OK and isinstance(response.body, dict):
             vendor = response.body.get('Vendor')
 
             fallback_value = 'ts_fujitsu'
@@ -515,7 +516,7 @@ class iRMC:
         else:
             self._warn(
                 f'iRMC Vendor detection failed (status={response.status}), '
-                'will retry on next access'
+                'will retry on next access.'
             )
             return None
 
@@ -573,7 +574,7 @@ class iRMC:
         """
         response = self.get('/redfish/v1')
 
-        if response.status == 200:
+        if response.status == HTTPStatus.OK:
             # CaseInsensitiveDictなので大文字小文字を気にせずアクセス可能
             server_header = response.headers.get('Server')
             version = _parse_irmc_version_from_server_header(server_header)
@@ -590,7 +591,7 @@ class iRMC:
         else:
             self._warn(
                 f'iRMC Server Version detection failed (status={response.status}), '
-                'will retry on next access'
+                'will retry on next access.'
             )
             return None
 

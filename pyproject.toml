@@ -1,6 +1,6 @@
 [project]
 name = "fujitsu-ansible-irmc-integration"
-version = "2.0.2"
+version = "2.1.0"
 description = "Ansible collection for manage PRIMERGY servers via iRMC"
 authors = [
     {name = "Shinya Hamano", email = "hamano.shinya@fujitsu.com"},
@@ -46,6 +46,8 @@ ignore = [
   "C408",  # unnecessary-collection-call. (e.g., dict(), dict(a=1, b=2), list(), tuple())
   "D400",  # ends-in-period
   "D415",  # ends-in-punctuation
+  "RUF002", # Docstring contains ambiguous characters (全角括弧等)
+  "RUF003", # Comment contains ambiguous characters (全角括弧等)
 ]
 
 [tool.ruff.format]

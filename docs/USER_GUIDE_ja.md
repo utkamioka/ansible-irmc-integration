@@ -41,7 +41,7 @@ Ansibleコレクションのセットアップ方法やロールの使用例、
 - `pywinrm` >= 0.5.0
 - `requests` >= 2.32.0
 - `requests_toolbelt` >= 1.0.0
-- `urllib3` >= 2.2.0
+- `urllib3` >= 2.5.0
 
 ### Ansible実行環境のセットアップ
 

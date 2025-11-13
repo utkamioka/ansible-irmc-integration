@@ -1,6 +1,6 @@
 namespace: fujitsu
 name: primergy
-version: 2.0.2
+version: 2.1.0
 readme: README.md
 description: Ansible iRMC Collection for PRIMERGY Distribution by Fsas Technologies Inc..
 repository: https://github.com/fujitsu/fujitsu-ansible-irmc-integration
