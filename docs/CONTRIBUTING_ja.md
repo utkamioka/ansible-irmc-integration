@@ -34,7 +34,6 @@
   正式なサポートでは無く、本番システムへの適用には推奨されていません。
   詳細はこのURLを参照してください：
   <https://docs.ansible.com/ansible/latest/os_guide/intro_windows.html#using-windows-as-the-control-node>
-  を参照してください。
 - このプロジェクトには二つのGitリポジトリがあります：
   1. **公開用**: <https://github.com/fujitsu/fujitsu-ansible-irmc-integration>
   2. **社内開発用**: URL非公開
@@ -159,7 +158,7 @@
      New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Enabled True -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow
      ```
 
-6. プレイブックを実行します。 
+6. プレイブックを実行します。
    インベントリファイル（`inventory.ini`）の`[iRMC_group]`に機器が設定されている状態で、
    以下のコマンドを実行してください。
    iRMC機器にライセンスを登録するロールを実行します：
@@ -242,8 +241,9 @@
 
 ### 6.1 現在の状況
 
-- 既存の単体テストコードは`./tests`ディレクトリに配置されていますが、
-  十分に整備されていません。（2024/12現在）
+- 単体テストコードは`./tests`ディレクトリに配置されています。
+  - 整備が不十分なテストコード`./tests/test_*.py`と、
+    新規に実装したansible-testによるテストコード`./tests/unit`が混在している状況です。（2025/11現在）
 
 ### 6.2 今後の方針
 
@@ -253,15 +253,15 @@
 - 特にロジック部分はレグレッションテストの対象とし、メンテナンス性を向上させます。
 - ロジック部分に関しては、単体テストのカバレッジを向上させ、安定性の確保を重視します。
 
-#### Moleculeの活用
+#### ansible-test
 
-- [Molecule](https://ansible.readthedocs.io/projects/molecule/)などを利用したテスト環境の整備を視野に入れてください。
-- ただし、以下の制約がある点を考慮してください:
-  - テスト対象の大半がiRMC機器向けのAPIであるため、Dockerなどの仮想環境では対応が難しい。
-  - 実機を用意し、Moleculeのdelegatedドライバを使用してテストを実行する必要がある。
-  - 開発機材であるiRMC機器を借用している現状では、
-    中長期的なレグレッションテストに借用機材を組み込むことは現実的ではない。
-- 短期的なテストのために「枠組みだけ」用意しておくこともプランの一つとして考えられます。
+- 2025/11現在では`ansible-test`によるテストを推奨しています。
+  `./tests/unit/plugins/modules`と`./tests/unit/plugins/module_utils`ディレクトリを参照してください。
+- `ansible-test`によるユニットテストの実行方法は以下の通りです：
+
+  ```shell
+  rye run ansible-test units --python 3.10
+  ```
 
 ---
 

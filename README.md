@@ -3,13 +3,10 @@
 Fujitsu PRIMERGY has been integrated into Fsas Technologies Inc. as of April 1, 2024.
 Please note that some instances may still use the Fujitsu branding during the transition period.
 
-The Fujitsu Software Serverview Ansible iRMC Integration features modules to access and manage
-Fujitsu PRIMERGY servers via iRMC.
-
 ## Overview
 
 These collection and examples are intended to provide easy-to-follow and understandable solutions to manage
-Fujitsu PRIMERGY server settings via iRMC.  
+Fsas Technologies PRIMERGY server settings via iRMC.  
 See User Guide for more details.
 
 - [User Guide (English)](./docs/USER_GUIDE.md)
@@ -30,7 +27,7 @@ See Contribution Guidelines for more details.
 
 ### Hardware
 
-- Fujitsu PRIMERGY Server with iRMC S6
+- Fsas Technologies PRIMERGY Server with iRMC S6
 
 ### Software
 
@@ -101,7 +98,7 @@ The following modules are part of this project:
 - [irmc_elcm_online_update](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_elcm_online_update/) - online update a server via iRMC
 - [irmc_elcm_repository](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_elcm_repository/) - configure the eLCM repository in iRMC
 - [irmc_eventlog](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_eventlog/) - handle iRMC eventlogs
-- [irmc_facts](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_facts/) - get or set Fujitsu PRIMERGY server and iRMC facts
+- [irmc_facts](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_facts/) - get or set PRIMERGY server and iRMC facts
 - [irmc_fwbios_update](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_fwbios_update/) - update iRMC Firmware or server BIOS
 - [irmc_getvm](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_getvm/) - get iRMC Virtual Media Data
 - [irmc_idled](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_idled/) - get or set server ID LED
@@ -118,6 +115,11 @@ The following modules are part of this project:
 - [irmc_task](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_task/) - handle iRMC tasks
 - [irmc_user](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/content/module/irmc_user/) - manage iRMC user accounts
 
+### Known Issues
+
+The `irmc_certificate` and `irmc_user` modules have usage restrictions on some M8 generation devices.
+For details, refer to each module's documentation (`known_issues_on_M8` section).
+
 ## Change log
 
 - V1.0: Initial version
@@ -128,7 +130,7 @@ The following modules are part of this project:
 ## License
 
 Fsas Technologies Inc.  
-Copyright 2018-2024 Fsas Technologies Inc.
+Copyright 2018-2025 Fsas Technologies Inc.
 
 GNU General Public License v3.0+ (see [LICENSE.md](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/LICENSE) or <https://www.gnu.org/licenses/gpl-3.0.txt>)
 

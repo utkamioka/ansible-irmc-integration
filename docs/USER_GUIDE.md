@@ -35,7 +35,7 @@ This document is intended for users with basic knowledge of Ansible.
 - `pywinrm` >= 0.5.0
 - `requests` >= 2.32.0
 - `requests_toolbelt` >= 1.0.0
-- `urllib3` >= 2.2.0
+- `urllib3` >= 2.5.0
 
 ### Setting Up Ansible Execution Environment
 

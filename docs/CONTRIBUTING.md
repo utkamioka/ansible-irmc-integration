@@ -218,7 +218,9 @@ The following coding standards are adopted to improve efficiency and code qualit
 
 ### 6.1 Current State
 
-- Existing unit tests are placed in the `./tests` directory, but they are not sufficiently comprehensive (as of December 2024).
+- Unit test code is located in the `./tests` directory.
+  - A mix of insufficiently maintained test code (`./tests/test_*.py`) and
+    newly implemented ansible-test based test code (`./tests/unit`) coexists (as of November 2025).
 
 ### 6.2 Future Plans
 
@@ -228,15 +230,15 @@ The following coding standards are adopted to improve efficiency and code qualit
 - Focus on regression testing for logic unrelated to iRMC to improve maintainability.
 - Increase unit test coverage for the general logic, emphasizing stability.
 
-#### Leveraging Molecule
+#### ansible-test
 
-- Please consider using [Molecule](https://ansible.readthedocs.io/projects/molecule/) or similar
-  to structure the testing environment.
-- However, consider the following constraints:
-  - Most tests target iRMC device APIs, which are difficult to simulate in virtual environments like Docker.
-  - Physical devices are required, and the delegated driver in Molecule must be used for testing.
-  - Given the current practice of borrowing iRMC devices for development, incorporating them into long-term regression testing is impractical.
-- Preparing the framework for short-term testing may still be a viable option.
+- As of November 2025, we recommend using `ansible-test` for testing.
+  Refer to the `./tests/unit/plugins/modules` and `./tests/unit/plugins/module_utils` directories.
+- To run unit tests with `ansible-test`, use the following command:
+
+  ```shell
+  rye run ansible-test units --python 3.10
+  ```
 
 ---
 

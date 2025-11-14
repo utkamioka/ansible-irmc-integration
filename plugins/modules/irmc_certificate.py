@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2025 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
@@ -23,6 +23,11 @@ version_added: "2.4"
 
 author:
     - Nakamura Takayuki (@nakamura-taka)
+
+known_issues_on_M8:
+    - On some M8 generation devices, this module fails when `command` is set to `"set"` due to an iRMC issue.
+      As a workaround, please use the iRMC Web UI to configure certificates manually.
+      Automation with this module is not available until an iRMC firmware update is released.
 
 options:
     irmc_url:

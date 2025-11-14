@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2025-11-14
+
+### Changed
+
+- Support for PRIMERGY M8 generation in the following modules:
+  - irmc_facts, irmc_powerstate, irmc_raid, irmc_fwbios_update
+  - irmc_eventlog, irmc_connectvm, irmc_getvm, irmc_setvm, irmc_task
+
 ## [2.0.2] - 2025-06-26
 
 ### Fixed
