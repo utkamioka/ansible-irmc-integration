@@ -14,7 +14,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `enabled` | true | | true<br>false | boolean | Enable/disable remote desktop. |
 
 Dependencies
@@ -31,7 +31,7 @@ playbook.yml:
     - name: Enable remote desktop
       hosts: windows
       roles:
-        - role: fujitsu.primergy.win_set_rdp
+        - role: fsas_temp_ns.primergy.win_set_rdp
           vars:
             enabled: true
 

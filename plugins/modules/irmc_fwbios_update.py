@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -93,7 +93,7 @@ EXAMPLES = r'''
 # Get irmc firmware and BIOS update settings
 - block:
   - name: Get irmc firmware and BIOS update settings
-    fujitsu.primergy.irmc_fwbios_update:
+    fsas_temp_ns.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -110,7 +110,7 @@ EXAMPLES = r'''
 # Update server BIOS from local file
 - block:
   - name: Update server BIOS from local file
-    fujitsu.primergy.irmc_fwbios_update:
+    fsas_temp_ns.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -130,7 +130,7 @@ EXAMPLES = r'''
 # Update server BIOS via TFTP
 - block:
   - name: Update server BIOS via TFTP
-    fujitsu.primergy.irmc_fwbios_update:
+    fsas_temp_ns.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -151,7 +151,7 @@ EXAMPLES = r'''
 # Update iRMC FW via TFTP
 - block:
   - name: Update iRMC FW via TFTP
-    fujitsu.primergy.irmc_fwbios_update:
+    fsas_temp_ns.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -175,7 +175,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
 
         For update command, the default return value of Ansible (changed, failed, etc.) is returned.
 
@@ -260,9 +260,9 @@ from pathlib import Path
 from requests_toolbelt import MultipartEncoder
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_fwbios_update(module):

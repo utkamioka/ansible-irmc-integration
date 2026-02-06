@@ -1,4 +1,4 @@
-# Copyright 2018-2025 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """ログ出力インターフェースとその実装
@@ -18,11 +18,12 @@ class Logger(Protocol):
     """ログ出力インターフェース
 
     このプロトコルは、warn/log/debugの3つのログレベルを定義します。
+    AnsibleModuleが持つログ出力機能（warn()/log()/debug()）に対応しています。
     実装クラスはこれらのメソッドを提供する必要があります。
     """
 
     def warn(self, msg: str) -> None:
-        """警告メッセージを出力します（常にコンソールに表示）
+        """警告メッセージを出力します。
 
         引数:
             msg - ログメッセージ
@@ -30,7 +31,7 @@ class Logger(Protocol):
         ...
 
     def log(self, msg: str) -> None:
-        """ログメッセージを出力します（syslogに記録）
+        """ログメッセージを出力します。
 
         引数:
             msg - ログメッセージ
@@ -38,7 +39,7 @@ class Logger(Protocol):
         ...
 
     def debug(self, msg: str) -> None:
-        """デバッグメッセージを出力します（-vvv時のみ表示）
+        """デバッグメッセージを出力します。
 
         引数:
             msg - ログメッセージ
@@ -125,6 +126,20 @@ class AnsibleLogger:
 
         # フォーマットして返す
         return [f'[{level}] {msg}' for level, msg in filtered]
+
+    def to_logs_dict(self) -> dict[str, list[str]]:
+        """蓄積したログをverbosityに応じてフィルタリングし、
+        辞書として返します。
+
+        戻り値:
+            ログがある場合は{'_logs': [...]}、ない場合は{}
+
+        使用例:
+            result = controller_result.to_exit_dict() | logger.to_logs_dict()
+            module.exit_json(**result)
+        """
+        logs = self.logs()
+        return {'_logs': logs} if logs is not None else {}
 
 
 class MockLogger:

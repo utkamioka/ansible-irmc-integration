@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -72,7 +72,7 @@ options:
 EXAMPLES = r'''
 # Write server location
 - name: Write server location
-  fujitsu.primergy.irmc_scci:
+  fsas_temp_ns.primergy.irmc_scci:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -87,7 +87,7 @@ EXAMPLES = r'''
 # Read server location
 - block:
   - name: "Read server location"
-    fujitsu.primergy.irmc_scci:
+    fsas_temp_ns.primergy.irmc_scci:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -104,7 +104,7 @@ EXAMPLES = r'''
 
 # Power on the server
 - name: "Power on the server"
-  fujitsu.primergy.irmc_scci:
+  fsas_temp_ns.primergy.irmc_scci:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -117,7 +117,7 @@ EXAMPLES = r'''
 
 # Power off the server
 - name: "Power off the server"
-  fujitsu.primergy.irmc_scci:
+  fsas_temp_ns.primergy.irmc_scci:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -130,7 +130,7 @@ EXAMPLES = r'''
 
 # Cancel shutdown
 - name: "Cancel shutdown"
-  fujitsu.primergy.irmc_scci:
+  fsas_temp_ns.primergy.irmc_scci:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -143,7 +143,7 @@ EXAMPLES = r'''
 
 # Reset firmware
 - name: "Reset firmware"
-  fujitsu.primergy.irmc_scci:
+  fsas_temp_ns.primergy.irmc_scci:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -158,7 +158,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get_cs”, the following value is returned.
+        If command is "get_cs", the following value is returned.
 
         For all other commands, the default return value of Ansible (changed, failed, etc.) is returned.
 
@@ -172,7 +172,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
     get_scciresult,
     irmc_scci_post,
     setup_sccirequest,

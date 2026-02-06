@@ -12,11 +12,13 @@ galaxy_info:
         - S6
 
   galaxy_tags:
-    - fujitsu
-    - fti
+    - fsas
+    - fsastech
+    - fsas_technologies
+    - primergy
+    - irmc
+    - redfish
     - os
     - windows
-    - irmc
-    - primergy
 
 dependencies: []

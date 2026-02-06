@@ -6,7 +6,7 @@
     bios_firmware_path_mapping: "{{ bios_firmware_path_mapping | default({}) }}"
 
 - name: Turn off the power of the iRMC device
-  fujitsu.primergy.irmc_powerstate:
+  fsas_temp_ns.primergy.irmc_powerstate:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -16,7 +16,7 @@
   delegate_to: localhost
 
 - name: Get the facts of iRMC device (before update)
-  fujitsu.primergy.irmc_facts:
+  fsas_temp_ns.primergy.irmc_facts:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -57,7 +57,7 @@
   when: timeout is defined
 
 - name: Update BIOS firmware
-  fujitsu.primergy.irmc_fwbios_update:
+  fsas_temp_ns.primergy.irmc_fwbios_update:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -71,7 +71,7 @@
   delegate_to: localhost
 
 - name: Get the facts of iRMC device (after update)
-  fujitsu.primergy.irmc_facts:
+  fsas_temp_ns.primergy.irmc_facts:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"

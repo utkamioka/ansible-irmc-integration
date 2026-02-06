@@ -11,7 +11,7 @@
 
 -e file:.
 ansible==10.7.0
-    # via fujitsu-ansible-irmc-integration
+    # via ansible-irmc-integration
 ansible-compat==24.7.0
     # via ansible-lint
 ansible-core==2.17.14
@@ -99,7 +99,7 @@ pytest==8.3.2
 pytest-forked==1.6.0
 pytest-xdist==3.8.0
 pywinrm==0.5.0
-    # via fujitsu-ansible-irmc-integration
+    # via ansible-irmc-integration
 pyyaml==6.0.1
     # via ansible-compat
     # via ansible-core
@@ -110,14 +110,14 @@ referencing==0.35.1
     # via jsonschema
     # via jsonschema-specifications
 requests==2.32.5
-    # via fujitsu-ansible-irmc-integration
+    # via ansible-irmc-integration
     # via pywinrm
     # via requests-ntlm
     # via requests-toolbelt
 requests-ntlm==1.3.0
     # via pywinrm
 requests-toolbelt==1.0.0
-    # via fujitsu-ansible-irmc-integration
+    # via ansible-irmc-integration
 resolvelib==1.0.1
     # via ansible-core
 rich==13.7.1
@@ -141,8 +141,8 @@ tomli==2.0.1
 typing-extensions==4.15.0
     # via black
     # via cryptography
-urllib3==2.5.0
-    # via fujitsu-ansible-irmc-integration
+urllib3==2.6.3
+    # via ansible-irmc-integration
     # via requests
 wcmatch==8.5.2
     # via ansible-lint

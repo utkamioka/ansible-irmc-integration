@@ -14,7 +14,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `adapter_names` | true | | | str | Adapter name or list of adapter names for which to manage DNS settings ("*" is supported as a wildcard value).<br>The adapter name used is the connection caption in the Network Control Panel or via `Get-NetAdapter`. |
 | `ipv4_addresses` | true | | | str | Single or ordered list of DNS server IPv4 addresses to configure for lookup. An empty list will configure the adapter to use the DHCP-assigned values on connections where DHCP is enabled, or disable DNS lookup on statically-configured connections. |
 
@@ -32,7 +32,7 @@ playbook.yml:
     - name: Set DNS
       hosts: windows
       roles:
-        - role: fujitsu.primergy.win_dns
+        - role: fsas_temp_ns.primergy.win_dns
           vars:
             adapter_names: Enthernet
             ipv4_addresses:

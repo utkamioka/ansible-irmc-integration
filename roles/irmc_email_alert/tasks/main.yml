@@ -19,11 +19,11 @@
 
 - name: Generate E-mail Alert settings as IRMC profile
   ansible.builtin.set_fact:
-    email_alert_profile: "{{ vars | fujitsu.primergy.email_alert_profile_filter }}"
+    email_alert_profile: "{{ vars | fsas_temp_ns.primergy.email_alert_profile_filter }}"
   tags: json
 
 - name: Apply E-mail Alert settings as IRMC profile
-  fujitsu.primergy.irmc_profiles:
+  fsas_temp_ns.primergy.irmc_profiles:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"

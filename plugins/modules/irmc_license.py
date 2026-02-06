@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 DOCUMENTATION = '''
 ---
@@ -55,7 +55,7 @@ EXAMPLES = '''
 # Get iRMC license key
 - block:
   - name: Get iRMC license key
-    fujitsu.primergy.irmc_license:
+    fsas_temp_ns.primergy.irmc_license:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -72,7 +72,7 @@ EXAMPLES = '''
 
 # Set iRMC license key
 - name: Set iRMC license key
-  fujitsu.primergy.irmc_license:
+  fsas_temp_ns.primergy.irmc_license:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -86,7 +86,7 @@ EXAMPLES = '''
 
 RETURN = '''
 details_for_get:
-    description: If command is “get”, the following value is returned.
+    description: If command is "get", the following value is returned.
     contains:
         license_key:
             description: system-locked iRMC license key
@@ -94,13 +94,13 @@ details_for_get:
             type: string
 
 details_for_set:
-    description: If command is “set”, the default return value of Ansible is returned.
+    description: If command is "set", the default return value of Ansible is returned.
 
 '''
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
     add_scci_command,
     get_scciresult,
     irmc_scci_post,

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -81,7 +81,7 @@ options:
 EXAMPLES = r'''
 # Get eLCM repository data
 - name: Get eLCM repository data
-  fujitsu.primergy.irmc_elcm_repository:
+  fsas_temp_ns.primergy.irmc_elcm_repository:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -91,7 +91,7 @@ EXAMPLES = r'''
 
 # Set eLCM repository data
 - name: Set eLCM repository data
-  fujitsu.primergy.irmc_elcm_repository:
+  fsas_temp_ns.primergy.irmc_elcm_repository:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -110,7 +110,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get”, the following value is returned.
+        If command is "get", the following value is returned.
 
         If command is "set", the default return value of Ansible (changed, failed, etc.) is returned.
 
@@ -125,7 +125,7 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc import (
     elcm_check_status,
     get_irmc_json,
     irmc_redfish_get,

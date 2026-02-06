@@ -12,10 +12,12 @@ galaxy_info:
         - S6
 
   galaxy_tags:
-    - fujitsu
-    - fti
-    - ntp
-    - irmc
+    - fsas
+    - fsastech
+    - fsas_technologies
     - primergy
+    - irmc
+    - redfish
+    - ntp
 
 dependencies: []

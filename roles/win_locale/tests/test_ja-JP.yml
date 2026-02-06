@@ -2,7 +2,7 @@
 - name: Change the language setting to Japanese (Japan)
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_locale
+    - role: fsas_temp_ns.primergy.win_locale
       vars:
         language: "ja-JP"
         location: "122"

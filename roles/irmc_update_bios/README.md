@@ -28,7 +28,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `bios_firmware_path` | false | | | str | Path to the firmware.<br/>Specified as absolute path or relative from the playbook.<br/>If `tftp_server` is specified, it is specified as a path from the root of the TFTP server.<br/>If `bios_firmware_path_mapping` does not have a key corresponding to the model name, this value is applied. |
 | `bios_firmware_path_mapping` | false | | | dict | Mapping of paths to the firmware with the model name of the target node (e.g. `"PRIMERGY_RX1330_M6S"`) as key.<br/>The specification of the path description is the same as the parameter `bios_firmware_path`.<br/>If there is no key corresponding to the model name and the parameter `bios_firmware_path` is not specified, an error is raised. |
 | `tftp_server` | false | | | str | IP address or hostname of the TFTP server from which to download the firmware.<br/>If not specified, the path is assumed to be the file system of the Ansible control node. |
@@ -49,7 +49,7 @@ To update with specified firmware:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_update_bios
+        - role: fsas_temp_ns.primergy.irmc_update_bios
           vars:
             bios_firmware_path: "/any/where/firm/RX1330_M6/bios/D4133-A1x.R1.1.0.UPC"
 
@@ -60,7 +60,7 @@ When updating with firmware for each model name:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_update_bios
+        - role: fsas_temp_ns.primergy.irmc_update_bios
           vars:
             bios_firmware_path_mapping:
               PRIMERGY_RX1330_M5R: "/any/where/firm/RX1330_M5R/bios/D3929-A1x.R1.41.0.UPC"
@@ -73,7 +73,7 @@ When updating with firmware for each model name via a TFTP server:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_update_bios
+        - role: fsas_temp_ns.primergy.irmc_update_bios
           vars:
             tftp_server: 192.0.2.1
             bios_firmware_path_mapping:
@@ -97,4 +97,4 @@ GPL-3.0-or-later
 Author Information
 ------------------
 
-- Yutaka Kamioka <yutaka.kamioka@jp.fujitsu.com>
+- Yutaka Kamioka <yutaka.kamioka@fujitsu.com>

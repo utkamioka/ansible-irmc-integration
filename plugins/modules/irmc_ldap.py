@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -121,15 +121,12 @@ options:
     alert_table_refresh:
         description: LDAP alert table refresh in hours (0 = never).
         required:    false
-
-notes:
-    - See https://sp.ts.fujitsu.com/dmsp/Publications/public/dp-svs-configuration-space-values-en.pdf
 '''
 
 EXAMPLES = r'''
 # Get LDAP data
 - name: Get LDAP data
-  fujitsu.primergy.irmc_ldap:
+  fsas_temp_ns.primergy.irmc_ldap:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -143,7 +140,7 @@ EXAMPLES = r'''
 
 # Set LDAP data
 - name: Set LDAP data
-  fujitsu.primergy.irmc_ldap:
+  fsas_temp_ns.primergy.irmc_ldap:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -157,7 +154,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
 
         If command is "set", the default return value of Ansible (changed, failed, etc.) is returned.
 
@@ -286,7 +283,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
 
 ldap_dir = {'0': 'MS Active Directory', '1': 'Novell eDirectory', '2': 'Sun ePlanet', '3': 'OpenLDAP',
             '4': 'OpenDS / OpenDJ'}

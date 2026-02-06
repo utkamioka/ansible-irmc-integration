@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -58,7 +58,7 @@ options:
 EXAMPLES = r'''
 - block:
   - name: List iRMC InternalEventLog
-    fujitsu.primergy.irmc_eventlog:
+    fsas_temp_ns.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -76,7 +76,7 @@ EXAMPLES = r'''
 # List iRMC SystemEventLog
 - block:
   - name: List iRMC SystemEventLog
-    fujitsu.primergy.irmc_eventlog:
+    fsas_temp_ns.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -92,10 +92,10 @@ EXAMPLES = r'''
     - list_systemeventlog
 
 # Get specific InternalEventLog entry information
-# Add '-e “id=xx”' to the command line argument of Playbook.
+# Add '-e "id=xx"' to the command line argument of Playbook.
 - block:
   - name: Get specific InternalEventLog entry information
-    fujitsu.primergy.irmc_eventlog:
+    fsas_temp_ns.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -112,10 +112,10 @@ EXAMPLES = r'''
     - get_internaleventlog
 
 # Get specific SystemEventLog entry information
-# Add '-e “id=xx”' to the command line argument of Playbook.
+# Add '-e "id=xx"' to the command line argument of Playbook.
 - block:
   - name: Get specific SystemEventLog entry information
-    fujitsu.primergy.irmc_eventlog:
+    fsas_temp_ns.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -133,7 +133,7 @@ EXAMPLES = r'''
 
 # Clear iRMC InternalEventLog
 - name: Clear iRMC InternalEventLog
-  fujitsu.primergy.irmc_eventlog:
+  fsas_temp_ns.primergy.irmc_eventlog:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -146,7 +146,7 @@ EXAMPLES = r'''
 
 # Clear iRMC SystemEventLog
 - name: Clear iRMC SystemEventLog
-  fujitsu.primergy.irmc_eventlog:
+  fsas_temp_ns.primergy.irmc_eventlog:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -161,7 +161,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
 
         If command is "list", list of individual eventlog_entries is returned.
 
@@ -197,7 +197,7 @@ details:
             description: event entry text
             returned: always
             type: string
-            sample: DIMM-1E Non Fujitsu Memory Module detected - Warranty restricted!
+            sample: DIMM-1E Non Certified Memory Module detected - Warranty restricted!
         Resolutions:
             description: list of possible solitions for the problem, if available
             returned: always
@@ -217,9 +217,9 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_eventlog(module):

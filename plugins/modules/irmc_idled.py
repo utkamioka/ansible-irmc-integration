@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -12,7 +12,7 @@ short_description: get or set server ID LED
 
 description:
     - Ansible module to get or set server ID LED via iRMC RedFish interface.
-    - Module Version V1.3.0.
+    - Module Version V2.0.0.
 
 requirements:
     - The module needs to run locally.
@@ -23,7 +23,7 @@ requirements:
 version_added: "2.4"
 
 author:
-    - Nakamura Takayuki (@nakamura-taka)
+    - Yutaka Kamioka (<yutaka.kamioka@fujitsu.com>)
 
 options:
     irmc_url:
@@ -54,7 +54,7 @@ EXAMPLES = r'''
 # Get server ID LED state
 - block:
   - name: Get ID LED state
-    fujitsu.primergy.irmc_idled:
+    fsas_temp_ns.primergy.irmc_idled:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -70,7 +70,7 @@ EXAMPLES = r'''
 
 # Set server ID LED state
 - name: Set server ID LED state
-  fujitsu.primergy.irmc_idled:
+  fsas_temp_ns.primergy.irmc_idled:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -83,83 +83,202 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-details:
-    description:
-        If command is “get”, the following values are returned.
-
-        If command is "set", the default return value of Ansible (changed, failed, etc.) is returned.
-
-    contains:
-        idled_state:
-            description: server ID LED state
-            returned: always
-            type: string
-            sample: Blinking
+idled_state:
+    description: server ID LED state
+    returned: when command is "get"
+    type: string
+    sample: Blinking
 '''
 
 
 import json
+import traceback
+from typing import Any, Mapping
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import get_irmc_json, irmc_redfish_get, irmc_redfish_patch
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.controller_result import ControllerResult
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger, Logger
 
 
-def irmc_idled(module):
-    result = dict(
-        changed=False,
-        status=0,
+class IdLedController:
+    """ID LEDの状態を管理するControllerクラスです。
+    """
+
+    def __init__(self, irmc: iRMC, logger: Logger):
+        """IdLedControllerを初期化します。
+
+        引数:
+            irmc - iRMCクライアントインスタンス
+            logger - ログ出力用のLoggerインスタンス
+        """
+        self.irmc = irmc
+        self.logger = logger
+
+    def _fetch_current_led_state(self) -> str:
+        """iRMCからID LED状態をフェッチします。
+
+        戻り値:
+            現在のLED状態
+
+        例外:
+            HttpError - HTTPリクエストが失敗した場合
+            ModuleError - レスポンスにIndicatorLEDフィールドが存在しない場合
+        """
+        response = self.irmc.get('/redfish/v1/Systems/0')
+        if response.status != 200:
+            msg = f"Failed to {response.request.method} {response.request.path}"
+            self.logger.warn(msg)
+            raise HttpError(msg, status=response.status)
+
+        fields = ['IndicatorLED']
+        state = dig(response.body, *fields)
+        if state is None:
+            msg = f"{'.'.join(fields)!r} field not found in response"
+            self.logger.warn(msg)
+            raise ModuleError(msg)
+
+        return state
+
+    def _fetch_allowable_led_states(self) -> list[str]:
+        """iRMCから許可されたID LED状態のリストをフェッチします。
+
+        戻り値:
+            許可されたLED状態のリスト
+
+        例外:
+            HttpError - HTTPリクエストが失敗した場合
+            ModuleError - レスポンスにIndicatorLED@Redfish.AllowableValuesフィールドが存在しない場合
+        """
+        response = self.irmc.get('/redfish/v1/Systems/0')
+        if response.status != 200:
+            msg = f"Failed to {response.request.method} {response.request.path}"
+            self.logger.warn(msg)
+            raise HttpError(msg, status=response.status)
+
+        fields = ['IndicatorLED@Redfish.AllowableValues']
+        allowed_values = dig(response.body, *fields)
+        if allowed_values is None:
+            msg = f"{'.'.join(fields)!r} field not found in response"
+            self.logger.warn(msg)
+            raise ModuleError(msg)
+
+        return allowed_values
+
+    def get_state(self) -> ControllerResult:
+        """ID LED状態を取得します。
+
+        戻り値:
+            ControllerResult（changed=False, idled_state属性を含む）
+
+        例外:
+            HttpError - HTTPリクエストが失敗した場合
+            ModuleError - レスポンスにIndicatorLEDフィールドが存在しない場合
+        """
+        self.logger.debug("Getting ID LED state from iRMC")
+        state = self._fetch_current_led_state()
+        return ControllerResult.unchanged(
+            idled_state=state,
+        )
+
+    def set_state(self, params: Mapping[str, Any]) -> ControllerResult:
+        """ID LED状態を設定します。
+
+        引数:
+            params - パラメータ辞書（必須: 'state'）
+
+        戻り値:
+            ControllerResult（changed=TrueまたはFalse）
+
+        例外:
+            ValidationError - stateパラメータが不足、または許可された値でない場合
+            HttpError - HTTPリクエストが失敗した場合
+            ModuleError - レスポンスに必要なフィールドが存在しない場合
+        """
+        # パラメータ検証（AnsibleModuleがstr型を保証しているため型チェック不要）
+        target_state = params.get('state')
+        if target_state is None:
+            raise ValidationError("'state' parameter is required for set command")
+
+        self.logger.debug(f"Setting ID LED state to '{target_state}'")
+        current_state = self._fetch_current_led_state()
+
+        if current_state == target_state:
+            return ControllerResult.skipped(
+                msg=f"ID LED is already in state '{target_state}'",
+            )
+
+        # AllowableValuesの取得と検証
+        allowed_values = self._fetch_allowable_led_states()
+        if target_state not in allowed_values:
+            msg = f"Invalid state '{target_state}'. Allowed: {json.dumps(allowed_values)}"
+            raise ValidationError(msg)
+
+        # 状態を設定（etagを取得）
+        response = self.irmc.get('/redfish/v1/Systems/0')
+        etag = dig(response.body, '@odata.etag')
+        headers = {'If-Match': str(etag)} if etag else None
+        body = {'IndicatorLED': target_state}
+        response = self.irmc.patch('/redfish/v1/Systems/0', body, headers=headers)
+        if response.status != 200:
+            msg = f"Failed to {response.request.method} {response.request.path} with body {body}: response={response.body}"
+            self.logger.warn(msg)
+            raise HttpError(msg, status=response.status)
+
+        self.logger.log(f"ID LED state changed: {current_state} -> {target_state}")
+        return ControllerResult.changed_success()
+
+
+def irmc_idled(module: AnsibleModule) -> None:
+    """irmc_idledモジュールのメイン処理です。
+
+    引数:
+        module - AnsibleModuleインスタンス
+    """
+    if module.check_mode:
+        module.exit_json(changed=False, msg='module was not run')
+
+    # ロガー初期化
+    logger = AnsibleLogger(module)
+
+    # iRMCクライアント初期化
+    irmc = iRMC(
+        ipaddress=module.params['irmc_url'],
+        username=module.params['irmc_username'],
+        password=module.params['irmc_password'],
+        validate_certs=module.params['validate_certs'],
+        logger=logger,
+        raise_on_error=True,
     )
 
-    if module.check_mode:
-        result['msg'] = 'module was not run'
+    # Controller初期化
+    controller = IdLedController(irmc, logger)
+
+    # ビジネスロジック実行
+    try:
+        if module.params['command'] == 'get':
+            controller_result = controller.get_state()
+        elif module.params['command'] == 'set':
+            controller_result = controller.set_state(module.params)
+        else:
+            raise ValidationError(f"Unknown command: {module.params['command']}")
+
+        result = controller_result.to_exit_dict() | logger.to_logs_dict()
         module.exit_json(**result)
 
-    # preliminary parameter check
-    if module.params['command'] == 'set' and module.params['state'] is None:
-        result['msg'] = "Command 'set' requires 'state' parameter to be set!"
-        result['status'] = 10
+    except ModuleError as e:
+        result = e.to_fail_dict() | logger.to_logs_dict()
         module.fail_json(**result)
 
-    # get iRMC system data
-    status, sysdata, msg = irmc_redfish_get(module, 'redfish/v1/Systems/0/')
-    if status < 100:
-        module.fail_json(msg=msg, status=status, exception=sysdata)
-    elif status != 200:
-        module.fail_json(msg=msg, status=status)
-
-    idledstate = get_irmc_json(sysdata.json(), 'IndicatorLED')
-    if module.params['command'] == 'get':
-        result['idled_state'] = idledstate
-        module.exit_json(**result)
-
-    # evaluate function params against iRMC
-    if idledstate == module.params['state']:
-        result['skipped'] = True
-        result['msg'] = "iRMC ID LED is already in state '{0}'".format(module.params['state'])
-        module.exit_json(**result)
-
-    allowedparams = get_irmc_json(sysdata.json(), 'IndicatorLED@Redfish.AllowableValues')
-    if module.params['state'] not in allowedparams:
-        result['msg'] = "Invalid parameter '{0}'. Allowed: {1}".format(module.params['state'],
-                                                                       json.dumps(allowedparams))
-        result['status'] = 11
+    except Exception as e:
+        # 予期しないエラー（接続エラーを含む）
+        result = {'msg': f"Unexpected error: {e}", 'exception': traceback.format_exc()} | logger.to_logs_dict()
         module.fail_json(**result)
 
-    # set iRMC system data
-    body = {'IndicatorLED': module.params['state']}
-    etag = get_irmc_json(sysdata.json(), '@odata.etag')
-    status, patch, msg = irmc_redfish_patch(module, 'redfish/v1/Systems/0/', json.dumps(body), etag)
-    if status < 100:
-        module.fail_json(msg=msg, status=status, exception=patch)
-    elif status != 200:
-        module.fail_json(msg=msg, status=status)
 
-    result['changed'] = True
-    module.exit_json(**result)
-
-
-def main():
-    # import pdb; pdb.set_trace()
+def main() -> None:
     module_args = dict(
         irmc_url=dict(required=True, type='str'),
         irmc_username=dict(required=True, type='str'),

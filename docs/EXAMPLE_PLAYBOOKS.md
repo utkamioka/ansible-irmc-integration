@@ -2,7 +2,7 @@
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/fujitsu-ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
 
 ## 1. Playbooks
 
@@ -24,7 +24,7 @@ The `./example/playbooks/` directory contains the following playbooks:
 - Please create an inventory file `inventory.ini`
   following the "[Example Inventory File Configuration](./USER_GUIDE.md#example-inventory-file-configuration)"
   in the [User Guide](./USER_GUIDE.md)
-  (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/USER_GUIDE/)).
+  (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/USER_GUIDE/)).
 
 #### File Sharing Server
 
@@ -47,7 +47,7 @@ The `./example/playbooks/` directory contains the following playbooks:
   and
   "[iRMC Firmware Update](./CONFIGURATION.md#irmc-firmware-update)"
   sections in the [Configuration Guide](./CONFIGURATION.md)
-  (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/CONFIGURATION/)).
+  (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/CONFIGURATION/)).
 - Set up a TFTP server and place the obtained firmware on it.
 
 #### 2.2.3 Configuration in the Playbook
@@ -116,7 +116,7 @@ Obtain the following information:
 Obtain the following files as needed.
 For how to obtain them,
 refer to each section in the [Configuration Guide](./CONFIGURATION.md)
-(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/CONFIGURATION/)):
+(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/CONFIGURATION/)):
 
 - Installer for ServerView Agents
 - Installer for ServerView RAID Manager
@@ -130,18 +130,18 @@ refer to each section in the [Configuration Guide](./CONFIGURATION.md)
 - Disable (remove or comment out) blocks containing the `import_role` directive
   for sections that do not require configuration.
 - Additional notes for particularly important sections:
-  - **iRMC User Registration `fujitsu.primergy.irmc_account_admin`**:
+  - **iRMC User Registration `fsas_temp_ns.primergy.irmc_account_admin`**:
     Be cautious not to change permissions
     (such as `role`=`Administrator` or `ipmi.lan_privilege`=`OEM`) carelessly,
     as this may cause subsequent configuration tasks to fail.
-  - **SSL Certificate and CA Certificate Configuration `fujitsu.primergy.irmc_set_certificate`**:
+  - **SSL Certificate and CA Certificate Configuration `fsas_temp_ns.primergy.irmc_set_certificate`**:
     The file specified in the `ssl_private_key_path` parameter will be directly modified
     to have headers and footers in OpenSSL 3.x format.
     If you do not want the original file to be altered, please be careful.
     Additionally, write permissions to the specified file are required.
-  - **iRMC License Registration `fujitsu.primergy.irmc_set_license`**:
+  - **iRMC License Registration `fsas_temp_ns.primergy.irmc_set_license`**:
     Since licenses are issued per device,
-    the `license_keys` parameter in `fujitsu.primergy.irmc_set_license` must be specified
+    the `license_keys` parameter in `fsas_temp_ns.primergy.irmc_set_license` must be specified
     for each iRMC device.
     Please specify the `license_keys` parameter in a file
     named `host_vars/<ipaddress-of-irmc-device>.yml` under the current directory.
@@ -153,15 +153,15 @@ refer to each section in the [Configuration Guide](./CONFIGURATION.md)
       - LICENSE-KEY2
     ```
 
-  - **DNS Configuration for Windows Server `fujitsu.primergy.win_dns`**:
+  - **DNS Configuration for Windows Server `fsas_temp_ns.primergy.win_dns`**:
     If you specify `"*"` for the `adapter_names` parameter,
     the settings will apply to all network adapters.
     If you want to apply settings to specific network adapters, specify the adapter names.
     Adapter names can be found using `Get-NetAdapter` after installing Windows.
-  - **Domain Joining `fujitsu.primergy.win_set_membership`**:
+  - **Domain Joining `fsas_temp_ns.primergy.win_set_membership`**:
     When joining a domain, specify the DNS server that is associated with the domain controller
-    as the first DNS server in the Windows server DNS settings `fujitsu.primergy.win_dns`.
-  - **Data Drive Configuration `fujitsu.primergy.win_data_drive`**:
+    as the first DNS server in the Windows server DNS settings `fsas_temp_ns.primergy.win_dns`.
+  - **Data Drive Configuration `fsas_temp_ns.primergy.win_data_drive`**:
     An error will occur if there is no unallocated space on the storage
     specified by the `disk_number` parameter.
     If you specify `0` for `disk_number`

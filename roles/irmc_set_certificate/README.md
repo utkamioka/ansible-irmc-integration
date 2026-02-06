@@ -3,7 +3,8 @@ irmc_set_certificate
 
 Set iRMC certificates.
 
-Note:  
+Note:
+
 - Before using this role, SSL Certificate, SSL CA Certificate must be generated or obtained in advance.
 
 Requirements
@@ -15,7 +16,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `ssl_private_key_path` | true | | | str | Path to file containing SSL private key. |
 | `ssl_cert_path` | true | | | str | Path to file containing SSL CA certificate. |
 | `ssl_ca_cert_path` | true | | | str | Path to file containing SSL certificate. |

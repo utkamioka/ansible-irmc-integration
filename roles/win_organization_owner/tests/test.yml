@@ -2,7 +2,7 @@
 - name: Change the description, organization and owner
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_organization_owner
+    - role: fsas_temp_ns.primergy.win_organization_owner
       vars:
         description: This is my Windows Server.
         organization: Fsas Technologies Inc.

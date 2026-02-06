@@ -17,7 +17,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `hostname` | true | | | str | Hostname of Windows Server |
 
 Dependencies
@@ -31,7 +31,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fujitsu.primergy.win_hostname
+        - role: fsas_temp_ns.primergy.win_hostname
           vars:
             hostname: Hostname
 

@@ -1,5 +1,5 @@
 ---
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook for module 'irmc_idled'
@@ -7,6 +7,12 @@
 
 # variables not defined in this playbook are expected to be provided
 # elsewhere, e.g. in group_vars/all
+
+# Usage examples:
+# ansible-playbook irmc_idled_examples.yml --tags get           # Get current LED state
+# ansible-playbook irmc_idled_examples.yml --tags set           # Set LED to Lit (default)
+# ansible-playbook irmc_idled_examples.yml --tags set -e state=Off       # Turn LED off
+# ansible-playbook irmc_idled_examples.yml --tags set -e state=Blinking  # Set LED to blink
 
 - name: irmc_idled - usage examples
   connection: local
@@ -19,13 +25,16 @@
     # Note: set validate_certificate to false for self-signed certificate
     # validate_certificate: false
 
+    # LED state configuration (default: Lit if not specified)
+    # state: "Lit"    # choices: "Off", "Lit", "Blinking"
+
   gather_facts: false
 
   tasks:
     # Get server ID LED state
     - block:
       - name: Get ID LED state
-        fujitsu.primergy.irmc_idled:
+        fsas_temp_ns.primergy.irmc_idled:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -41,13 +50,13 @@
 
     # Set server ID LED state
     - name: Set server ID LED state
-      fujitsu.primergy.irmc_idled:
+      fsas_temp_ns.primergy.irmc_idled:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
         validate_certs: "{{ validate_certificate }}"
         command: "set"
-        state: "Lit"
+        state: "{{ state | default('Lit') }}"
       delegate_to: localhost
       tags:
         - set

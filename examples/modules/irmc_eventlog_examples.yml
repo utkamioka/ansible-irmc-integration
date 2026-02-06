@@ -1,5 +1,5 @@
 ---
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook for module 'irmc_eventlog'
@@ -25,7 +25,7 @@
     # List iRMC InternalEventLog
     - block:
       - name: List iRMC InternalEventLog
-        fujitsu.primergy.irmc_eventlog:
+        fsas_temp_ns.primergy.irmc_eventlog:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -43,7 +43,7 @@
     # List iRMC SystemEventLog
     - block:
       - name: List iRMC SystemEventLog
-        fujitsu.primergy.irmc_eventlog:
+        fsas_temp_ns.primergy.irmc_eventlog:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -59,10 +59,10 @@
         - list_systemeventlog
 
     # Get specific InternalEventLog entry information
-    # Add '-e “id=xx”' to the command line argument of Playbook.
+    # Add '-e "id=xx"' to the command line argument of Playbook.
     - block:
       - name: Get specific InternalEventLog entry information
-        fujitsu.primergy.irmc_eventlog:
+        fsas_temp_ns.primergy.irmc_eventlog:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -79,10 +79,10 @@
         - get_internaleventlog
 
     # Get specific SystemEventLog entry information
-    # Add '-e “id=xx”' to the command line argument of Playbook.
+    # Add '-e "id=xx"' to the command line argument of Playbook.
     - block:
       - name: Get specific SystemEventLog entry information
-        fujitsu.primergy.irmc_eventlog:
+        fsas_temp_ns.primergy.irmc_eventlog:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -100,7 +100,7 @@
 
     # Clear iRMC InternalEventLog
     - name: Clear iRMC InternalEventLog
-      fujitsu.primergy.irmc_eventlog:
+      fsas_temp_ns.primergy.irmc_eventlog:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -113,7 +113,7 @@
 
     # Clear iRMC SystemEventLog
     - name: Clear iRMC SystemEventLog
-      fujitsu.primergy.irmc_eventlog:
+      fsas_temp_ns.primergy.irmc_eventlog:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

@@ -1,5 +1,5 @@
 ---
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook for module 'irmc_ntp'
@@ -25,7 +25,7 @@
     # Get iRMC time settings
     - block:
       - name: Get iRMC time settings
-        fujitsu.primergy.irmc_ntp:
+        fsas_temp_ns.primergy.irmc_ntp:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -41,7 +41,7 @@
 
     # Set iRMC time option(s)
     - name: Set iRMC time option(s)
-      fujitsu.primergy.irmc_ntp:
+      fsas_temp_ns.primergy.irmc_ntp:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

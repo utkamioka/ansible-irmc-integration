@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -56,7 +56,7 @@ options:
             This option also requires the SSL certificate.
             Important: Private keys created with openssl 3.x cannot be registered.
             To register, the header and footer must be rewritten to openssl 1.x format.
-            (ex. Rewrite header “-----BEGIN PRIVATE KEY-----” to “-----BEGIN RSA PRIVATE KEY-----”)
+            (ex. Rewrite header "-----BEGIN PRIVATE KEY-----" to "-----BEGIN RSA PRIVATE KEY-----")
         required:    false
     ssl_cert_path:
         description: Path to file containing SSL certificate.
@@ -65,9 +65,6 @@ options:
     ssl_ca_cert_path:
         description: Path to file containing SSL CA certificate.
         required:    false
-
-notes:
-    - See https://sp.ts.fujitsu.com/dmsp/Publications/public/dp-svs-configuration-space-values-en.pdf
 '''
 
 EXAMPLES = r'''
@@ -76,7 +73,7 @@ EXAMPLES = r'''
     - get
   block:
     - name: Get SSL certificates
-      fujitsu.primergy.irmc_certificate:
+      fsas_temp_ns.primergy.irmc_certificate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -89,7 +86,7 @@ EXAMPLES = r'''
         var: certificates.certificates
 
 - name: Set SSL certificates
-  fujitsu.primergy.irmc_certificate:
+  fsas_temp_ns.primergy.irmc_certificate:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -106,7 +103,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description: >
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
         For other commands,
         the default return value of Ansible (changed, failed, etc.) is returned.
     type: dict
@@ -123,7 +120,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
 
 param_scci_map = [
     # Param, SCCI Name, SCCI Code, index, value dict

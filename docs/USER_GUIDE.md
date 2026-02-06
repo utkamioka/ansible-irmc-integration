@@ -1,14 +1,14 @@
-# Ansible Collection `fujitsu.primergy` User Guide
+# Ansible Collection `fsas_temp_ns.primergy` User Guide
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/fujitsu-ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
 
 ## 1. Introduction
 
-This document is a guide for users of Ansible collection `fujitsu.primergy`.  
+This document is a guide for users of Ansible collection `fsas_temp_ns.primergy`.  
 Ansible collections are packages that bundle Ansible playbooks, modules, roles, plugins, documentation, and more.  
-Ansible collection `fujitsu.primergy` aims to automate configuration tasks
+Ansible collection `fsas_temp_ns.primergy` aims to automate configuration tasks
 based on PRIMERGY's "Environment and setting sheet" and provides Ansible roles and modules.
 
 This user guide provides information on setting up the Ansible collection,
@@ -49,10 +49,10 @@ $ python -m venv venv && . $_/bin/activate
 ```
 
 Use Ansible installed in the virtual environment (venv)
-to install the Ansible collection `fujitsu.primergy` from <https://galaxy.ansible.com/>:
+to install the Ansible collection `fsas_temp_ns.primergy` from <https://galaxy.ansible.com/>:
 
 ```bash
-(venv) $ ansible-galaxy collection install fujitsu.primergy
+(venv) $ ansible-galaxy collection install fsas_temp_ns.primergy
 ```
 
 ### Example Inventory File Configuration
@@ -96,7 +96,7 @@ ansible_winrm_server_cert_validation=ignore
 Retrieve and display the configuration and settings of the specified iRMC device:
 
 ```shell
-$ ansible localhost -m fujitsu.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+$ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
 localhost | SUCCESS => {
     "changed": false,
     "facts": {
@@ -140,12 +140,12 @@ New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Ena
 ### Overall Structure of the Collection
 
 For a detailed list of modules and roles in this collection,
-refer to the [Ansible Galaxy Collection Page](https://galaxy.ansible.com/fujitsu/primergy).
+refer to the [Ansible Galaxy Collection Page](https://galaxy.ansible.com/fsas_temp_ns/primergy).
 
 ### How to Use Roles
 
 Refer to the [Configuration Guide](./CONFIGURATION.md)
-(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/CONFIGURATION/)).
+(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/CONFIGURATION/)).
 
 ### Description of Sample Playbooks
 
@@ -153,7 +153,7 @@ Sample playbooks are provided in `examples/playbooks/`.
 
 For usage information,
 Refer to the [Sample Playbook Documentation](./EXAMPLE_PLAYBOOKS.md)
-(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/docs/EXAMPLE_PLAYBOOKS/)).
+(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/EXAMPLE_PLAYBOOKS/)).
 
 ### Troubleshooting
 
@@ -186,7 +186,7 @@ We cannot address questions about Red Hat products, how to use Ansible, or Ansib
 #### GitHub Issues
 
 For public feedback or contribution proposals, please use the GitHub "Issues" page.  
-GitHub Issues: <https://github.com/fujitsu/fujitsu-ansible-irmc-integration/issues>
+GitHub Issues: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration/issues>
 
 #### Request When Providing Feedback
 
@@ -220,7 +220,7 @@ For details, refer to this URL:
 ### Ansible Galaxy
 
 - <https://galaxy.ansible.com/>
-- <https://galaxy.ansible.com/ui/repo/published/fujitsu/primergy/>
+- <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/>
 
 ### Ansible
 

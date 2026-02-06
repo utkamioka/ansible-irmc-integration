@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """SessionInformationクラスのユニットテスト"""
@@ -10,11 +10,11 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 from requests.structures import CaseInsensitiveDict
 
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC, Response
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_session_information import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC, Response
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_session_information import (
     Session,
     SessionInformation,
 )

@@ -12,7 +12,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `license_keys` | true | | | list | iRMC license keys to be set. |
 
 Dependencies
@@ -31,7 +31,7 @@ playbook.yml:
       hosts: iRMC_group
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_set_license
+        - role: fsas_temp_ns.primergy.irmc_set_license
           vars:
             license_keys:
               - "AAAAAA-AAAAAAA-AAAAA"

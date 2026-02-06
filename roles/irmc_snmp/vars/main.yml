@@ -1,8 +1,9 @@
 ---
 # vars file for ./roles/irmc_snmp
 
-# These version numbers are described in "5.1 Profile versions support" of "Specification iRMC RESTful API Version 10.0 (24/05/2023)".
+# These version numbers are described in "5.1 Profile versions support" of "Fsas - Specification iRMC Restful BIOS1.12_IRMC1.11 (30/09/2025)".
 # You can download it from here:
-#  <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=C821591C-C441-43A8-8A39-CC36D37AB2A1>
+#  <https://support.ts.fujitsu.com/IndexDownload.asp?Softwareguid=34A6AA91-F241-4045-8492-6F1D921C8B57>
+
 irmc_snmp_profile_server_version: "1.01"
 irmc_snmp_profile_irmcconfig_version: "1.08"

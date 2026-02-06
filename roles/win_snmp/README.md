@@ -15,7 +15,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `agent.contact` | true | | | str | Contact name of the managed node and information on how to contact. |
 | `agent.location` | true | | | str | Physical location of the managed node. |
 | `agent.service` | true | | | int | Any combination of up to five SNMP services. <br> The integer value is derived from the following binary values: <br> <ul> <li>Physical: 0x01</li> <li>DataLink and Subnet: 0x02</li> <li>Internet: 0x04</li> <li>End-to-end: 0x08</li> <li>Application: 0x40</li> </ul> Ex: A combination of "Internet", "End-to-end" and "Application" has a value of 0x4c (76) |
@@ -37,7 +37,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fujitsu.primergy.win_snmp
+        - role: fsas_temp_ns.primergy.win_snmp
           vars:
             agent:
               contact: MyContact

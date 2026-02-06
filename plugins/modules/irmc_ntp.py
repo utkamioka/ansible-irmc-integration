@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 DOCUMENTATION = '''
 ---
@@ -65,7 +65,7 @@ EXAMPLES = '''
 # Get iRMC time settings
 - block:
   - name: Get iRMC time settings
-    fujitsu.primergy.irmc_ntp:
+    fsas_temp_ns.primergy.irmc_ntp:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -81,7 +81,7 @@ EXAMPLES = '''
 
 # Set iRMC time option(s)
 - name: Set iRMC time option(s)
-  fujitsu.primergy.irmc_ntp:
+  fsas_temp_ns.primergy.irmc_ntp:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -97,7 +97,7 @@ EXAMPLES = '''
 
 RETURN = '''
 details_for_get:
-    description: If command is “get”, the following values are returned.
+    description: If command is "get", the following values are returned.
     contains:
         ntp_server_primary:
             description: primary NTP server
@@ -126,13 +126,13 @@ details_for_get:
             sample: Europe/Berlin
 
 details_for_set:
-    description: If command is “set”, the default return value of Ansible is returned.
+    description: If command is "set", the default return value of Ansible is returned.
 
 '''
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
     add_scci_command,
     get_key_for_value,
     get_scciresultlist_oi,

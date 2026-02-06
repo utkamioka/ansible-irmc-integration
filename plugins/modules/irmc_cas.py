@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 
@@ -89,15 +89,12 @@ options:
     privilege_storage:
         description: Remote Storage Enable.
         required:    false
-
-notes:
-    - See https://sp.ts.fujitsu.com/dmsp/Publications/public/dp-svs-configuration-space-values-en.pdf
 '''
 
 EXAMPLES = r'''
 # Get CAS data
 - name: Get CAS data
-  fujitsu.primergy.irmc_cas:
+  fsas_temp_ns.primergy.irmc_cas:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -111,7 +108,7 @@ EXAMPLES = r'''
 
 # Set CAS data
 - name: Set CAS data
-  fujitsu.primergy.irmc_cas:
+  fsas_temp_ns.primergy.irmc_cas:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -125,7 +122,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
 
         If command is "set", the default return value of Ansible (changed, failed, etc.) is returned.
 
@@ -204,7 +201,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
 
 cas_priv = {'0': 'Reserved', '1': 'Callback', '2': 'User', '3': 'Operator', '4': 'Administrator', '5': 'OEM', '15': 'NoAccess'}
 cas_priv_src = {'0': 'Local', '1': 'LDAP'}

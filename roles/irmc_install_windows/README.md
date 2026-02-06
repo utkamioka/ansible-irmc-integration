@@ -19,7 +19,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `server` | true | | | str | Remote server (IP or DNS name) where the image is located. |
 | `share` | true | | | str | Path on the remote server where the image is located. |
 | `image` | true | | | str | Name of the remote image. |
@@ -44,7 +44,7 @@ playbook.yml:
       hosts: iRMC_group
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_install_windows
+        - role: fsas_temp_ns.primergy.irmc_install_windows
           vars:
             server: "192.0.2.1"
             share: "/var/share"
@@ -67,7 +67,7 @@ playbook.yml:
       gather_facts: false
       connection: local
       - name: Disconnect Virtual CD
-        fujitsu.primergy.irmc_connectvm:
+        fsas_temp_ns.primergy.irmc_connectvm:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"

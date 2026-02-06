@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """helpersモジュールのユニットテスト"""
@@ -11,7 +11,7 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import (
     dig,
 )
 

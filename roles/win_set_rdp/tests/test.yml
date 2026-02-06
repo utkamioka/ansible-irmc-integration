@@ -3,6 +3,6 @@
 - name: Enable remote desktop
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_set_rdp
+    - role: fsas_temp_ns.primergy.win_set_rdp
       vars:
         enabled: true
