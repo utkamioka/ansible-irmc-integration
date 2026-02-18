@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -72,7 +72,7 @@ EXAMPLES = r'''
     - get
   block:
     - name: Get RAID configuration
-      fujitsu.primergy.irmc_raid:
+      fsas_temp_ns.primergy.irmc_raid:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -85,7 +85,7 @@ EXAMPLES = r'''
         var: raid.configuration
 
 - name: Create RAID array
-  fujitsu.primergy.irmc_raid:
+  fsas_temp_ns.primergy.irmc_raid:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -99,7 +99,7 @@ EXAMPLES = r'''
     - create
 
 - name: Delete RAID array
-  fujitsu.primergy.irmc_raid:
+  fsas_temp_ns.primergy.irmc_raid:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -114,7 +114,7 @@ EXAMPLES = r'''
 
 RETURN = r'''
 details_for_get:
-    description: If command is “get, the following value is returned.
+    description: If command is "get, the following value is returned.
 
     contains:
         configuration:
@@ -169,8 +169,8 @@ details_for_all:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
 
 # Global
 result = dict()

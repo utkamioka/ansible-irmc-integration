@@ -14,7 +14,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `op` | true | | `create`,<br>`resize`,<br>`remove` | str | Select an operation to create, resize or remove a partition. |
 | `drive_letter` | true | | `A` to `Z` | str | Used for accessing partitions. |
 | `partition_size` | false | Maximum supported size | | str | Specify size of the partition in B, KB, KiB, MB, MiB, GB, GiB, TB or TiB. |
@@ -36,7 +36,7 @@ playbook.yml:
     - name: Create a new partition
       hosts: windows
       roles:
-        - role: fujitsu.primergy.win_data_drive
+        - role: fsas_temp_ns.primergy.win_data_drive
           vars:
             drive_letter: D
             disk_number: 0
@@ -46,7 +46,7 @@ playbook.yml:
     - name: Resize a partition
       hosts: windows
       roles:
-        - role: fujitsu.primergy.win_data_drive
+        - role: fsas_temp_ns.primergy.win_data_drive
           vars:
             drive_letter: D
             partition_size: 100 GB
@@ -57,7 +57,7 @@ playbook.yml:
       hosts: windows
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.win_data_drive
+        - role: fsas_temp_ns.primergy.win_data_drive
           vars:
             drive_letter: D
             op: "remove"

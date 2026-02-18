@@ -1,5 +1,5 @@
 ---
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook to boot an ISO image on a PRIMERGY server via iRMC
@@ -35,7 +35,7 @@
 
   tasks:
     - name: Get system power state
-      fujitsu.primergy.irmc_powerstate:
+      fsas_temp_ns.primergy.irmc_powerstate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -50,7 +50,7 @@
       when: powerstate.power_state == "On"
 
     - name: Disconnect Virtual CD
-      fujitsu.primergy.irmc_connectvm:
+      fsas_temp_ns.primergy.irmc_connectvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -59,7 +59,7 @@
       delegate_to: localhost
 
     - name: Set Virtual Media Data
-      fujitsu.primergy.irmc_setvm:
+      fsas_temp_ns.primergy.irmc_setvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -76,7 +76,7 @@
       delegate_to: localhost
 
     - name: Connect Virtual CD
-      fujitsu.primergy.irmc_connectvm:
+      fsas_temp_ns.primergy.irmc_connectvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -85,7 +85,7 @@
       delegate_to: localhost
 
     - name: Set Bios to next boot from Virtual CD
-      fujitsu.primergy.irmc_setnextboot:
+      fsas_temp_ns.primergy.irmc_setnextboot:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -96,7 +96,7 @@
       delegate_to: localhost
 
     - name: Get Virtual Media data
-      fujitsu.primergy.irmc_getvm:
+      fsas_temp_ns.primergy.irmc_getvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -109,7 +109,7 @@
         msg: "{{ vmdata.virtual_media_data }}"
 
     - name: PowerOn System
-      fujitsu.primergy.irmc_powerstate:
+      fsas_temp_ns.primergy.irmc_powerstate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

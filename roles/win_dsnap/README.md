@@ -4,7 +4,7 @@ win_dsnap
 Set up DSNAP.
 
 Note:  
-DSNAP is software for collecting information of failure analisys in a batch.
+DSNAP is software for collecting information of failure analysis in a batch.
 
 Note:  
 You must download ServerView Management and Serviceability DVD to use this role.
@@ -32,10 +32,10 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `cpu_arch` | false | `x64` | `x64`, <br> `x86` | str | Architecture of your Windows Server. <br> This parameter is used when the ISO file is selected for `filename`. |
 | `language` | false | `English` | `English`, <br> `Japanese` | str | Language of DSNAP. <br> This parameter is used when the ISO file is selected for `filename`. |
-| `path` | true | | | str | Path to the EXE or ISO file placed on the Ansible control node. <br> Example: <ul> <li>/path/to/dsnapfile/dsnap.exe</li> <li>/path/to/dsnapfile/SVS15.24.06.03.iso</li> </ul>  |
+| `path` | true | | | str | Path to the EXE or ISO file placed on the Ansible control node. <br> Example: <ul> <li>/path/to/dsnapfile/dsnap.exe</li> <li>/path/to/dsnapfile/SVS15.24.06.03.iso</li> </ul> |
 
 Dependencies
 ------------
@@ -49,7 +49,7 @@ Example Playbook
     - name: Set up DSNAP
       hosts: windows
       roles:
-        - role: fujitsu.primergy.win_dsnap
+        - role: fsas_temp_ns.primergy.win_dsnap
           vars:
             language: Japanese
             path: /path/to/dsnapfile/SVS15.24.06.03.iso

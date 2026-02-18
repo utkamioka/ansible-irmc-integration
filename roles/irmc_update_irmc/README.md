@@ -33,7 +33,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `irmc_firmware_path` | false | | | str | Path to the firmware.<br/>Specified as absolute path or relative from the playbook.<br/>If `tftp_server` is specified, it is specified as a path from the root of the TFTP server.<br/>If `irmc_firmware_path_mapping` does not have a key corresponding to the model name, this value is applied. |
 | `irmc_firmware_path_mapping` | false | | | dict | Mapping of paths to the firmware with the model name of the target node (e.g. `"PRIMERGY_RX1330_M6S"`) as key.<br/>The specification of the path description is the same as the parameter `irmc_firmware_path`.<br/>If there is no key corresponding to the model name and the parameter `irmc_firmware_path` is not specified, an error is raised. |
 | `tftp_server` | false(*2) | | | str | IP address or hostname of the TFTP server from which to download the firmware.<br/>If not specified, the path is assumed to be the file system of the Ansible control node. |
@@ -57,9 +57,9 @@ Example Playbook
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_update_irmc
+        - role: fsas_temp_ns.primergy.irmc_update_irmc
           vars:
-            irmc_firmware_path: "/any/where/firm/RX1330_M6/irmc/FTS_PRIMERGYRX1330M6iRMC253SSDR227.BIN"
+            irmc_firmware_path: "/any/where/firm/RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
             destination: low
 
 To update with specified firmware via tftp server:
@@ -69,10 +69,10 @@ To update with specified firmware via tftp server:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_update_irmc
+        - role: fsas_temp_ns.primergy.irmc_update_irmc
           vars:
             tftp_server: 192.0.2.1
-            irmc_firmware_path: "RX1330_M6/irmc/FTS_PRIMERGYRX1330M6iRMC253SSDR227.BIN"
+            irmc_firmware_path: "RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
             destination: low
 
 When updating with firmware for each model name via a TFTP server:
@@ -82,12 +82,12 @@ When updating with firmware for each model name via a TFTP server:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_update_irmc
+        - role: fsas_temp_ns.primergy.irmc_update_irmc
           vars:
             tftp_server: 192.0.2.1
             irmc_firmware_path_mapping:
-              PRIMERGY_RX1330_M5R: "RX1330_M5R/irmc/FTS_PRIMERGYRX1330M5iRMC124SSDR341.BIN"
-              PRIMERGY_RX1330_M6S: "RX1330_M6/irmc/FTS_PRIMERGYRX1330M6iRMC253SSDR227.BIN"
+              PRIMERGY_RX1330_M5R: "RX1330_M5R/irmc/PRIMERGYRX1330M5iRMC124SSDR341.BIN"
+              PRIMERGY_RX1330_M6S: "RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
             destination: high
 
 inventory.ini:
@@ -97,7 +97,7 @@ inventory.ini:
     192.0.2.102 irmc_user=admin irmc_password=SECRET
 
     [iRMC_group:vars]
-    validate_certificate=false  # When iRMC deivce is operated without a server certificate
+    validate_certificate=false  # When iRMC device is operated without a server certificate
 
 License
 -------
@@ -107,4 +107,4 @@ GPL-3.0-or-later
 Author Information
 ------------------
 
-- Yutaka Kamioka <yutaka.kamioka@jp.fujitsu.com>
+- Yutaka Kamioka <yutaka.kamioka@fujitsu.com>

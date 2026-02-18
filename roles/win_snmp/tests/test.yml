@@ -2,7 +2,7 @@
 - name: Configure the SNMP Service
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_snmp
+    - role: fsas_temp_ns.primergy.win_snmp
       vars:
         agent:
           contact: MyContact

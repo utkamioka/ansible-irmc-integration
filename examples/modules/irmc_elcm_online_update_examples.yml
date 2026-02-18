@@ -1,5 +1,5 @@
 ---
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook for module 'irmc_elcm_online_update'
@@ -24,7 +24,7 @@
   tasks:
     # Generate eLCM Online Update List
     - name: Generate eLCM Online Update List
-      fujitsu.primergy.irmc_elcm_online_update:
+      fsas_temp_ns.primergy.irmc_elcm_online_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -36,7 +36,7 @@
 
     # Read eLCM Online Update List
     - name: Read eLCM Online Update List
-      fujitsu.primergy.irmc_elcm_online_update:
+      fsas_temp_ns.primergy.irmc_elcm_online_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -46,7 +46,7 @@
 
     # De-select entry in eLCM Online Update List
     - name: De-select entry in eLCM Online Update List
-      fujitsu.primergy.irmc_elcm_online_update:
+      fsas_temp_ns.primergy.irmc_elcm_online_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -60,7 +60,7 @@
 
     # Execute eLCM Online Update
     - name: Execute eLCM Online Update
-      fujitsu.primergy.irmc_elcm_online_update:
+      fsas_temp_ns.primergy.irmc_elcm_online_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -70,7 +70,7 @@
 
     # Delete eLCM Online Update List
     - name: Delete eLCM Online Update List
-      fujitsu.primergy.irmc_elcm_online_update:
+      fsas_temp_ns.primergy.irmc_elcm_online_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

@@ -1,4 +1,4 @@
-# Copyright 2018-2025 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """iRMC Redfish APIクライアント
@@ -12,15 +12,16 @@ __metaclass__ = type
 
 import json
 import time
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import Dict, Any, Optional, Tuple, Mapping, TYPE_CHECKING
 
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_session_information import SessionInformation
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_session_information import SessionInformation
 
 # 型チェック時のみインポート（型ヒント専用、起動速度最適化のため）
 # LoggerはProtocolで実行時にインスタンス化されないため、mypyなどの型チェッカーでのみ必要
 if TYPE_CHECKING:
-    from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import Logger
+    from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import Logger
 
 try:
     import requests
@@ -37,41 +38,50 @@ except ImportError:
     HAS_REQUESTS = False
 
 
+@dataclass(frozen=True)
+class Request:
+    """HTTPリクエスト情報を保持するクラスです。
+
+    このクラスは、HTTPリクエストのメソッドとパスを保持し、
+    Responseオブジェクトと関連付けられます。
+
+    引数:
+        method - HTTPメソッド（GET, POST, PATCH等）
+        path - リクエストパス（例: '/redfish/v1/Systems/0'）
+    """
+
+    method: str = ''
+    path: str = ''
+
+
+@dataclass(frozen=True)
 class Response:
     """HTTPレスポンスを表すクラスです。
 
-    このクラスは、HTTPレスポンスの内容を保持し、属性アクセスとタプル展開の
-    両方の方法でアクセス可能にします。
+    このクラスは、HTTPレスポンスの内容とリクエスト情報を保持し、
+    属性アクセスとタプル展開の両方の方法でアクセス可能にします。
 
     引数:
         body - レスポンスボディ（dictまたはstr）
         headers - レスポンスヘッダー（CaseInsensitiveDict）
         status - HTTPステータスコード（int）
+        request - リクエスト情報（Request、オプション）
     """
 
-    def __init__(self, body: Any, headers: CaseInsensitiveDict[str, str], status: int):
-        """Responseオブジェクトを初期化します。
-
-        引数:
-            body - レスポンスボディ
-            headers - レスポンスヘッダー（CaseInsensitiveDict）
-            status - HTTPステータスコード
-        """
-        self.body = body
-        self.headers = headers
-        self.status = status
+    body: Any
+    headers: CaseInsensitiveDict[str, str]
+    status: int
+    request: Request = field(default_factory=Request)
 
     def __iter__(self):
         """タプル展開を可能にします。
 
         使用例:
             body, headers, status = response
+
+        注意: requestはタプル展開には含まれません（後方互換性維持）
         """
         return iter((self.body, self.headers, self.status))
-
-    def __repr__(self):
-        """文字列表現を返します。"""
-        return f'Response(status={self.status}, body={self.body!r})'
 
 
 def _parse_irmc_version_from_server_header(server_header: Optional[str]) -> Optional[str]:
@@ -117,6 +127,7 @@ class iRMC:
         port - ポート番号（デフォルト: 443）
         validate_certs - SSL証明書の検証を行うか（デフォルト: True）
         logger - ログ出力用のLoggerインスタンス（オプション）
+        raise_on_error - エラー時に例外を送出するか（デフォルト: False、既存動作維持）
     """
 
     def __init__(
@@ -127,6 +138,7 @@ class iRMC:
         port: int = 443,
         validate_certs: bool = True,
         logger: Optional['Logger'] = None,
+        raise_on_error: bool = False,
     ):
         """iRMCクライアントを初期化します。
 
@@ -137,6 +149,7 @@ class iRMC:
             port - ポート番号（デフォルト: 443）
             validate_certs - SSL証明書の検証（デフォルト: True）
             logger - ログ出力用のLoggerインスタンス（オプション）
+            raise_on_error - エラー時に例外を送出するか（デフォルト: False）
         """
         if not HAS_REQUESTS:
             raise ImportError("Python 'requests' module is required")
@@ -147,6 +160,7 @@ class iRMC:
         self.port = port
         self.validate_certs = validate_certs
         self.logger = logger
+        self.raise_on_error = raise_on_error
         self._cache: Dict[Tuple, Response] = {}
         self._session: Optional[requests.Session] = None
 
@@ -208,22 +222,26 @@ class iRMC:
         戻り値:
             str - 完全なURL（https://ipaddress:port/path形式）
         """
-        # pathの先頭の/を除去（あれば）
-        path = path.lstrip('/')
-        return f'https://{self.ipaddress}:{self.port}/{path}'
+        # パスを正規化（'/foo/bar'形式になる）
+        normalized = self._normalize_path(path)
+        # normalizedは '/foo/bar' 形式なので、そのまま結合
+        return f'https://{self.ipaddress}:{self.port}{normalized}'
 
     def _normalize_path(self, path: str) -> str:
         """パスを正規化します。
 
-        末尾のスラッシュを除去します。
+        先頭にスラッシュを追加し、末尾のスラッシュを除去します。
 
         引数:
             path - リクエストパス
 
         戻り値:
-            str - 正規化されたパス
+            str - 正規化されたパス（'/foo/bar'形式）
         """
-        return path.rstrip('/')
+        # 先頭と末尾のスラッシュを除去
+        normalized = path.strip('/')
+        # 先頭にスラッシュを追加
+        return f'/{normalized}'
 
     def _make_cache_key(
         self, path: str, headers: Optional[Mapping[str, str]]
@@ -268,6 +286,9 @@ class iRMC:
         戻り値:
             Response - レスポンスオブジェクト
         """
+        # パスを正規化（以降はこの正規化されたpathを使用）
+        path = self._normalize_path(path)
+
         url = self._build_url(path)
         session = self._get_session()
 
@@ -340,6 +361,7 @@ class iRMC:
                 body=response_body,
                 headers=CaseInsensitiveDict(response.headers),
                 status=response.status_code,
+                request=Request(method, path),
             )
 
         except Exception as e:
@@ -349,8 +371,16 @@ class iRMC:
                 f'iRMC Request Error: {method} {path} -> '
                 f'Error: {str(e)}, Time: {elapsed_time:.3f}s'
             )
-            # エラー時もResponseオブジェクトを返す
-            return Response(body=str(e), headers=CaseInsensitiveDict(), status=99)
+            # raise_on_errorがTrueの場合は例外を再送出
+            if self.raise_on_error:
+                raise
+            # エラー時もResponseオブジェクトを返す（irmc.py::irmc_redfish_get()との互換性維持）
+            return Response(
+                body=str(e),
+                headers=CaseInsensitiveDict(),
+                status=99,
+                request=Request(method, path),
+            )
 
     def get(
         self,
@@ -373,18 +403,21 @@ class iRMC:
         戻り値:
             Response - レスポンスオブジェクト
         """
+        # pathを正規化（以降は正規化されたpathを使用）
+        normalized_path = self._normalize_path(path)
+
         # キャッシュキーの生成
         cache_key = None
         if use_cache:
-            cache_key = self._make_cache_key(path, headers)
+            cache_key = self._make_cache_key(normalized_path, headers)
 
         # キャッシュから取得
         if cache_key is not None and cache_key in self._cache:
-            self._debug(f'iRMC Cache Hit: GET {path}')
+            self._debug(f'iRMC Cache Hit: GET {normalized_path}')
             return self._cache[cache_key]
 
         # リクエスト送信
-        response = self._request('GET', path, headers=headers)
+        response = self._request('GET', normalized_path, headers=headers)
 
         # 成功時（200）のみキャッシュに保存
         if cache_key is not None and response.status == HTTPStatus.OK:
@@ -513,12 +546,12 @@ class iRMC:
                 vendor = fallback_value
 
             return vendor
-        else:
-            self._warn(
-                f'iRMC Vendor detection failed (status={response.status}), '
-                'will retry on next access.'
-            )
-            return None
+
+        self._warn(
+            f'iRMC Vendor detection failed (status={response.status}), '
+            'will retry on next access.'
+        )
+        return None
 
     @property
     def oem_prefix(self) -> Optional[str]:
@@ -544,10 +577,9 @@ class iRMC:
         vendor = self.vendor
         if vendor == 'ts_fujitsu':
             return 'FTS'
-        elif vendor == 'Fsas':
+        if vendor == 'Fsas':
             return 'Fsas'
-        else:
-            return None
+        return None
 
     @property
     def version(self) -> Optional[str]:
@@ -588,12 +620,12 @@ class iRMC:
                     self._debug('Server header not found in /redfish/v1 response')
 
             return version
-        else:
-            self._warn(
-                f'iRMC Server Version detection failed (status={response.status}), '
-                'will retry on next access.'
-            )
-            return None
+
+        self._warn(
+            f'iRMC Server Version detection failed (status={response.status}), '
+            'will retry on next access.'
+        )
+        return None
 
     @property
     def sessions(self) -> SessionInformation:

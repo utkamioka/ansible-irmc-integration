@@ -19,7 +19,7 @@
   ansible.windows.win_shell: (Get-WinSystemLocale).Name
   register: locale_result
 
-- name: Set "FUJITSU SVUSER" group description based on system locale
+- name: Set "FSAS SVUSER" group description based on system locale
   ansible.builtin.set_fact:
     group_description: >
       {%- if 'ja-JP' in locale_result.stdout -%}
@@ -39,16 +39,16 @@
     msg: "Reboot initiated by Ansible after SNMP Service installation."
   when: snmp_result.reboot_required
 
-- name: Create local group "FUJITSU SVUSER"
+- name: Create local group "FSAS SVUSER"
   ansible.windows.win_group:
-    name: "FUJITSU SVUSER"
+    name: "FSAS SVUSER"
     description: "{{ group_description }}"
     scope: Local
     state: present
 
-- name: Add or Remove user "Administrator" to "FUJITSU SVUSER" group
+- name: Add or Remove user "Administrator" to "FSAS SVUSER" group
   ansible.windows.win_group_membership:
-    name: "FUJITSU SVUSER"
+    name: "FSAS SVUSER"
     members: Administrator
     state: "{{ 'present' if serverview_agents_allow_administrator_login else 'absent' }}"
 
@@ -59,7 +59,7 @@
     description: Managing ServerView Agents
     groups:
       - Administrators
-      - "FUJITSU SVUSER"
+      - "FSAS SVUSER"
     password_never_expires: true
     state: present
 

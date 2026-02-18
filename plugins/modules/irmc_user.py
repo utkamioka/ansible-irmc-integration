@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import annotations
 
@@ -203,15 +203,12 @@ options:
         description: Define alert level for other.
         required:    false
         choices:     ['None', 'Critical', 'Warning', 'All']
-
-notes:
-    - See https://sp.ts.fujitsu.com/dmsp/Publications/public/dp-svs-configuration-space-values-en.pdf
 '''
 
 EXAMPLES = r'''
 # Create new user account
 - name: "Create new user account"
-  fujitsu.primergy.irmc_user:
+  fsas_temp_ns.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -229,7 +226,7 @@ EXAMPLES = r'''
     - get
   block:
     - name: Get user account data
-      fujitsu.primergy.irmc_user:
+      fsas_temp_ns.primergy.irmc_user:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -244,7 +241,7 @@ EXAMPLES = r'''
 
 # Change user account data
 - name: Change user account data
-  fujitsu.primergy.irmc_user:
+  fsas_temp_ns.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -258,7 +255,7 @@ EXAMPLES = r'''
 
 # Delete user account
 - name: Delete user account
-  fujitsu.primergy.irmc_user:
+  fsas_temp_ns.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -273,7 +270,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description: >
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
 
         For other commands ("create", "change", etc.),
         the default return value of Ansible (changed, failed, etc.) is returned.
@@ -466,7 +463,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
     add_scci_command,
     get_key_for_value,
     get_scciresult,

@@ -15,7 +15,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `password` | false | | | str | User account password. |
 | `description` | false | | | str | User account desciption. |
 | `access.redfish.enable` | false | | | bool | User may use iRMC Redfish interface. |
@@ -61,7 +61,7 @@ playbook.yml:
       hosts: iRMC_group
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_account_admin
+        - role: fsas_temp_ns.primergy.irmc_account_admin
           vars:
             password: P@ssw0rd
             description: my description

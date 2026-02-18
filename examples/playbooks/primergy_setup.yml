@@ -8,7 +8,7 @@
     # ローカルユーザアカウント設定
     - name: Configure admin account
       ansible.builtin.include_role:
-        name: fujitsu.primergy.irmc_account_admin
+        name: fsas_temp_ns.primergy.irmc_account_admin
       vars:
         description: my description
         access:
@@ -26,7 +26,7 @@
     # SSL証明書・CA証明書の登録
     - name: Register SSL certificate and CA certificate
       ansible.builtin.include_role:
-        name: fujitsu.primergy.irmc_set_certificate
+        name: fsas_temp_ns.primergy.irmc_set_certificate
       vars:
         ssl_private_key_path: "/path/to/certs/server.key"
         ssl_cert_path: "/path/to/certs/server.crt"
@@ -35,7 +35,7 @@
     # SNMP設定
     - name: Set SNMP
       ansible.builtin.include_role:
-        name: fujitsu.primergy.irmc_snmp
+        name: fsas_temp_ns.primergy.irmc_snmp
       vars:
         snmp:
           enabled: true
@@ -51,7 +51,7 @@
     # Eメール警告送信設定
     - name: Configure E-mail Alerting
       ansible.builtin.include_role:
-        name: fujitsu.primergy.irmc_email_alert
+        name: fsas_temp_ns.primergy.irmc_email_alert
       vars:
         email_alert:
           enabled: true
@@ -70,7 +70,7 @@
     # 時刻同期設定
     - name: Configure time syncronization
       ansible.builtin.include_role:
-        name: fujitsu.primergy.irmc_set_ntp
+        name: fsas_temp_ns.primergy.irmc_set_ntp
       vars:
         ntp_server_primary: ntp1.mycompany.example.com
         ntp_server_secondary: ntp2.mycompany.example.com
@@ -81,7 +81,7 @@
     # ライセンス設定
     - name: Register and activate license keys
       ansible.builtin.include_role:
-        name: fujitsu.primergy.irmc_set_license
+        name: fsas_temp_ns.primergy.irmc_set_license
       # NOTE: The 'license_keys' variable should be defined in the 'host_vars' file for each host.
       # Example:
       #   host_vars/<ipaddress-of-irmc>.yml:
@@ -93,7 +93,7 @@
   post_tasks:
     # iRMC経由でPRIMERGYの電源オン
     - name: Turn ON the server
-      fujitsu.primergy.irmc_powerstate:
+      fsas_temp_ns.primergy.irmc_powerstate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -118,7 +118,7 @@
     # DNS設定
     - name: Set DNS
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_dns
+        name: fsas_temp_ns.primergy.win_dns
       vars:
         adapter_names: "*"
         ipv4_addresses:
@@ -129,7 +129,7 @@
     # データドライブ割り当て
     - name: Assign data drive
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_data_drive
+        name: fsas_temp_ns.primergy.win_data_drive
       vars:
         drive_letter: D
         disk_number: 0
@@ -138,7 +138,7 @@
     # 組織名と名前の設定
     - name: Set organization and owner
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_organization_owner
+        name: fsas_temp_ns.primergy.win_organization_owner
       vars:
         description: This is my Windows Server.
         organization: MyCompany Inc.
@@ -147,14 +147,14 @@
     # ホスト名変更
     - name: Set hostname
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_hostname
+        name: fsas_temp_ns.primergy.win_hostname
       vars:
         hostname: myhostname
 
     # 言語・地域・タイムゾーン設定
     - name: Set locale, region and timezone
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_locale
+        name: fsas_temp_ns.primergy.win_locale
       vars:
         language: ja-JP
         location: 122
@@ -163,7 +163,7 @@
     # Windowsドメインへの参加
     - name: Join windows domain
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_set_membership
+        name: fsas_temp_ns.primergy.win_set_membership
       vars:
         state: domain
         domain: ansible.mycompany.local
@@ -173,7 +173,7 @@
     # SNMP設定
     - name: Set SNMP
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_snmp
+        name: fsas_temp_ns.primergy.win_snmp
       vars:
         agent:
           contact: MyContact
@@ -190,14 +190,14 @@
     # リモートデスクトップの有効化
     - name: Enable Remote Desktop
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_set_rdp
+        name: fsas_temp_ns.primergy.win_set_rdp
       vars:
         enabled: true
 
     # ServerView Agentsのセットアップ
     - name: Setup ServerView Agents
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_serverview_agents
+        name: fsas_temp_ns.primergy.win_serverview_agents
       vars:
         password: User001
         installer: "/path/to/installer/ServerViewAgents_Win_x64.exe"
@@ -205,7 +205,7 @@
     # ServerView RAID Managerのセットアップ
     - name: Setup ServerView RAID Manager
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_serverview_raidmanager
+        name: fsas_temp_ns.primergy.win_serverview_raidmanager
       vars:
         password: User002
         installer: "/path/to/installer/ServerView_RAID_x64.exe"
@@ -214,7 +214,7 @@
     # DSNAPのセットアップ
     - name: Setup DSNAP
       ansible.builtin.include_role:
-        name: fujitsu.primergy.win_dsnap
+        name: fsas_temp_ns.primergy.win_dsnap
       vars:
         language: Japanese
         path: "/path/to/iso/SVS15.24.06.03.iso"

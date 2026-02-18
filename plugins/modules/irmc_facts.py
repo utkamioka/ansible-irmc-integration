@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -67,7 +67,7 @@ EXAMPLES = r'''
 # Get basic server and iRMC facts
 - block:
   - name: Get basic server and iRMC facts
-    fujitsu.primergy.irmc_facts:
+    fsas_temp_ns.primergy.irmc_facts:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -83,7 +83,7 @@ EXAMPLES = r'''
 
 # Set server asset tag
 - name: Set server asset tag
-  fujitsu.primergy.irmc_facts:
+  fsas_temp_ns.primergy.irmc_facts:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -98,7 +98,7 @@ EXAMPLES = r'''
 RETURN = r'''
 details:
     description:
-        If command is “get”, the following values are returned.
+        If command is "get", the following values are returned.
 
         If command is "set", the default return value of Ansible (changed, failed, etc.) is returned.
 
@@ -229,7 +229,7 @@ details:
             sample:
                 {
                     "dnumber": "D3289",
-                    "manufacturer": "FUJITSU",
+                    "manufacturer": "Fsas Technologies",
                     "part_number": "S26361-D3289-D13",
                     "serial_number": "44617895",
                     "version": "WGS04 GS50"
@@ -254,7 +254,7 @@ details:
                     "idled_state": "Off",
                     "ip": 101.102.103.104,
                     "location": "Server Room",
-                    "manufacturer": "FUJITSU",
+                    "manufacturer": "Fsas Technologies",
                     "memory_size": "24 GB",
                     "model": "PRIMERGY RX2540 M1",
                     "part_number": "ABN:K1495-VXXX-XX",
@@ -268,9 +268,9 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_facts(module):

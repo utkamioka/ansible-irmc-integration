@@ -1,6 +1,6 @@
 [project]
-name = "fujitsu-ansible-irmc-integration"
-version = "2.1.0"
+name = "ansible-irmc-integration"
+version = "3.0.0"
 description = "Ansible collection for manage PRIMERGY servers via iRMC"
 authors = [
     {name = "Shinya Hamano", email = "hamano.shinya@fujitsu.com"},
@@ -8,14 +8,14 @@ authors = [
     {name = "Tomohisa Nakai", email = "nakai.tomohisa@fujitsu.com"},
 ]
 dependencies = [
-    "ansible>=8.7.0",
+    "ansible>=10.7.0",
     "requests>=2.32.5",
-    "urllib3>=2.5.0",
+    "urllib3>=2.6.3",
     "requests-toolbelt>=1.0.0",
     "pywinrm>=0.5.0",
 ]
 readme = "README.md"
-license = {file = "docs/LICENSE.md"}
+license = {file = "LICENSE.md"}
 requires-python = ">= 3.10"
 
 [build-system]

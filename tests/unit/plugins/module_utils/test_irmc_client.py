@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """iRMCクライアントクラスのユニットテスト"""
@@ -9,16 +9,15 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import pytest
 from unittest.mock import Mock, patch, MagicMock
 from requests.structures import CaseInsensitiveDict
 
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_client import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import (
     iRMC,
     Response,
     _parse_irmc_version_from_server_header,
 )
-from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import MockLogger
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import MockLogger
 
 
 class TestResponse:
@@ -43,12 +42,6 @@ class TestResponse:
         assert body == {'data': 'test'}
         assert headers == {'Content-Type': 'application/json'}
         assert status == 200
-
-    def test_response_repr(self):
-        """Responseオブジェクトの文字列表現"""
-        response = Response({'data': 'test'}, {}, 200)
-        assert 'Response' in repr(response)
-        assert 'status=200' in repr(response)
 
 
 class TestIRMCInit:
@@ -86,10 +79,12 @@ class TestIRMCInit:
         assert url == 'https://192.0.2.1:443/redfish/v1'
 
     def test_normalize_path(self):
-        """パスの正規化"""
+        """パスの正規化（先頭にスラッシュを追加、末尾のスラッシュを削除）"""
         irmc = iRMC('192.0.2.1', 'admin', 'password')
         assert irmc._normalize_path('/redfish/v1/') == '/redfish/v1'
         assert irmc._normalize_path('/redfish/v1') == '/redfish/v1'
+        assert irmc._normalize_path('redfish/v1/') == '/redfish/v1'
+        assert irmc._normalize_path('redfish/v1') == '/redfish/v1'
 
 
 class TestIRMCCacheKey:
@@ -109,11 +104,16 @@ class TestIRMCCacheKey:
         assert key is None
 
     def test_make_cache_key_normalizes_trailing_slash(self):
-        """末尾のスラッシュが正規化される"""
+        """先頭と末尾のスラッシュが正規化される"""
         irmc = iRMC('192.0.2.1', 'admin', 'password')
         key1 = irmc._make_cache_key('/redfish/v1/', None)
         key2 = irmc._make_cache_key('/redfish/v1', None)
-        assert key1 == key2
+        key3 = irmc._make_cache_key('redfish/v1', None)
+        key4 = irmc._make_cache_key('redfish/v1/', None)
+        # すべてのパターンで同じキャッシュキーになる
+        assert key1 == key2 == key3 == key4
+        # 正規化後のパスは '/redfish/v1'
+        assert key1[0] == '/redfish/v1'
 
     def test_make_cache_key_with_headers(self):
         """ヘッダーを含むキャッシュキー"""

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 DOCUMENTATION = '''
 ---
@@ -46,7 +46,7 @@ EXAMPLES = '''
 # Compare iRMC profiles against each other via json files
 - block:
   - name: Compare iRMC profiles by file
-    fujitsu.primergy.irmc_compare_profiles:
+    fsas_temp_ns.primergy.irmc_compare_profiles:
       profile_path1: "{{ profile1_path }}"
       profile_path2: "{{ profile2_path }}"
     delegate_to: localhost
@@ -64,7 +64,7 @@ EXAMPLES = '''
 # Compare iRMC profiles against each other via json string
 - block:
   - name: Compare iRMC profiles by json
-    fujitsu.primergy.irmc_compare_profiles:
+    fsas_temp_ns.primergy.irmc_compare_profiles:
       profile_json1: "{{ profile_json1 }}"
       profile_json2: "{{ profile_json2 }}"
     delegate_to: localhost
@@ -97,7 +97,7 @@ import json
 from builtins import str
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc_utils import compare_irmc_profile
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_utils import compare_irmc_profile
 
 
 def irmc_compare_profiles(module):

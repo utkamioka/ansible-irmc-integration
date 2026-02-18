@@ -5,22 +5,22 @@
   gather_facts: false
   roles:
     # # **DOES NOT WORK AS EXPECTED** (See README.md for more details)
-    # - role: fujitsu.primergy.irmc_update_irmc
+    # - role: fsas_temp_ns.primergy.irmc_update_irmc
     #   vars:
-    #     irmc_firmware_path: "/any/where/firm/RX1330_M6/irmc/FTS_PRIMERGYRX1330M6iRMC253SSDR227.BIN"
+    #     irmc_firmware_path: "/any/where/firm/RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
     #     destination: 1  # 1 is same as "low"
 
-    - role: fujitsu.primergy.irmc_update_irmc
+    - role: fsas_temp_ns.primergy.irmc_update_irmc
       vars:
         tftp_server: 192.0.2.1
-        irmc_firmware_path: "RX1330_M6/irmc/FTS_PRIMERGYRX1330M6iRMC253SSDR227.BIN"
+        irmc_firmware_path: "RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
         destination: 2  # 2 is same as "high"
 
-    # - role: fujitsu.primergy.irmc_update_irmc
+    # - role: fsas_temp_ns.primergy.irmc_update_irmc
     #   vars:
     #     tftp_server: 192.0.2.1
     #     irmc_firmware_path_mapping:
-    #       PRIMERGY_RX1330_M5R: "RX1330_M5R/irmc/FTS_PRIMERGYRX1330M5iRMC124SSDR341.BIN"
-    #       PRIMERGY_RX1330_M6S: "RX1330_M6/irmc/FTS_PRIMERGYRX1330M6iRMC253SSDR227.BIN"
+    #       PRIMERGY_RX1330_M5R: "RX1330_M5R/irmc/PRIMERGYRX1330M5iRMC124SSDR341.BIN"
+    #       PRIMERGY_RX1330_M6S: "RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
     #     destination: high
     #     timeout: 900  # 900seconds (=15minutes)

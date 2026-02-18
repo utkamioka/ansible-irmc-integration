@@ -2,7 +2,7 @@
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/fujitsu-ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
 
 ## 1. Introduction
 
@@ -30,7 +30,7 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
 - Although it can run on Windows Subsystem for Linux (WSL), this is not officially supported and is not recommended for production systems. For details, refer to:  
   <https://docs.ansible.com/ansible/latest/os_guide/intro_windows.html#using-windows-as-the-control-node>
 - This project has two Git repositories:
-  1. **Public**: <https://github.com/fujitsu/fujitsu-ansible-irmc-integration>
+  1. **Public**: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration>
   2. **Internal development**: URL not disclosed
 
   If you participate in development as an employee of our company,
@@ -43,20 +43,20 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
 1. The directory structure is critical for running the project as an Ansible collection. Clone the repository as follows:
 
    ```shell
-   $ mkdir -p ~/git/ansible_collections/fujitsu && cd $_
-   $ git clone https://github.com/fujitsu/fujitsu-ansible-irmc-integration.git primergy && cd $_
+   $ mkdir -p ~/git/ansible_collections/fsas_temp_ns && cd $_
+   $ git clone https://github.com/{{ NEW_ORG }}/ansible-irmc-integration.git primergy && cd $_
    $ pwd
-   # => ~/git/ansible_collections/fujitsu/primergy
+   # => ~/git/ansible_collections/fsas_temp_ns/primergy
    ```
 
-   The base path `~/git` can be customized, but the repository must be cloned into the `ansible_collections/fujitsu/primergy` directory hierarchy.
+   The base path `~/git` can be customized, but the repository must be cloned into the `ansible_collections/fsas_temp_ns/primergy` directory hierarchy.
 
 2. Set up the Python and Ansible execution environment. This project uses [Rye](https://rye.astral.sh/) to manage Python environments. Install `rye` as described in <https://rye.astral.sh/guide/installation/>.
    Rye automatically downloads and sets up the Python interpreter, so there is no need to prepare a separate Python runtime environment.
 
    ```shell
    $ rye sync
-   Initializing new virtualenv in ~/git/ansible_collections/fujitsu/primergy/.venv
+   Initializing new virtualenv in ~/git/ansible_collections/fsas_temp_ns/primergy/.venv
    Python version: cpython@3.10.14
    (snipped)
    Done!
@@ -119,7 +119,7 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
    - Test the connection to the iRMC device:
 
      ```shell
-     $ ansible localhost -m fujitsu.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+     $ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
      localhost | SUCCESS => {
          "changed": false,
          "facts": {
@@ -245,7 +245,7 @@ The following coding standards are adopted to improve efficiency and code qualit
 ## 7. Documentation
 
 - User-facing documentation (manuals and Ansible runtime messages) must be written in English.
-- Documentation visible only to developers (this document and detailed comments in the code) may be written in Japanese.
+- Developer documentation and code comments should preferably be in English, but comprehensive documentation in your native language is better than incomplete English.
 
 ---
 

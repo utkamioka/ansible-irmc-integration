@@ -2,7 +2,7 @@
 - name: Remove a partition
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_data_drive
+    - role: fsas_temp_ns.primergy.win_data_drive
       vars:
         drive_letter: D
         op: "remove"

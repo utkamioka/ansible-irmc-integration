@@ -4,7 +4,7 @@
   connection: local
   gather_facts: false
   roles:
-    - role: fujitsu.primergy.irmc_set_certificate
+    - role: fsas_temp_ns.primergy.irmc_set_certificate
       vars:
         ssl_private_key_path: /path/to/sslprivatekey/server.key
         ssl_cert_path: /path/to/sslcert/server.crt

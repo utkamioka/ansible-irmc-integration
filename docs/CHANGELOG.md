@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-02-16
+
+### Changed
+
+- Rebranding support for Fsas Technologies Inc.:
+  - Changed Ansible collection namespace from `fujitsu.primergy` to `fsas_temp_ns.primergy`
+    - `fsas_temp_ns` will be replaced after securing official namespace
+  - Changed GitHub repository URL from `github.com/fujitsu/fujitsu-ansible-irmc-integration` to `github.com/{{ NEW_ORG }}/ansible-irmc-integration`
+    - `{{ NEW_ORG }}` will be replaced after securing official organization
+  - Updated external reference URLs, file names, document titles, and page numbers to latest versions
+  - Updated Ansible collection tags
+  - Updated Ansible version requirement: 8.7.0 to 10.7.0
+
 ## [2.1.0] - 2025-11-14
 
 ### Changed

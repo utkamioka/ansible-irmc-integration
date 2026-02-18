@@ -3,7 +3,7 @@
 **ご注意**：
 このドキュメントは、<https://galaxy.ansible.com/>上で閲覧する際に、
 レイアウトが崩れる場合があります。
-そのため[github.com](https://github.com/fujitsu/fujitsu-ansible-irmc-integration)
+そのため[github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration)
 上で閲覧することを推奨します。
 
 ## 1. はじめに
@@ -35,7 +35,7 @@
   詳細はこのURLを参照してください：
   <https://docs.ansible.com/ansible/latest/os_guide/intro_windows.html#using-windows-as-the-control-node>
 - このプロジェクトには二つのGitリポジトリがあります：
-  1. **公開用**: <https://github.com/fujitsu/fujitsu-ansible-irmc-integration>
+  1. **公開用**: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration>
   2. **社内開発用**: URL非公開
 
   当社社員として開発に参加する場合は「社内開発用」のGitリポジトリを使ってください。
@@ -48,14 +48,14 @@
    以下の方法でgitリポジトリをcloneしてください。
 
    ```shell
-   $ mkdir -p ~/git/ansible_collections/fujitsu && cd $_
-   $ git clone https://github.com/fujitsu/fujitsu-ansible-irmc-integration.git primergy && cd $_
+   $ mkdir -p ~/git/ansible_collections/fsas_temp_ns && cd $_
+   $ git clone https://github.com/{{ NEW_ORG }}/ansible-irmc-integration.git primergy && cd $_
    $ pwd
-   # => ~/git/ansible_collections/fujitsu/primergy
+   # => ~/git/ansible_collections/fsas_temp_ns/primergy
    ```
 
    `~/git`は任意のパスで構いませんが、
-   `ansible_collections/fujitsu/primergy`というディレクトリ階層でcloneされている必要があります。
+   `ansible_collections/fsas_temp_ns/primergy`というディレクトリ階層でcloneされている必要があります。
 
 2. PythonおよびAnsible実行環境の構築を行います。
    [Rye](https://rye.astral.sh/) でPythonプロジェクト環境を記述していますので、
@@ -65,7 +65,7 @@
 
    ```shell
    $ rye sync
-   Initializing new virtualenv in ~/git/ansible_collections/fujitsu/primergy/.venv
+   Initializing new virtualenv in ~/git/ansible_collections/fsas_temp_ns/primergy/.venv
    Python version: cpython@3.10.14
    （略）
    Done!  
@@ -134,7 +134,7 @@
    - iRMC機器への疎通テストをします：
 
      ```shell
-     $ ansible localhost -m fujitsu.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+     $ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
      localhost | SUCCESS => {
          "changed": false,
          "facts": {
@@ -268,7 +268,7 @@
 ## 7. ドキュメント
 
 - 利用者が目にすることになるドキュメントは英語（マニュアルやAnsible実行メッセージ）で記述してください。
-- 開発者のみが目にすることになるドキュメント（本書やコード中の詳細コメント）は日本語で記述してください。
+- 開発者向けドキュメントやコード中のコメントは英語が推奨ですが、不完全な英語よりもネイティブ言語での完全な記述を優先してください。
 
 ---
 

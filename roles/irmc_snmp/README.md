@@ -4,11 +4,15 @@ irmc_snmp
 Configure SNMP settings for iRMC devices.
 
 **Notes**:
-For more information, see P.159 "Simple Network Management Protocol (SNMP)" in "Fujitsu Software ServerView Suite iRMC S6 Web Interface 2.x".
-Documents can be downloaded from the link below:
+For more information, refer to the following documentation:
 
-- English version: <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=D3410FEF-70F5-4446-B8DC-B4FAD18F48A9>
-- Japanese version: <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=6B16AC97-2302-47F1-A14D-05DD26BFF27C>
+- **English**: "Simple Network Management Protocol (SNMP)" (P.168)
+  in "ServerView iRMC S6 Web Interface 3.x"  
+  <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=15E0B053-4BA8-4220-A93A-98DD15C46916>
+
+- **Japanese**: "SNMP" (P.188)
+  in "ServerView iRMC S6 Web インターフェイス 3.x"  
+  <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=05D99CB6-7159-4A3A-8AF6-E37537B114E8>
 
 Requirements
 ------------
@@ -19,7 +23,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `snmp.enabled` | false | | | bool | Enables/disables the SNMP service. |
 | `snmp.port` | false | | | int | Port on which the SNMP service is listening (normally UDP 161). |
 | `snmp.protocol` | false | | `All`, `V3only` | str | SNMP protocol version to be used. If "All" is specified, all SNMP protocol versions (SNMP v1/v2c/v3) are supported. |
@@ -27,10 +31,10 @@ Role Variables
 | `snmp_trap_destination.community_name` | false | | | str | Community name used for SNMP v1/v2 trap sending. |
 | `snmp_trap_destination.engine_id` | false | | | str | The Engine ID is used for sending SNMPv3 traps. |
 | `snmp_trap_destination.servers[].index` | true | | 0 to 6 | int | Forwarding of SNMP traps to up to seven SNMP servers is supported. |
-| `snmp_trap_destination.servers[].name` | true | | | str | DNS names or IP addresses of the servers that are configured as trap destinations.<br/> If the empty string is specified, the trap transmission will be disabled.|
+| `snmp_trap_destination.servers[].name` | true | | | str | DNS names or IP addresses of the servers that are configured as trap destinations. If the empty string is specified, the trap transmission will be disabled. |
 | `snmp_trap_destination.servers[].protocol` | true | | `SnmpV1`, `SnmpV2c`, `SnmpV3` (*1) | str | SNMP protocol version to be used. |
 
-*1: `SnmpV3` can only be specified if an SNMPv3 enabled account exists.
+- *1: `SnmpV3` can only be specified if an SNMPv3 enabled account exists.
 
 Dependencies
 ------------
@@ -46,7 +50,7 @@ playbook.yml:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_snmp
+        - role: fsas_temp_ns.primergy.irmc_snmp
           vars:
             snmp:
               enabled: true
@@ -80,4 +84,4 @@ GPL-3.0-or-later
 Author Information
 ------------------
 
-- Yutaka Kamioka <yutaka.kamioka@jp.fujitsu.com>
+- Yutaka Kamioka <yutaka.kamioka@fujitsu.com>

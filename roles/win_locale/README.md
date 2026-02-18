@@ -24,7 +24,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `language` | true | | | str | Language. <br/> A list of culture names to use is available from <https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/available-language-packs-for-windows>. |
 | `location` | true | | | str | Location. <br/> A list of GeoIDs you can use and what location it relates to is available from <https://msdn.microsoft.com/en-us/library/dd374073.aspx>. |
 | `timezone` | true | | | str | Timezone. <br/> A list of possible timezones is available from `tzutil.exe /l` and from <https://msdn.microsoft.com/en-us/library/ms912391.aspx>. |
@@ -41,7 +41,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fujitsu.primergy.win_locale
+        - role: fsas_temp_ns.primergy.win_locale
           vars:
             language: "ja-JP"
             location: "122"

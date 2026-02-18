@@ -4,11 +4,15 @@ irmc_email_alert
 Configure E-mail Alert settings for iRMC devices.
 
 **Notes**:
-For more information, see P.161 "E-mail Alerting" in "Fujitsu Software ServerView Suite iRMC S6 Web Interface 2.x".
-Documents can be downloaded from the link below:
+For more information, refer to the following documentation:
 
-- English version: <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=D3410FEF-70F5-4446-B8DC-B4FAD18F48A9>
-- Japanese version: <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=6B16AC97-2302-47F1-A14D-05DD26BFF27C>
+- **English**: "E-mail Alerting" (P.170)
+  in "ServerView iRMC S6 Web Interface 3.x"  
+  <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=15E0B053-4BA8-4220-A93A-98DD15C46916>
+
+- **Japanese**: "メール警告送信" (P.190)
+  in "ServerView iRMC S6 Web インターフェイス 3.x"  
+  <https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=05D99CB6-7159-4A3A-8AF6-E37537B114E8>
 
 Requirements
 ------------
@@ -19,7 +23,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `email_alert.enabled` | false | | | bool | Enable E-mail Alerting. |
 | `email_alert.retries` | false | | 0 to 7 (*1) | int | Number of SMTP retries. |
 | `email_alert.retry_delay` | false | | | int | Time (up to 255 in seconds) between SMTP retries. |
@@ -46,8 +50,9 @@ Role Variables
 - *1: No error occurs if an out-of-range value is specified.
   The error is displayed on the appropriate iRMC(GUI) parameter setting screen.
 
-**About E-mail formats**:
-The E-mail format for each user is configured in “iRMC Local User Accounts”.
+### About E-mail formats
+
+The E-mail format for each user is configured in "iRMC Local User Accounts".
 The following E-mail formats are supported:
 
 - Standard
@@ -70,7 +75,7 @@ playbook.yml:
       connection: local
       gather_facts: false
       roles:
-        - role: fujitsu.primergy.irmc_email_alert
+        - role: fsas_temp_ns.primergy.irmc_email_alert
           vars:
             email_alert:
               enabled: true
@@ -123,4 +128,4 @@ GPL-3.0-or-later
 Author Information
 ------------------
 
-- Yutaka Kamioka <yutaka.kamioka@jp.fujitsu.com>
+- Yutaka Kamioka <yutaka.kamioka@fujitsu.com>

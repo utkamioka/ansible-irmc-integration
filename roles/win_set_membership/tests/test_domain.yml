@@ -2,7 +2,7 @@
 - name: Join a domain
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_set_membership
+    - role: fsas_temp_ns.primergy.win_set_membership
       vars:
         state: domain
         domain: fti.test

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -67,7 +67,7 @@ EXAMPLES = r'''
 # List iRMC profiles
 - block:
   - name: List iRMC profiles
-    fujitsu.primergy.irmc_profiles:
+    fsas_temp_ns.primergy.irmc_profiles:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -84,7 +84,7 @@ EXAMPLES = r'''
 # Get specific profile
 - block:
   - name: Get specific profile
-    fujitsu.primergy.irmc_profiles:
+    fsas_temp_ns.primergy.irmc_profiles:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -101,7 +101,7 @@ EXAMPLES = r'''
 
 # Create profile
 - name: Create profile
-  fujitsu.primergy.irmc_profiles:
+  fsas_temp_ns.primergy.irmc_profiles:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -115,7 +115,7 @@ EXAMPLES = r'''
 
 # Delete profile
 - name: Delete profile
-  fujitsu.primergy.irmc_profiles:
+  fsas_temp_ns.primergy.irmc_profiles:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -128,7 +128,7 @@ EXAMPLES = r'''
 
 # Import profile
 - name: Import profile
-  fujitsu.primergy.irmc_profiles:
+  fsas_temp_ns.primergy.irmc_profiles:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -140,12 +140,12 @@ EXAMPLES = r'''
     - import_profile
 
 notes:
-    - See iRMC RESTful API BIOS1.09 - Spezification (https://support.ts.fujitsu.com/IndexDownload.asp?SoftwareGuid=C821591C-C441-43A8-8A39-CC36D37AB2A1)
+    - See "Fsas - Specification iRMC Restful BIOS1.12_IRMC1.11" (<https://support.ts.fujitsu.com/IndexDownload.asp?Softwareguid=34A6AA91-F241-4045-8492-6F1D921C8B57>)
 '''
 
 RETURN = r'''
 details_for_list:
-    description: If command is “list”, the following values are returned.
+    description: If command is "list", the following values are returned.
 
     contains:
         <profile_name>:
@@ -165,7 +165,7 @@ details_for_list:
             sample: BiosBootOrder
 
 details_for_get:
-    description: If command is “get”, the following value is returned.
+    description: If command is "get", the following value is returned.
 
     contains:
         profile:
@@ -183,7 +183,7 @@ import json
 import os.path
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc import (
     get_irmc_json,
     irmc_redfish_delete,
     irmc_redfish_get,

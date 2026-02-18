@@ -2,6 +2,6 @@
 - name: Change Administrator password
   hosts: windows
   roles:
-    - role: fujitsu.primergy.win_admin_password
+    - role: fsas_temp_ns.primergy.win_admin_password
       vars:
         password: NewP@ssw0rd

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Copyright 2018-2024 Fsas Technologies Inc.
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see LICENSE.md or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 DOCUMENTATION = r'''
@@ -69,7 +69,7 @@ options:
 EXAMPLES = r'''
 # Prepare eLCM Offline Update
 - name: Prepare eLCM Offline Update
-  fujitsu.primergy.irmc_elcm_offline_update:
+  fsas_temp_ns.primergy.irmc_elcm_offline_update:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -81,7 +81,7 @@ EXAMPLES = r'''
 
 # Execute eLCM Offline Update
 - name: Execute eLCM Offline Update
-  fujitsu.primergy.irmc_elcm_offline_update:
+  fsas_temp_ns.primergy.irmc_elcm_offline_update:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -99,7 +99,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fujitsu.primergy.plugins.module_utils.irmc import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc import (
     elcm_check_status,
     get_irmc_json,
     irmc_redfish_get,

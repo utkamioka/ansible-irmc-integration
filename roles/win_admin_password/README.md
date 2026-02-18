@@ -14,7 +14,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `password` | true | | | str | Administrator password |
 
 Dependencies
@@ -28,7 +28,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fujitsu.primergy.win_admin_password
+        - role: fsas_temp_ns.primergy.win_admin_password
           vars:
             password: NewP@ssw0rd
 
@@ -40,4 +40,4 @@ GPL-3.0-or-later
 Author Information
 ------------------
 
-- Yutaka Kamioka <yutaka.kamioka@jp.fujitsu.com>
+- Yutaka Kamioka <yutaka.kamioka@fujitsu.com>

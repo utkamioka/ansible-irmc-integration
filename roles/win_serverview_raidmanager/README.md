@@ -31,7 +31,7 @@ Role Variables
 --------------
 
 | Name | Required | Default Value | Choices | Type | Description |
-|------|----------|---------------|---------|------|-------------|
+| ---- | -------- | ------------- | ------- | ---- | ----------- |
 | `username` | false | `raidroot` | | str | Account for login to "RAID Manager".<br/> The account name is `raidroot` by default, but can be customized as needed. |
 | `password` | true | | | str | Password for the account specified in `username` |
 | `installer` | true | | | str | Path to ServerView RAID Manager installer.<br/> Specify the absolute path or relative path from Playbook.|
@@ -48,7 +48,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fujitsu.primergy.win_serverview_raidmanager
+        - role: fsas_temp_ns.primergy.win_serverview_raidmanager
           vars:
             password: P@ssw0rd
             installer: "/path/to/installer/ServerView_RAID_x64.exe"
@@ -62,4 +62,4 @@ GPL-3.0-or-later
 Author Information
 ------------------
 
-- Yutaka Kamioka <yutaka.kamioka@jp.fujitsu.com>
+- Yutaka Kamioka <yutaka.kamioka@fujitsu.com>

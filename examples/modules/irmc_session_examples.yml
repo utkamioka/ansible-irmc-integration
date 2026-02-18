@@ -1,5 +1,5 @@
 ---
-# Copyright 2018-2024 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook for module 'irmc_session'
@@ -28,7 +28,7 @@
         - list
       block:
         - name: List iRMC sessions
-          fujitsu.primergy.irmc_session:
+          fsas_temp_ns.primergy.irmc_session:
             irmc_url: "{{ inventory_hostname }}"
             irmc_username: "{{ irmc_user }}"
             irmc_password: "{{ irmc_password }}"
@@ -46,7 +46,7 @@
         - get
       block:
         - name: Get specific session information
-          fujitsu.primergy.irmc_session:
+          fsas_temp_ns.primergy.irmc_session:
             irmc_url: "{{ inventory_hostname }}"
             irmc_username: "{{ irmc_user }}"
             irmc_password: "{{ irmc_password }}"
@@ -65,7 +65,7 @@
         - remove
       block:
         - name: Remove specific session information
-          fujitsu.primergy.irmc_session:
+          fsas_temp_ns.primergy.irmc_session:
             irmc_url: "{{ inventory_hostname }}"
             irmc_username: "{{ irmc_user }}"
             irmc_password: "{{ irmc_password }}"
@@ -80,7 +80,7 @@
 
     # Clear all sessions information
     - name: Clear all sessions information
-      fujitsu.primergy.irmc_session:
+      fsas_temp_ns.primergy.irmc_session:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -93,7 +93,7 @@
 
     # Terminate specific session
     - name: Terminate specific session
-      fujitsu.primergy.irmc_session:
+      fsas_temp_ns.primergy.irmc_session:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

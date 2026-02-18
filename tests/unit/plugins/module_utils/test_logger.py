@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright 2018-2025 Fsas Technologies Inc.
+# Copyright 2018-2026 Fsas Technologies Inc.
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 """ログ機能のユニットテスト"""
@@ -9,10 +9,9 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import pytest
 from unittest.mock import Mock
 
-from ansible_collections.fujitsu.primergy.plugins.module_utils.logger import (
+from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import (
     AnsibleLogger,
     MockLogger,
 )
@@ -277,3 +276,68 @@ class TestAnsibleLoggerAccumulation:
         logger.debug('Debug 1')
 
         assert logger.logs() == []
+
+
+class TestAnsibleLoggerToLogsDict:
+    """AnsibleLoggerのto_logs_dict()メソッドのテストクラス"""
+
+    def test_to_logs_dict_returns_empty_dict_when_verbosity_0(self):
+        """verbosity=0の場合は空の辞書を返す"""
+        mock_module = Mock()
+        mock_module._verbosity = 0
+        logger = AnsibleLogger(mock_module)
+
+        logger.warn('Warning')
+
+        assert logger.to_logs_dict() == {}
+
+    def test_to_logs_dict_returns_logs_when_verbosity_1(self):
+        """verbosity=1の場合は{'_logs': [...]}を返す"""
+        mock_module = Mock()
+        mock_module._verbosity = 1
+        logger = AnsibleLogger(mock_module)
+
+        logger.warn('Warning')
+
+        result = logger.to_logs_dict()
+        assert result == {'_logs': ['[WARN] Warning']}
+
+    def test_to_logs_dict_returns_empty_logs_when_no_messages(self):
+        """ログがない場合は{'_logs': []}を返す"""
+        mock_module = Mock()
+        mock_module._verbosity = 3
+        logger = AnsibleLogger(mock_module)
+
+        result = logger.to_logs_dict()
+        assert result == {'_logs': []}
+
+    def test_to_logs_dict_can_be_merged_with_dict(self):
+        """辞書のマージ演算子と組み合わせて使用できる"""
+        mock_module = Mock()
+        mock_module._verbosity = 1
+        logger = AnsibleLogger(mock_module)
+
+        logger.warn('Warning')
+
+        base_dict = {'changed': True, 'msg': 'Success'}
+        result = base_dict | logger.to_logs_dict()
+
+        assert result == {
+            'changed': True,
+            'msg': 'Success',
+            '_logs': ['[WARN] Warning'],
+        }
+
+    def test_to_logs_dict_merge_with_empty_dict(self):
+        """verbosity=0の場合、マージしても元の辞書が保持される"""
+        mock_module = Mock()
+        mock_module._verbosity = 0
+        logger = AnsibleLogger(mock_module)
+
+        logger.warn('Warning')
+
+        base_dict = {'changed': True, 'msg': 'Success'}
+        result = base_dict | logger.to_logs_dict()
+
+        assert result == {'changed': True, 'msg': 'Success'}
+        assert '_logs' not in result
