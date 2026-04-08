@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-04-09
+
+### Changed
+
+- Changed GitHub repository URL from `github.com/fujitsu/fujitsu-ansible-irmc-integration` to `github.com/fujitsu/ansible-irmc-integration`
+
 ## [3.0.0] - 2026-02-16
 
 ### Changed

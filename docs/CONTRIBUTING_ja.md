@@ -3,7 +3,7 @@
 **ご注意**：
 このドキュメントは、<https://galaxy.ansible.com/>上で閲覧する際に、
 レイアウトが崩れる場合があります。
-そのため[github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration)
+そのため[github.com](https://github.com/fujitsu/ansible-irmc-integration)
 上で閲覧することを推奨します。
 
 ## 1. はじめに
@@ -35,7 +35,7 @@
   詳細はこのURLを参照してください：
   <https://docs.ansible.com/ansible/latest/os_guide/intro_windows.html#using-windows-as-the-control-node>
 - このプロジェクトには二つのGitリポジトリがあります：
-  1. **公開用**: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration>
+  1. **公開用**: <https://github.com/fujitsu/ansible-irmc-integration>
   2. **社内開発用**: URL非公開
 
   当社社員として開発に参加する場合は「社内開発用」のGitリポジトリを使ってください。
@@ -49,7 +49,7 @@
 
    ```shell
    $ mkdir -p ~/git/ansible_collections/fsas_temp_ns && cd $_
-   $ git clone https://github.com/{{ NEW_ORG }}/ansible-irmc-integration.git primergy && cd $_
+   $ git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
    $ pwd
    # => ~/git/ansible_collections/fsas_temp_ns/primergy
    ```

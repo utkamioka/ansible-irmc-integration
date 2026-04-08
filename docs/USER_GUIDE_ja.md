@@ -3,7 +3,7 @@
 **ご注意**：
 このドキュメントは、<https://galaxy.ansible.com/>上で閲覧する際に、
 レイアウトが崩れる場合があります。
-そのため[github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration)
+そのため[github.com](https://github.com/fujitsu/ansible-irmc-integration)
 上で閲覧することを推奨します。
 
 ## 1. はじめに
@@ -194,7 +194,7 @@ Red Hat製品やAnsibleの利用方法、仕様に関するご質問は、本窓
 #### GitHub Issues
 
 公開のフィードバックや貢献のご提案は、GitHubの「Issues」ページにて受け付けています。  
-GitHub Issues: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration/issues>
+GitHub Issues: <https://github.com/fujitsu/ansible-irmc-integration/issues>
 
 #### フィードバックの際のお願い
 

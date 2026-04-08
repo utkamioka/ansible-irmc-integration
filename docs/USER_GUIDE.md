@@ -2,7 +2,7 @@
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/ansible-irmc-integration).
 
 ## 1. Introduction
 
@@ -186,7 +186,7 @@ We cannot address questions about Red Hat products, how to use Ansible, or Ansib
 #### GitHub Issues
 
 For public feedback or contribution proposals, please use the GitHub "Issues" page.  
-GitHub Issues: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration/issues>
+GitHub Issues: <https://github.com/fujitsu/ansible-irmc-integration/issues>
 
 #### Request When Providing Feedback
 
