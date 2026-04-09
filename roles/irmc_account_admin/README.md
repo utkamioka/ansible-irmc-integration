@@ -61,7 +61,7 @@ playbook.yml:
       hosts: iRMC_group
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_account_admin
+        - role: fsas.primergy.irmc_account_admin
           vars:
             password: P@ssw0rd
             description: my description

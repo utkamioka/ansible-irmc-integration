@@ -13,8 +13,8 @@ import pytest
 from unittest.mock import Mock
 from requests.structures import CaseInsensitiveDict
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC, Response
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_session_information import (
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC, Response
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_session_information import (
     Session,
     SessionInformation,
 )

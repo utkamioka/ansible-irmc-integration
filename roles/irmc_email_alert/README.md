@@ -75,7 +75,7 @@ playbook.yml:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_email_alert
+        - role: fsas.primergy.irmc_email_alert
           vars:
             email_alert:
               enabled: true

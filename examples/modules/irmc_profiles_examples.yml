@@ -25,7 +25,7 @@
     # List iRMC profiles
     - block:
       - name: List iRMC profiles
-        fsas_temp_ns.primergy.irmc_profiles:
+        fsas.primergy.irmc_profiles:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -42,7 +42,7 @@
     # Get specific profile
     - block:
       - name: Get specific profile
-        fsas_temp_ns.primergy.irmc_profiles:
+        fsas.primergy.irmc_profiles:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -64,7 +64,7 @@
 
     # Create profile
     - name: Create profile
-      fsas_temp_ns.primergy.irmc_profiles:
+      fsas.primergy.irmc_profiles:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -78,7 +78,7 @@
 
     # Delete profile
     - name: Delete profile
-      fsas_temp_ns.primergy.irmc_profiles:
+      fsas.primergy.irmc_profiles:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -91,7 +91,7 @@
 
     # Import profile
     - name: Import profile
-      fsas_temp_ns.primergy.irmc_profiles:
+      fsas.primergy.irmc_profiles:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

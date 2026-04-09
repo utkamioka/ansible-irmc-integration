@@ -50,7 +50,7 @@ playbook.yml:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_snmp
+        - role: fsas.primergy.irmc_snmp
           vars:
             snmp:
               enabled: true

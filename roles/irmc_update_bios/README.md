@@ -49,7 +49,7 @@ To update with specified firmware:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_update_bios
+        - role: fsas.primergy.irmc_update_bios
           vars:
             bios_firmware_path: "/any/where/firm/RX1330_M6/bios/D4133-A1x.R1.1.0.UPC"
 
@@ -60,7 +60,7 @@ When updating with firmware for each model name:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_update_bios
+        - role: fsas.primergy.irmc_update_bios
           vars:
             bios_firmware_path_mapping:
               PRIMERGY_RX1330_M5R: "/any/where/firm/RX1330_M5R/bios/D3929-A1x.R1.41.0.UPC"
@@ -73,7 +73,7 @@ When updating with firmware for each model name via a TFTP server:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_update_bios
+        - role: fsas.primergy.irmc_update_bios
           vars:
             tftp_server: 192.0.2.1
             bios_firmware_path_mapping:

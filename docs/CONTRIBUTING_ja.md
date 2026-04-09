@@ -48,14 +48,14 @@
    以下の方法でgitリポジトリをcloneしてください。
 
    ```shell
-   $ mkdir -p ~/git/ansible_collections/fsas_temp_ns && cd $_
+   $ mkdir -p ~/git/ansible_collections/fsas && cd $_
    $ git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
    $ pwd
-   # => ~/git/ansible_collections/fsas_temp_ns/primergy
+   # => ~/git/ansible_collections/fsas/primergy
    ```
 
    `~/git`は任意のパスで構いませんが、
-   `ansible_collections/fsas_temp_ns/primergy`というディレクトリ階層でcloneされている必要があります。
+   `ansible_collections/fsas/primergy`というディレクトリ階層でcloneされている必要があります。
 
 2. PythonおよびAnsible実行環境の構築を行います。
    [Rye](https://rye.astral.sh/) でPythonプロジェクト環境を記述していますので、
@@ -65,7 +65,7 @@
 
    ```shell
    $ rye sync
-   Initializing new virtualenv in ~/git/ansible_collections/fsas_temp_ns/primergy/.venv
+   Initializing new virtualenv in ~/git/ansible_collections/fsas/primergy/.venv
    Python version: cpython@3.10.14
    （略）
    Done!  
@@ -134,7 +134,7 @@
    - iRMC機器への疎通テストをします：
 
      ```shell
-     $ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+     $ ansible localhost -m fsas.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
      localhost | SUCCESS => {
          "changed": false,
          "facts": {

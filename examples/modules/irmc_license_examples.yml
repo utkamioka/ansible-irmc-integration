@@ -25,7 +25,7 @@
     # Get iRMC license key
     - block:
       - name: Get iRMC license key
-        fsas_temp_ns.primergy.irmc_license:
+        fsas.primergy.irmc_license:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -43,7 +43,7 @@
 
     # Set iRMC license key
     - name: Set iRMC license key
-      fsas_temp_ns.primergy.irmc_license:
+      fsas.primergy.irmc_license:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

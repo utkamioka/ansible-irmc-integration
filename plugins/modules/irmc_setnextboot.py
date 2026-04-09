@@ -59,7 +59,7 @@ EXAMPLES = r'''
 # Set Bios to boot from the specified device.
 # Note: boot from virtual CD might fail, if a 'real' DVD drive exists
 - name: Set Bios to boot from the specified device.
-  fsas_temp_ns.primergy.irmc_setnextboot:
+  fsas.primergy.irmc_setnextboot:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -96,11 +96,11 @@ import traceback
 from typing import Any, Mapping
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.controller_result import ControllerResult
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger, Logger
+from ansible_collections.fsas.primergy.plugins.module_utils.controller_result import ControllerResult
+from ansible_collections.fsas.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger, Logger
 
 
 class SetNextBootController:

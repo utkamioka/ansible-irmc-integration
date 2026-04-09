@@ -28,7 +28,7 @@
 
   tasks:
     - name: Import LDAP Settings
-      fsas_temp_ns.primergy.irmc_ldap:
+      fsas.primergy.irmc_ldap:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

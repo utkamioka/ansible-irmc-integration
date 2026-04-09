@@ -28,7 +28,7 @@
   tasks:
     # Get user account data
     - name: Get user account data
-      fsas_temp_ns.primergy.irmc_user:
+      fsas.primergy.irmc_user:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

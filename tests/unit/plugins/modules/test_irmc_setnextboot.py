@@ -13,9 +13,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.errors import HttpError, ValidationError
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import Request, Response
-from ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_setnextboot import SetNextBootController
+from ansible_collections.fsas.primergy.plugins.module_utils.errors import HttpError, ValidationError
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import Request, Response
+from ansible_collections.fsas.primergy.plugins.modules.irmc_setnextboot import SetNextBootController
 
 
 class TestSetNextBootController:

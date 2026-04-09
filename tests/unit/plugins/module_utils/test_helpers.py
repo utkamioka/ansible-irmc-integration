@@ -11,7 +11,7 @@ __metaclass__ = type
 
 import pytest
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import (
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import (
     dig,
 )
 

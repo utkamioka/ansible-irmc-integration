@@ -36,7 +36,7 @@ playbook.yml:
     - name: Create a new partition
       hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_data_drive
+        - role: fsas.primergy.win_data_drive
           vars:
             drive_letter: D
             disk_number: 0
@@ -46,7 +46,7 @@ playbook.yml:
     - name: Resize a partition
       hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_data_drive
+        - role: fsas.primergy.win_data_drive
           vars:
             drive_letter: D
             partition_size: 100 GB
@@ -57,7 +57,7 @@ playbook.yml:
       hosts: windows
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.win_data_drive
+        - role: fsas.primergy.win_data_drive
           vars:
             drive_letter: D
             op: "remove"

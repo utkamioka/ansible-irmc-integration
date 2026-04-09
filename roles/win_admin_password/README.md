@@ -28,7 +28,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_admin_password
+        - role: fsas.primergy.win_admin_password
           vars:
             password: NewP@ssw0rd
 

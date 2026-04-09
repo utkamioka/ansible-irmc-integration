@@ -55,7 +55,7 @@ EXAMPLES = '''
 # Get iRMC license key
 - block:
   - name: Get iRMC license key
-    fsas_temp_ns.primergy.irmc_license:
+    fsas.primergy.irmc_license:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -72,7 +72,7 @@ EXAMPLES = '''
 
 # Set iRMC license key
 - name: Set iRMC license key
-  fsas_temp_ns.primergy.irmc_license:
+  fsas.primergy.irmc_license:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -100,7 +100,7 @@ details_for_set:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_scci_utils import (
     add_scci_command,
     get_scciresult,
     irmc_scci_post,

@@ -24,7 +24,7 @@
   tasks:
     # Prepare eLCM Offline Update
     - name: Prepare eLCM Offline Update
-      fsas_temp_ns.primergy.irmc_elcm_offline_update:
+      fsas.primergy.irmc_elcm_offline_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -36,7 +36,7 @@
 
     # Execute eLCM Offline Update
     - name: Execute eLCM Offline Update
-      fsas_temp_ns.primergy.irmc_elcm_offline_update:
+      fsas.primergy.irmc_elcm_offline_update:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

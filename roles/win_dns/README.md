@@ -32,7 +32,7 @@ playbook.yml:
     - name: Set DNS
       hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_dns
+        - role: fsas.primergy.win_dns
           vars:
             adapter_names: Enthernet
             ipv4_addresses:

@@ -65,7 +65,7 @@ EXAMPLES = '''
 # Get iRMC time settings
 - block:
   - name: Get iRMC time settings
-    fsas_temp_ns.primergy.irmc_ntp:
+    fsas.primergy.irmc_ntp:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -81,7 +81,7 @@ EXAMPLES = '''
 
 # Set iRMC time option(s)
 - name: Set iRMC time option(s)
-  fsas_temp_ns.primergy.irmc_ntp:
+  fsas.primergy.irmc_ntp:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -132,7 +132,7 @@ details_for_set:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_scci_utils import (
     add_scci_command,
     get_key_for_value,
     get_scciresultlist_oi,

@@ -37,7 +37,7 @@ playbook.yml(join workgroup):
     - name: Join a workgroup
       hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_set_membership
+        - role: fsas.primergy.win_set_membership
           vars:
             state: workgroup
             workgroup: WORKGROUP
@@ -48,7 +48,7 @@ playbook.yml(join a domain):
     - name: Join a domain
       hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_set_membership
+        - role: fsas.primergy.win_set_membership
           vars:
             state: domain
             domain: fti.test

@@ -37,7 +37,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_snmp
+        - role: fsas.primergy.win_snmp
           vars:
             agent:
               contact: MyContact

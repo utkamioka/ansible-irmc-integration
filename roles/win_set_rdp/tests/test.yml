@@ -3,6 +3,6 @@
 - name: Enable remote desktop
   hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_set_rdp
+    - role: fsas.primergy.win_set_rdp
       vars:
         enabled: true

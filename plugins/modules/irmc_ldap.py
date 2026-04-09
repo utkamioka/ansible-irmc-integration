@@ -126,7 +126,7 @@ options:
 EXAMPLES = r'''
 # Get LDAP data
 - name: Get LDAP data
-  fsas_temp_ns.primergy.irmc_ldap:
+  fsas.primergy.irmc_ldap:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -140,7 +140,7 @@ EXAMPLES = r'''
 
 # Set LDAP data
 - name: Set LDAP data
-  fsas_temp_ns.primergy.irmc_ldap:
+  fsas.primergy.irmc_ldap:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -283,7 +283,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_scci_utils import get_scciresultlist, irmc_scci_post, setup_commandlist, setup_datadict
 
 ldap_dir = {'0': 'MS Active Directory', '1': 'Novell eDirectory', '2': 'Sun ePlanet', '3': 'OpenLDAP',
             '4': 'OpenDS / OpenDJ'}

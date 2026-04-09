@@ -2,7 +2,7 @@
 - name: Change the language setting to English (United States)
   hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_locale
+    - role: fsas.primergy.win_locale
       vars:
         language: "en-US"
         location: "244"
