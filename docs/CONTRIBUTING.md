@@ -2,7 +2,7 @@
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/ansible-irmc-integration).
 
 ## 1. Introduction
 
@@ -30,7 +30,7 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
 - Although it can run on Windows Subsystem for Linux (WSL), this is not officially supported and is not recommended for production systems. For details, refer to:  
   <https://docs.ansible.com/ansible/latest/os_guide/intro_windows.html#using-windows-as-the-control-node>
 - This project has two Git repositories:
-  1. **Public**: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration>
+  1. **Public**: <https://github.com/fujitsu/ansible-irmc-integration>
   2. **Internal development**: URL not disclosed
 
   If you participate in development as an employee of our company,
@@ -44,7 +44,7 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
 
    ```shell
    $ mkdir -p ~/git/ansible_collections/fsas_temp_ns && cd $_
-   $ git clone https://github.com/{{ NEW_ORG }}/ansible-irmc-integration.git primergy && cd $_
+   $ git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
    $ pwd
    # => ~/git/ansible_collections/fsas_temp_ns/primergy
    ```

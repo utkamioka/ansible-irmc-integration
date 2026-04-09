@@ -1,6 +1,6 @@
 [project]
 name = "ansible-irmc-integration"
-version = "3.0.0"
+version = "3.0.1"
 description = "Ansible collection for manage PRIMERGY servers via iRMC"
 authors = [
     {name = "Shinya Hamano", email = "hamano.shinya@fujitsu.com"},

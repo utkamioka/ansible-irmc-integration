@@ -1,9 +1,9 @@
 namespace: fsas_temp_ns
 name: primergy
-version: 3.0.0
+version: 3.0.1
 readme: README.md
 description: Ansible iRMC Collection for PRIMERGY Distribution by Fsas Technologies Inc..
-repository: https://github.com/{{ NEW_ORG }}/ansible-irmc-integration
+repository: https://github.com/fujitsu/ansible-irmc-integration
 
 authors:
   - Shinya Hamano <hamano.shinya@fujitsu.com>

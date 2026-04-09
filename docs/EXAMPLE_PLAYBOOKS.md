@@ -2,7 +2,7 @@
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/ansible-irmc-integration).
 
 ## 1. Playbooks
 
