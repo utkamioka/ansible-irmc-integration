@@ -67,7 +67,7 @@ EXAMPLES = r'''
 # Get basic server and iRMC facts
 - block:
   - name: Get basic server and iRMC facts
-    fsas_temp_ns.primergy.irmc_facts:
+    fsas.primergy.irmc_facts:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -83,7 +83,7 @@ EXAMPLES = r'''
 
 # Set server asset tag
 - name: Set server asset tag
-  fsas_temp_ns.primergy.irmc_facts:
+  fsas.primergy.irmc_facts:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -268,9 +268,9 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_facts(module):

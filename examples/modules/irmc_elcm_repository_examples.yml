@@ -24,7 +24,7 @@
   tasks:
     # Get eLCM repository data
     - name: Get eLCM repository data
-      fsas_temp_ns.primergy.irmc_elcm_repository:
+      fsas.primergy.irmc_elcm_repository:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -34,7 +34,7 @@
 
     # Set eLCM repository data
     - name: Set eLCM repository data
-      fsas_temp_ns.primergy.irmc_elcm_repository:
+      fsas.primergy.irmc_elcm_repository:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

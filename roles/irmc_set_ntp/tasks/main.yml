@@ -1,7 +1,7 @@
 ---
-# tasks file for ./fsas_temp_ns/primergy/roles/irmc_set_ntp
+# tasks file for ./fsas/primergy/roles/irmc_set_ntp
 - name: Set iRMC time option(s)
-  fsas_temp_ns.primergy.irmc_ntp:
+  fsas.primergy.irmc_ntp:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"

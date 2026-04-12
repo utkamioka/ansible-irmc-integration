@@ -208,7 +208,7 @@ options:
 EXAMPLES = r'''
 # Create new user account
 - name: "Create new user account"
-  fsas_temp_ns.primergy.irmc_user:
+  fsas.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -226,7 +226,7 @@ EXAMPLES = r'''
     - get
   block:
     - name: Get user account data
-      fsas_temp_ns.primergy.irmc_user:
+      fsas.primergy.irmc_user:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -241,7 +241,7 @@ EXAMPLES = r'''
 
 # Change user account data
 - name: Change user account data
-  fsas_temp_ns.primergy.irmc_user:
+  fsas.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -255,7 +255,7 @@ EXAMPLES = r'''
 
 # Delete user account
 - name: Delete user account
-  fsas_temp_ns.primergy.irmc_user:
+  fsas.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -463,7 +463,7 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import (
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_scci_utils import (
     add_scci_command,
     get_key_for_value,
     get_scciresult,

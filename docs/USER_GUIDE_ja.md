@@ -1,4 +1,4 @@
-# Ansibleコレクション `fsas_temp_ns.primergy` ユーザーガイド
+# Ansibleコレクション `fsas.primergy` ユーザーガイド
 
 **ご注意**：
 このドキュメントは、<https://galaxy.ansible.com/>上で閲覧する際に、
@@ -8,10 +8,10 @@
 
 ## 1. はじめに
 
-このドキュメントはAnsibleコレクション`fsas_temp_ns.primergy`の利用者に向けたガイドです。
+このドキュメントはAnsibleコレクション`fsas.primergy`の利用者に向けたガイドです。
 Ansibleコレクションとは、Ansibleのプレイブックやモジュール、
 ロール、プラグイン、ドキュメントなどをまとめたパッケージです。
-Ansibleコレクション`fsas_temp_ns.primergy`では、
+Ansibleコレクション`fsas.primergy`では、
 PRIMERGYの「環境設定シート」に基づいた設定作業の自動化を目的とし、
 Ansibleのロールやモジュールを提供しています。
 
@@ -55,10 +55,10 @@ $ python -m venv venv && . $_/bin/activate
 ```
 
 仮想環境（venv）にインストールしたAnsibleを使って、
-<https://galaxy.ansible.com/>からAnsibleコレクション`fsas_temp_ns.primergy`をインストールします：
+<https://galaxy.ansible.com/>からAnsibleコレクション`fsas.primergy`をインストールします：
 
 ```bash
-(venv) $ ansible-galaxy collection install fsas_temp_ns.primergy
+(venv) $ ansible-galaxy collection install fsas.primergy
 ```
 
 ### インベントリファイルの設定例
@@ -103,7 +103,7 @@ ansible_winrm_server_cert_validation=ignore
 指定したiRMC機器の構成・設定などを取得し表示します：
 
 ```shell
-$ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+$ ansible localhost -m fsas.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
 localhost | SUCCESS => {
     "changed": false,
     "facts": {
@@ -146,13 +146,13 @@ New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Ena
 ### コレクションの全体構成
 
 このコレクションの詳細なモジュールやロールの一覧については、
-[Ansible Galaxyのコレクションページ](https://galaxy.ansible.com/fsas_temp_ns/primergy)
+[Ansible Galaxyのコレクションページ](https://galaxy.ansible.com/fsas/primergy)
 を参照してください。
 
 ### ロールの使い方
 
 [設定ガイド](./CONFIGURATION_ja.md)
-（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/CONFIGURATION_ja/)）
+（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/CONFIGURATION_ja/)）
 を参照してください。
 
 ### サンプルプレイブックの説明
@@ -161,7 +161,7 @@ New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Ena
 
 使い方については、
 [サンプルプレイブック説明書](./EXAMPLE_PLAYBOOKS_ja.md)
-（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/EXAMPLE_PLAYBOOKS_ja/)）
+（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/EXAMPLE_PLAYBOOKS_ja/)）
 を参照してください。
 
 ### トラブルシューティング
@@ -228,7 +228,7 @@ Windows Subsystem for Linux（WSL）では実行できますが、
 ### Ansible Galaxy
 
 - <https://galaxy.ansible.com/>
-- <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/>
+- <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/>
 
 ### Ansible
 

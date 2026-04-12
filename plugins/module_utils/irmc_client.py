@@ -16,12 +16,12 @@ from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import Dict, Any, Optional, Tuple, Mapping, TYPE_CHECKING
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_session_information import SessionInformation
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_session_information import SessionInformation
 
 # 型チェック時のみインポート（型ヒント専用、起動速度最適化のため）
 # LoggerはProtocolで実行時にインスタンス化されないため、mypyなどの型チェッカーでのみ必要
 if TYPE_CHECKING:
-    from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import Logger
+    from ansible_collections.fsas.primergy.plugins.module_utils.logger import Logger
 
 try:
     import requests

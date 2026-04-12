@@ -93,7 +93,7 @@ EXAMPLES = r'''
 # Get irmc firmware and BIOS update settings
 - block:
   - name: Get irmc firmware and BIOS update settings
-    fsas_temp_ns.primergy.irmc_fwbios_update:
+    fsas.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -110,7 +110,7 @@ EXAMPLES = r'''
 # Update server BIOS from local file
 - block:
   - name: Update server BIOS from local file
-    fsas_temp_ns.primergy.irmc_fwbios_update:
+    fsas.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -130,7 +130,7 @@ EXAMPLES = r'''
 # Update server BIOS via TFTP
 - block:
   - name: Update server BIOS via TFTP
-    fsas_temp_ns.primergy.irmc_fwbios_update:
+    fsas.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -151,7 +151,7 @@ EXAMPLES = r'''
 # Update iRMC FW via TFTP
 - block:
   - name: Update iRMC FW via TFTP
-    fsas_temp_ns.primergy.irmc_fwbios_update:
+    fsas.primergy.irmc_fwbios_update:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -260,9 +260,9 @@ from pathlib import Path
 from requests_toolbelt import MultipartEncoder
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_fwbios_update(module):

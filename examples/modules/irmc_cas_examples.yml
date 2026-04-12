@@ -24,7 +24,7 @@
   tasks:
     # Get CAS data
     - name: Get CAS data
-      fsas_temp_ns.primergy.irmc_cas:
+      fsas.primergy.irmc_cas:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -38,7 +38,7 @@
 
     # Set CAS data
     - name: Set CAS data
-      fsas_temp_ns.primergy.irmc_cas:
+      fsas.primergy.irmc_cas:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

@@ -10,7 +10,7 @@
     - { regexp: END PRIVATE KEY, replace: END RSA PRIVATE KEY }
 
 - name: Set iRMC certificates
-  fsas_temp_ns.primergy.irmc_certificate:
+  fsas.primergy.irmc_certificate:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"

@@ -1,7 +1,7 @@
 ---
-# tasks file for ./fsas_temp_ns/primergy/roles/irmc_set_license
+# tasks file for ./fsas/primergy/roles/irmc_set_license
 - name: Set iRMC license key
-  fsas_temp_ns.primergy.irmc_license:
+  fsas.primergy.irmc_license:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"

@@ -54,7 +54,7 @@ EXAMPLES = r'''
 # Get server ID LED state
 - block:
   - name: Get ID LED state
-    fsas_temp_ns.primergy.irmc_idled:
+    fsas.primergy.irmc_idled:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -70,7 +70,7 @@ EXAMPLES = r'''
 
 # Set server ID LED state
 - name: Set server ID LED state
-  fsas_temp_ns.primergy.irmc_idled:
+  fsas.primergy.irmc_idled:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -96,11 +96,11 @@ import traceback
 from typing import Any, Mapping
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.controller_result import ControllerResult
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger, Logger
+from ansible_collections.fsas.primergy.plugins.module_utils.controller_result import ControllerResult
+from ansible_collections.fsas.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger, Logger
 
 
 class IdLedController:

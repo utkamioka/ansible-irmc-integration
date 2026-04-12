@@ -13,10 +13,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.controller_result import ControllerResult
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import Request, Response
-from ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled import IdLedController
+from ansible_collections.fsas.primergy.plugins.module_utils.controller_result import ControllerResult
+from ansible_collections.fsas.primergy.plugins.module_utils.errors import HttpError, ModuleError, ValidationError
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import Request, Response
+from ansible_collections.fsas.primergy.plugins.modules.irmc_idled import IdLedController
 
 
 class TestIdLedController:
@@ -239,11 +239,11 @@ class TestModuleIntegration:
         module._verbosity = 0
         return module
 
-    @patch('ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled.iRMC')
-    @patch('ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled.AnsibleLogger')
+    @patch('ansible_collections.fsas.primergy.plugins.modules.irmc_idled.iRMC')
+    @patch('ansible_collections.fsas.primergy.plugins.modules.irmc_idled.AnsibleLogger')
     def test_get_command_success(self, mock_logger_class, mock_irmc_class, mock_module):
         """get command: 正常系の統合テストです。"""
-        from ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled import irmc_idled
+        from ansible_collections.fsas.primergy.plugins.modules.irmc_idled import irmc_idled
 
         # モックの設定
         mock_logger = Mock()
@@ -269,11 +269,11 @@ class TestModuleIntegration:
         assert call_kwargs['idled_state'] == 'Blinking'
         assert 'msg' not in call_kwargs
 
-    @patch('ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled.iRMC')
-    @patch('ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled.AnsibleLogger')
+    @patch('ansible_collections.fsas.primergy.plugins.modules.irmc_idled.iRMC')
+    @patch('ansible_collections.fsas.primergy.plugins.modules.irmc_idled.AnsibleLogger')
     def test_set_command_success(self, mock_logger_class, mock_irmc_class, mock_module):
         """set command: 正常系の統合テストです。"""
-        from ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled import irmc_idled
+        from ansible_collections.fsas.primergy.plugins.modules.irmc_idled import irmc_idled
 
         # パラメータ変更
         mock_module.params['command'] = 'set'
@@ -311,11 +311,11 @@ class TestModuleIntegration:
         call_kwargs = mock_module.exit_json.call_args[1]
         assert call_kwargs['changed'] is True
 
-    @patch('ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled.iRMC')
-    @patch('ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled.AnsibleLogger')
+    @patch('ansible_collections.fsas.primergy.plugins.modules.irmc_idled.iRMC')
+    @patch('ansible_collections.fsas.primergy.plugins.modules.irmc_idled.AnsibleLogger')
     def test_http_error_handling(self, mock_logger_class, mock_irmc_class, mock_module):
         """HTTPエラーハンドリングのテストです。"""
-        from ansible_collections.fsas_temp_ns.primergy.plugins.modules.irmc_idled import irmc_idled
+        from ansible_collections.fsas.primergy.plugins.modules.irmc_idled import irmc_idled
 
         # モックの設定
         mock_logger = Mock()

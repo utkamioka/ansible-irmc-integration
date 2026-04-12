@@ -57,7 +57,7 @@ Example Playbook
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_update_irmc
+        - role: fsas.primergy.irmc_update_irmc
           vars:
             irmc_firmware_path: "/any/where/firm/RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
             destination: low
@@ -69,7 +69,7 @@ To update with specified firmware via tftp server:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_update_irmc
+        - role: fsas.primergy.irmc_update_irmc
           vars:
             tftp_server: 192.0.2.1
             irmc_firmware_path: "RX1330_M6/irmc/PRIMERGYRX1330M6iRMC253SSDR227.BIN"
@@ -82,7 +82,7 @@ When updating with firmware for each model name via a TFTP server:
       connection: local
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_update_irmc
+        - role: fsas.primergy.irmc_update_irmc
           vars:
             tftp_server: 192.0.2.1
             irmc_firmware_path_mapping:

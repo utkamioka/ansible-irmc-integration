@@ -31,7 +31,7 @@ playbook.yml:
       hosts: iRMC_group
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_set_license
+        - role: fsas.primergy.irmc_set_license
           vars:
             license_keys:
               - "AAAAAA-AAAAAAA-AAAAA"

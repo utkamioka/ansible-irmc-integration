@@ -78,7 +78,7 @@ options:
 EXAMPLES = r'''
 # Set Virtual CD
 - name: Set Virtual CD
-  fsas_temp_ns.primergy.irmc_setvm:
+  fsas.primergy.irmc_setvm:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -96,7 +96,7 @@ EXAMPLES = r'''
 
 # Set Virtual HD
 - name: Set Virtual HD
-  fsas_temp_ns.primergy.irmc_setvm:
+  fsas.primergy.irmc_setvm:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -123,10 +123,10 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import setup_datadict
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_scci_utils import setup_datadict
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_setvirtualmedia(module):
