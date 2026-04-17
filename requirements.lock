@@ -14,33 +14,33 @@ ansible==10.7.0
     # via ansible-irmc-integration
 ansible-core==2.17.14
     # via ansible
-certifi==2024.7.4
+certifi==2026.2.25
     # via requests
 cffi==2.0.0
     # via cryptography
-charset-normalizer==3.3.2
+charset-normalizer==3.4.7
     # via requests
-cryptography==46.0.3
+cryptography==46.0.7
     # via ansible-core
     # via pyspnego
     # via requests-ntlm
-idna==3.7
+idna==3.11
     # via requests
 jinja2==3.1.6
     # via ansible-core
-markupsafe==2.1.5
+markupsafe==3.0.3
     # via jinja2
-packaging==24.1
+packaging==26.1
     # via ansible-core
-pycparser==2.22
+pycparser==3.0
     # via cffi
-pyspnego==0.11.1
+pyspnego==0.12.1
     # via requests-ntlm
 pywinrm==0.5.0
     # via ansible-irmc-integration
-pyyaml==6.0.1
+pyyaml==6.0.3
     # via ansible-core
-requests==2.32.5
+requests==2.33.1
     # via ansible-irmc-integration
     # via pywinrm
     # via requests-ntlm
@@ -56,5 +56,5 @@ typing-extensions==4.15.0
 urllib3==2.6.3
     # via ansible-irmc-integration
     # via requests
-xmltodict==0.13.0
+xmltodict==1.0.4
     # via pywinrm

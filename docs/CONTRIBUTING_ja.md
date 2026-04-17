@@ -48,9 +48,9 @@
    以下の方法でgitリポジトリをcloneしてください。
 
    ```shell
-   $ mkdir -p ~/git/ansible_collections/fsas && cd $_
-   $ git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
-   $ pwd
+   mkdir -p ~/git/ansible_collections/fsas && cd $_
+   git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
+   pwd
    # => ~/git/ansible_collections/fsas/primergy
    ```
 
@@ -77,13 +77,15 @@
 
    ```shell
    # ryeから実行
-   $ rye run python -V
-   $ rye run ansible --version
+   rye run python -V
+   rye run ansible --version
+   ```
 
+   ```shell
    # 仮想環境を有効化して実行
-   $ . .venv/bin/activate
-   $ python -V
-   $ ansible --version
+   . .venv/bin/activate
+   python -V
+   ansible --version
    ```
 
    ---

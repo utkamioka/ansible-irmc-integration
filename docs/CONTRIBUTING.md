@@ -43,9 +43,9 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
 1. The directory structure is critical for running the project as an Ansible collection. Clone the repository as follows:
 
    ```shell
-   $ mkdir -p ~/git/ansible_collections/fsas && cd $_
-   $ git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
-   $ pwd
+   mkdir -p ~/git/ansible_collections/fsas && cd $_
+   git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
+   pwd
    # => ~/git/ansible_collections/fsas/primergy
    ```
 
@@ -66,13 +66,15 @@ This project adheres to the [Ansible Community Code of Conduct](https://docs.ans
 
    ```shell
    # Using Rye
-   $ rye run python -V
-   $ rye run ansible --version
+   rye run python -V
+   rye run ansible --version
+   ```
 
+   ```shell
    # Activating the virtual environments
-   $ . .venv/bin/activate
-   $ python -V
-   $ ansible --version
+   . .venv/bin/activate
+   python -V
+   ansible --version
    ```
 
    ---
