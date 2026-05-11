@@ -12,12 +12,12 @@ __metaclass__ = type
 from unittest.mock import Mock, patch, MagicMock
 from requests.structures import CaseInsensitiveDict
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import (
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import (
     iRMC,
     Response,
     _parse_irmc_version_from_server_header,
 )
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import MockLogger
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import MockLogger
 
 
 class TestResponse:

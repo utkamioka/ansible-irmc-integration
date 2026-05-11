@@ -25,7 +25,7 @@
     # List iRMC tasks
     - block:
       - name: List iRMC tasks
-        fsas_temp_ns.primergy.irmc_task:
+        fsas.primergy.irmc_task:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -42,13 +42,13 @@
     # Get specific task information
     - block:
       - name: Get specific task information
-        fsas_temp_ns.primergy.irmc_task:
+        fsas.primergy.irmc_task:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
           validate_certs: "{{ validate_certificate }}"
           command: "get"
-          id: 3
+          id: "{{ id | int }}"
         register: get
         delegate_to: localhost
       - name: Show specific task

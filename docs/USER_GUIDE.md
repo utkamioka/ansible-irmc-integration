@@ -1,14 +1,14 @@
-# Ansible Collection `fsas_temp_ns.primergy` User Guide
+# Ansible Collection `fsas.primergy` User Guide
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/ansible-irmc-integration).
 
 ## 1. Introduction
 
-This document is a guide for users of Ansible collection `fsas_temp_ns.primergy`.  
+This document is a guide for users of Ansible collection `fsas.primergy`.  
 Ansible collections are packages that bundle Ansible playbooks, modules, roles, plugins, documentation, and more.  
-Ansible collection `fsas_temp_ns.primergy` aims to automate configuration tasks
+Ansible collection `fsas.primergy` aims to automate configuration tasks
 based on PRIMERGY's "Environment and setting sheet" and provides Ansible roles and modules.
 
 This user guide provides information on setting up the Ansible collection,
@@ -31,11 +31,11 @@ This document is intended for users with basic knowledge of Ansible.
 
 #### Python Modules
 
-- `ansible` >= 8.0.0
+- `ansible` >= 10.7.0
 - `pywinrm` >= 0.5.0
-- `requests` >= 2.32.0
+- `requests` >= 2.33.1
 - `requests_toolbelt` >= 1.0.0
-- `urllib3` >= 2.5.0
+- `urllib3` >= 2.6.3
 
 ### Setting Up Ansible Execution Environment
 
@@ -43,16 +43,16 @@ Create and activate a Python virtual environment (venv),
 then install the necessary Python modules including Ansible:
 
 ```shell
-$ mkdir -p ~/ansible/primergy && cd $_  # Create and move to a directory of your choice
-$ python -m venv venv && . $_/bin/activate
-(venv) $ python -m pip install ansible pywinrm requests requests_toolbelt urllib3
+mkdir -p ~/ansible/primergy && cd $_  # Create and move to a directory of your choice
+python -m venv venv && . $_/bin/activate
+python -m pip install ansible pywinrm requests requests_toolbelt urllib3
 ```
 
 Use Ansible installed in the virtual environment (venv)
-to install the Ansible collection `fsas_temp_ns.primergy` from <https://galaxy.ansible.com/>:
+to install the Ansible collection `fsas.primergy` from <https://galaxy.ansible.com/>:
 
 ```bash
-(venv) $ ansible-galaxy collection install fsas_temp_ns.primergy
+ansible-galaxy collection install fsas.primergy
 ```
 
 ### Example Inventory File Configuration
@@ -96,7 +96,7 @@ ansible_winrm_server_cert_validation=ignore
 Retrieve and display the configuration and settings of the specified iRMC device:
 
 ```shell
-$ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+$ ansible localhost -m fsas.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
 localhost | SUCCESS => {
     "changed": false,
     "facts": {
@@ -140,12 +140,12 @@ New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Ena
 ### Overall Structure of the Collection
 
 For a detailed list of modules and roles in this collection,
-refer to the [Ansible Galaxy Collection Page](https://galaxy.ansible.com/fsas_temp_ns/primergy).
+refer to the [Ansible Galaxy Collection Page](https://galaxy.ansible.com/fsas/primergy).
 
 ### How to Use Roles
 
 Refer to the [Configuration Guide](./CONFIGURATION.md)
-(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/CONFIGURATION/)).
+(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/CONFIGURATION/)).
 
 ### Description of Sample Playbooks
 
@@ -153,7 +153,7 @@ Sample playbooks are provided in `examples/playbooks/`.
 
 For usage information,
 Refer to the [Sample Playbook Documentation](./EXAMPLE_PLAYBOOKS.md)
-(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/EXAMPLE_PLAYBOOKS/)).
+(link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/EXAMPLE_PLAYBOOKS/)).
 
 ### Troubleshooting
 
@@ -186,7 +186,7 @@ We cannot address questions about Red Hat products, how to use Ansible, or Ansib
 #### GitHub Issues
 
 For public feedback or contribution proposals, please use the GitHub "Issues" page.  
-GitHub Issues: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration/issues>
+GitHub Issues: <https://github.com/fujitsu/ansible-irmc-integration/issues>
 
 #### Request When Providing Feedback
 
@@ -220,7 +220,7 @@ For details, refer to this URL:
 ### Ansible Galaxy
 
 - <https://galaxy.ansible.com/>
-- <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/>
+- <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/>
 
 ### Ansible
 

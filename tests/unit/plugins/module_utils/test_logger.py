@@ -11,7 +11,7 @@ __metaclass__ = type
 
 from unittest.mock import Mock
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import (
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import (
     AnsibleLogger,
     MockLogger,
 )

@@ -24,7 +24,7 @@
   tasks:
     # Disconnect Virtual CD
     - name: Disconnect Virtual CD
-      fsas_temp_ns.primergy.irmc_connectvm:
+      fsas.primergy.irmc_connectvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -36,7 +36,7 @@
 
     # Connect Virtual CD
     - name: Connect Virtual CD
-      fsas_temp_ns.primergy.irmc_connectvm:
+      fsas.primergy.irmc_connectvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -48,7 +48,7 @@
 
     # Disconnect Virtual HD
     - name: Disconnect Virtual HD
-      fsas_temp_ns.primergy.irmc_connectvm:
+      fsas.primergy.irmc_connectvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -60,7 +60,7 @@
 
     # Connect Virtual HD
     - name: Connect Virtual HD
-      fsas_temp_ns.primergy.irmc_connectvm:
+      fsas.primergy.irmc_connectvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

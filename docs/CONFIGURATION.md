@@ -1,12 +1,12 @@
-# Ansible Collection `fsas_temp_ns.primergy` Configuration Guide
+# Ansible Collection `fsas.primergy` Configuration Guide
 
 **Note**:
 This document may not display properly when viewed on <https://galaxy.ansible.com/>.
-Therefore, it is recommended to view it on [github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration).
+Therefore, it is recommended to view it on [github.com](https://github.com/fujitsu/ansible-irmc-integration).
 
 ## 1. Introduction
 
-This document explains how to use each role provided in Ansible collection `fsas_temp_ns.primergy`,
+This document explains how to use each role provided in Ansible collection `fsas.primergy`,
 along with examples of playbooks.  
 This configuration guide uses Ansible to perform various settings of PRIMERGY's iRMC,
 install the OS (Windows Server), and configure Windows Server.
@@ -59,7 +59,7 @@ Please download the firmware in advance:
 *1: The serial number is listed in the system information at `https://<iRMC IP Address>/system`.
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_update_irmc/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_update_irmc/>
 - If applying to different models simultaneously,
   you need to specify firmware corresponding to each model.
   Refer to the parameter `irmc_firmware_path_mapping`.
@@ -81,7 +81,7 @@ Please download the firmware in advance:
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_update_irmc
+    - role: fsas.primergy.irmc_update_irmc
       vars:
         tftp_server: 192.0.2.1
         irmc_firmware_path: "RX1330_M6/irmc/D4132D4132iRMCKronos6FirmwareUpdateforT_D41320264Ssdr0851_1312819.BIN"
@@ -108,7 +108,7 @@ Please download the firmware in advance:
 *1: The serial number is listed in the system information at `https://<iRMC IP Address>/system`.
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_update_bios/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_update_bios/>
 - If applying to different models simultaneously,
   you need to specify firmware corresponding to each model.
   Refer to the parameter `bios_firmware_path_mapping`.
@@ -124,7 +124,7 @@ Please download the firmware in advance:
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_update_bios
+    - role: fsas.primergy.irmc_update_bios
       vars:
         bios_firmware_path: "/any/where/firm/RX1330_M6/bios/D4133-A1x.R1.1.0.UPC"
 ```
@@ -135,7 +135,7 @@ Configure the SSL certificate and CA certificate of iRMC.
 
 - The SSL certificate and CA certificate must be created or obtained in advance.
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_set_certificate/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_set_certificate/>
 
 **Note**:
 
@@ -149,7 +149,7 @@ Configure the SSL certificate and CA certificate of iRMC.
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_set_certificate
+    - role: fsas.primergy.irmc_set_certificate
       vars:
         ssl_private_key_path: "/path/to/certs/server.key"
         ssl_cert_path: "/path/to/certs/server.crt"
@@ -168,7 +168,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   "2.4.4 Services" > "Simple Network Management Protocol (SNMP)"
   in [iRMC User Guide](#irmc-user-guide).
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_snmp/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_snmp/>
 - The parameter `irmc_snmp.trap_destination.servers[].index` should be specified with values from 0 to 6,
   corresponding to SNMP trap servers 1 to 7 in the "iRMC Web Interface".
 - Parameters that do not need to be changed do not need to be described.
@@ -179,7 +179,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_snmp
+    - role: fsas.primergy.irmc_snmp
       vars:
         irmc_snmp:
           enabled: true
@@ -209,7 +209,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   "2.4.4 Services" > "E-mail Alerting"
   in [iRMC User Guide](#irmc-user-guide).
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_email_alert/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_email_alert/>
 - Parameters that do not need to be changed do not need to be described.
 
 ```yaml
@@ -218,7 +218,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_email_alert
+    - role: fsas.primergy.irmc_email_alert
       vars:
         irmc_email_alert:
           enabled: true
@@ -248,7 +248,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
 - Also refer to "2.4.5 User Management"
   in [iRMC User Guide](#irmc-user-guide).
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_account_admin/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_account_admin/>
 - If you have changed the initial username `admin` from the default at the time of purchase,
   this role will not work.
 
@@ -258,7 +258,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_account_admin
+    - role: fsas.primergy.irmc_account_admin
       vars:
         irmc_account_admin:
           password: P@ssw0rd
@@ -292,7 +292,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   "2.4.9 Baseboard Management Controller" > "Time Synchronization"
   in [iRMC User Guide](#irmc-user-guide).
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_set_ntp/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_set_ntp/>
 
 ```yaml
 ---
@@ -300,7 +300,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_set_ntp
+    - role: fsas.primergy.irmc_set_ntp
       vars:
         ntp_server_primary: 192.0.2.1
         ntp_server_secondary: 192.0.2.2
@@ -321,7 +321,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   "2.4.9 Baseboard Management Controller" > "License Keys"
   in [iRMC User Guide](#irmc-user-guide).
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/irmc_set_license/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/irmc_set_license/>
 
 ```yaml
 ---
@@ -329,7 +329,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_set_license
+    - role: fsas.primergy.irmc_set_license
       vars:
         license_keys:
           - "XXX-XXXX-XXXX-XXXX-XXXX-XX-AA"
@@ -365,7 +365,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   connection: local
   gather_facts: false
   roles:
-    - role: fsas_temp_ns.primergy.irmc_install_windows
+    - role: fsas.primergy.irmc_install_windows
       vars:
         share_type: NFS
         server: 192.0.2.1
@@ -395,7 +395,7 @@ in [Environment and setting sheet (PRIMERGY)](#environment-and-setting-sheet-har
   gather_facts: false
   tasks:
     - name: Turn on the device
-      fsas_temp_ns.primergy.irmc_powerstate:
+      fsas.primergy.irmc_powerstate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -445,13 +445,13 @@ in "環境設定シート –ServerView Installation Manager編-" (CA92344-0149-
 Allocate unused storage space to a new drive.
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_data_drive/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_data_drive/>
 
 ```yaml
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_data_drive
+    - role: fsas.primergy.win_data_drive
       vars:
         op: "create"
         drive_letter: D
@@ -465,13 +465,13 @@ sheet "Win2K19_ガイド(1)" > "基本設定" > "名前" and "組織名"
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_organization_owner/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_organization_owner/>
 
 ```yaml
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_organization_owner
+    - role: fsas.primergy.win_organization_owner
       vars:
         organization: Fsas Technologies Inc.
         owner: Fsas Tarou
@@ -484,13 +484,13 @@ sheet "Win2K19_ガイド(1)" > "基本設定" > "コンピュータ名"
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_hostname/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_hostname/>
 
 ```yaml
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_hostname
+    - role: fsas.primergy.win_hostname
       vars:
         hostname: webserver01
 ```
@@ -502,7 +502,7 @@ sheet "Win2K19_ガイド(1)" > "基本設定" > "タイムゾーン", "地域と
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_locale/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_locale/>
 - Depending on language you set,
   access to `https://go.microsoft.com/` may occur to download the language pack.
   Therefore, depending on the environment,
@@ -512,7 +512,7 @@ in [Environment and setting sheet (Windows Server)](#environment-and-setting-she
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_locale
+    - role: fsas.primergy.win_locale
       vars:
         language: "en-US"
         location: "244"
@@ -526,7 +526,7 @@ sheet "Win2K19_ガイド(2)" > "TCP/IP パラメータ 詳細設定" > "DNSサ�
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_dns/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_dns/>
 - If [joining a domain](#joining-a-domain),
   you need to specify DNS servers that are linked to domain controller.
 
@@ -534,7 +534,7 @@ in [Environment and setting sheet (Windows Server)](#environment-and-setting-she
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_dns
+    - role: fsas.primergy.win_dns
       vars:
         adapter_names: Ethernet
         ipv4_addresses:
@@ -549,13 +549,13 @@ sheet "Win2K19_ガイド(1)" > "システムの設定" > "参加先" and "ワー
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_set_membership/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_set_membership/>
 
 ```yaml
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_set_membership
+    - role: fsas.primergy.win_set_membership
       vars:
         state: workgroup
         workgroup: WORKGROUP
@@ -568,7 +568,7 @@ sheet "Win2K19_ガイド(1)" > "システムの設定" > "参加先", "ドメイ
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_set_membership/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_set_membership/>
 - When joining a domain,
   you need to [set up DNS servers](#dns-configuration) that are linked to domain controller in advance.
 
@@ -576,7 +576,7 @@ in [Environment and setting sheet (Windows Server)](#environment-and-setting-she
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_set_membership
+    - role: fsas.primergy.win_set_membership
       vars:
         state: domain
         domain: fti.ansible.local
@@ -593,13 +593,13 @@ sheet "Win2K19_ガイド(3)" > "「SNMPサービス」選択時のみ" > "SNMP�
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_snmp/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_snmp/>
 
 ```yaml
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_snmp
+    - role: fsas.primergy.win_snmp
       vars:
         agent:
           contact: MyContact
@@ -621,13 +621,13 @@ sheet "Win2K19_ガイド(3)" > "追加のパラメータ" > "Remote Desktop"
 in [Environment and setting sheet (Windows Server)](#environment-and-setting-sheet-serverview-installation-manager-).
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_set_rdp/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_set_rdp/>
 
 ```yaml
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_set_rdp
+    - role: fsas.primergy.win_set_rdp
       vars:
         enabled: true
 ```
@@ -654,7 +654,7 @@ Please download ServerView Agents in advance:
 7. Retrieve `ServerView\Agents\ServerViewAgents_Win_x64.exe`
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_serverview_agents/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_serverview_agents/>
 - Specify the path to the installer on the Ansible control node's file system for the `installer` parameter.  
   Specify an absolute path or a relative path from the playbook.
 
@@ -662,7 +662,7 @@ Please download ServerView Agents in advance:
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_serverview_agents
+    - role: fsas.primergy.win_serverview_agents
       vars:
         password: P@ssw0rd!
         installer: /any/where/ServerView/Agents/ServerViewAgents_Win_x64.exe
@@ -690,14 +690,14 @@ Please download AdoptOpenJDK in advance:
 2. Only AdoptOpenJDK is supported by this role. Other JDKs are not supported.
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_serverview_raidmanager/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_serverview_raidmanager/>
 - Specify path to the installer and `openjdk_installer` on Ansible control node's file system.  
   Specify an absolute path or a relative path from the playbook.
 
 ```yaml
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_serverview_raidmanager
+    - role: fsas.primergy.win_serverview_raidmanager
       vars:
         password: P@ssw0rd!
         installer: /any/where/ServerViewRAIDManagerWindows64bit/Windows/x64/ServerView_RAID_7.17.5_x64.exe
@@ -721,7 +721,7 @@ Please download ServerView Suite (ServerView Management and Serviceability DVD) 
 6. Extract `ServerViewManagementandServiceabilityDVD_<version>_*.zip` file and retrieve ISO file
 
 - For details on parameters, etc.,
-  refer to <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/content/role/win_dsnap/>
+  refer to <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/role/win_dsnap/>
 - For the `path` parameter, you can directly specify DSNAP (`*.exe`).  
   Although it increases effort to extract DSNAP from ISO file,
   it reduces time required to transfer files to the target node, thereby reducing the playbook execution time.  
@@ -733,7 +733,7 @@ Please download ServerView Suite (ServerView Management and Serviceability DVD) 
 ---
 - hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_dsnap
+    - role: fsas.primergy.win_dsnap
       vars:
         language: Japanese
         path: /path/to/SVS15.24.06.03.iso

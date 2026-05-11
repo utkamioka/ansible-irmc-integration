@@ -6,7 +6,7 @@
     irmc_firmware_path_mapping: "{{ irmc_firmware_path_mapping | default({}) }}"
 
 - name: Turn off the power of the iRMC device
-  fsas_temp_ns.primergy.irmc_powerstate:
+  fsas.primergy.irmc_powerstate:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -32,7 +32,7 @@
     fail_msg: "Invalid 'destination' parameter value. Please specify 'low', 'high', 1, or 2 to proceed with iRMC firmware update."
 
 - name: Get the facts of iRMC device (before update)
-  fsas_temp_ns.primergy.irmc_facts:
+  fsas.primergy.irmc_facts:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -77,7 +77,7 @@
   when: timeout is defined
 
 - name: Update iRMC firmware
-  fsas_temp_ns.primergy.irmc_fwbios_update:
+  fsas.primergy.irmc_fwbios_update:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -93,7 +93,7 @@
   delegate_to: localhost
 
 - name: Get the facts of iRMC device (after update)
-  fsas_temp_ns.primergy.irmc_facts:
+  fsas.primergy.irmc_facts:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"

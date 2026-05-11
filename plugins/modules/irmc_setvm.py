@@ -55,9 +55,9 @@ options:
         description: Name of the remote image.
         required:    true
     share_type:
-        description: Share type (NFS share or SMB share).
+        description: Share type (NFS, CIFS/SMB or HTTPS share).
         required:    false
-        choices:     ['NFS', 'SMB']
+        choices:     ['NFS', 'SMB', 'HTTPS']
     vm_domain:
         description: User domain in case of SMB share.
         required:    false
@@ -78,7 +78,7 @@ options:
 EXAMPLES = r'''
 # Set Virtual CD
 - name: Set Virtual CD
-  fsas_temp_ns.primergy.irmc_setvm:
+  fsas.primergy.irmc_setvm:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -96,7 +96,7 @@ EXAMPLES = r'''
 
 # Set Virtual HD
 - name: Set Virtual HD
-  fsas_temp_ns.primergy.irmc_setvm:
+  fsas.primergy.irmc_setvm:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -123,10 +123,10 @@ details:
 import json
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_scci_utils import setup_datadict
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_scci_utils import setup_datadict
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_setvirtualmedia(module):
@@ -234,7 +234,7 @@ def main():
         server=dict(required=True, type='str'),
         share=dict(required=True, type='str'),
         image=dict(required=True, type='str'),
-        share_type=dict(required=False, type='str', choices=['NFS', 'SMB']),
+        share_type=dict(required=False, type='str', choices=['NFS', 'SMB', 'HTTPS']),
         vm_domain=dict(required=False, type='str'),
         vm_user=dict(required=False, type='str'),
         vm_password=dict(required=False, type='str', no_log=True),

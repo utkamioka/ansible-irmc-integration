@@ -6,19 +6,19 @@
 このモジュールは、iRMCのsessionInformation APIを操作するためのクラスを提供します。
 """
 
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import, division, print_function, annotations
 
 __metaclass__ = type
 
 import time
 from typing import TYPE_CHECKING, Optional
 
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
 
 # typing.TYPE_CHECKINGは型チェックのときだけTrueになる
 # （循環インポート回避のため）型チェック時のみインポートされる
 if TYPE_CHECKING:
-    from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC, Response
+    from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC, Response
 
 
 class Session:
@@ -100,7 +100,7 @@ class Session:
                 # エラーで終了した場合はログを取得
                 if 'error' in session_status:
                     # 循環インポート回避のため、ここでインポート
-                    from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import Response
+                    from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import Response
                     body, header, _status = self.get_log()
                     return Response(body, header, 29)  # status=29はirmc.py::waitForFinish()と同じ挙動
                 else:

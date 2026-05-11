@@ -2,7 +2,7 @@
 - name: Change language settings to Chinese (Simplified, China)
   hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_locale
+    - role: fsas.primergy.win_locale
       vars:
         language: "zh-CN"
         location: "45"

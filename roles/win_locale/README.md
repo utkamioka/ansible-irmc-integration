@@ -41,7 +41,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_locale
+        - role: fsas.primergy.win_locale
           vars:
             language: "ja-JP"
             location: "122"

@@ -3,7 +3,7 @@
 **ご注意**：
 このドキュメントは、<https://galaxy.ansible.com/>上で閲覧する際に、
 レイアウトが崩れる場合があります。
-そのため[github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration)
+そのため[github.com](https://github.com/fujitsu/ansible-irmc-integration)
 上で閲覧することを推奨します。
 
 ## 1. はじめに
@@ -35,7 +35,7 @@
   詳細はこのURLを参照してください：
   <https://docs.ansible.com/ansible/latest/os_guide/intro_windows.html#using-windows-as-the-control-node>
 - このプロジェクトには二つのGitリポジトリがあります：
-  1. **公開用**: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration>
+  1. **公開用**: <https://github.com/fujitsu/ansible-irmc-integration>
   2. **社内開発用**: URL非公開
 
   当社社員として開発に参加する場合は「社内開発用」のGitリポジトリを使ってください。
@@ -48,47 +48,48 @@
    以下の方法でgitリポジトリをcloneしてください。
 
    ```shell
-   $ mkdir -p ~/git/ansible_collections/fsas_temp_ns && cd $_
-   $ git clone https://github.com/{{ NEW_ORG }}/ansible-irmc-integration.git primergy && cd $_
-   $ pwd
-   # => ~/git/ansible_collections/fsas_temp_ns/primergy
+   mkdir -p ~/git/ansible_collections/fsas && cd $_
+   git clone https://github.com/fujitsu/ansible-irmc-integration.git primergy && cd $_
+   pwd
+   # => ~/git/ansible_collections/fsas/primergy
    ```
 
    `~/git`は任意のパスで構いませんが、
-   `ansible_collections/fsas_temp_ns/primergy`というディレクトリ階層でcloneされている必要があります。
+   `ansible_collections/fsas/primergy`というディレクトリ階層でcloneされている必要があります。
 
 2. PythonおよびAnsible実行環境の構築を行います。
-   [Rye](https://rye.astral.sh/) でPythonプロジェクト環境を記述していますので、
-   `rye`コマンドを使って環境構築を行うのが最も簡単です。
-   `rye`コマンドのインストールについては <https://rye.astral.sh/guide/installation/> を参照してください。
-   RyeはPythonインタープリタのダウンロードも行いますので、Python実行環境を用意する必要はありません。
+   [uv](https://docs.astral.sh/uv/) でPythonプロジェクト環境を記述していますので、
+   `uv`コマンドを使って環境構築を行うのが最も簡単です。
+   `uv`コマンドのインストールについては <https://docs.astral.sh/uv/getting-started/installation/> を参照してください。
+   uvはPythonインタープリタのダウンロードも行いますので、Python実行環境を用意する必要はありません。
 
    ```shell
-   $ rye sync
-   Initializing new virtualenv in ~/git/ansible_collections/fsas_temp_ns/primergy/.venv
-   Python version: cpython@3.10.14
+   $ uv sync --dev
+   Using CPython 3.10.14
+   Creating virtual environment at: .venv
    （略）
-   Done!  
    ```
-  
-   Ryeを使って環境構築した場合、
-   インストールしたコマンドは`rye`コマンド経由で実行するか、
-   `rye sync`によって生成された仮想環境を有効化して実行します。
+
+   uvを使って環境構築した場合、
+   インストールしたコマンドは`uv run`コマンド経由で実行するか、
+   `uv sync`によって生成された仮想環境を有効化して実行します。
 
    ```shell
-   # ryeから実行
-   $ rye run python -V
-   $ rye run ansible --version
+   # uvから実行
+   uv run python -V
+   uv run ansible --version
+   ```
 
+   ```shell
    # 仮想環境を有効化して実行
-   $ . .venv/bin/activate
-   $ python -V
-   $ ansible --version
+   . .venv/bin/activate
+   python -V
+   ansible --version
    ```
 
    ---
 
-   Ryeを使わず環境構築する場合はPython3.10以降のPython実行環境を用意してください。
+   uvを使わず環境構築する場合はPython3.10以降のPython実行環境を用意してください。
    仮想環境（venv）を作成・有効化してから、必要なライブラリをインストールしてください。
 
    ```shell
@@ -97,6 +98,16 @@
    $ python -m venv .venv
    $ . .venv/bin/activate
    (.venv) $ python -m pip install -r requirements.lock -r requirements-dev.lock
+   ```
+
+   ---
+
+   パッケージの依存関係を追加・変更した場合は、以下のコマンドでロックファイルを更新してください。
+
+   ```shell
+   uv lock
+   uv export --no-hashes --no-dev -o requirements.lock
+   uv export --no-hashes -o requirements-dev.lock
    ```
 
 3. `ansible.cfg`ファイルに、`ansible_collections`ディレクトリがあるディレクトリを指定してください。
@@ -134,7 +145,7 @@
    - iRMC機器への疎通テストをします：
 
      ```shell
-     $ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+     $ ansible localhost -m fsas.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
      localhost | SUCCESS => {
          "changed": false,
          "facts": {
@@ -260,7 +271,7 @@
 - `ansible-test`によるユニットテストの実行方法は以下の通りです：
 
   ```shell
-  rye run ansible-test units --python 3.10
+  uv run ansible-test units --python 3.10
   ```
 
 ---

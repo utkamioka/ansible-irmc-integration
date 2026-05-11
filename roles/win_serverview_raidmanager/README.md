@@ -48,7 +48,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_serverview_raidmanager
+        - role: fsas.primergy.win_serverview_raidmanager
           vars:
             password: P@ssw0rd
             installer: "/path/to/installer/ServerView_RAID_x64.exe"

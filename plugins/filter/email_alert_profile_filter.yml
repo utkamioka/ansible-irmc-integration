@@ -6,19 +6,19 @@ DOCUMENTATION:
   author: Yutaka Kamioka <yutaka.kamioka@fujitsu.com>
   description:
     - NOT INTENDED FOR STANDALONE USE.
-    - Accepts parameters from the `fsas_temp_ns.primergy.irmc_email_alert` role and creates an E-mail alerting profile.
-    - Used within the `fsas_temp_ns.primergy.irmc_email_alert` role to call the `fsas_temp_ns.primergy.irmc_profiles` module.
+    - Accepts parameters from the `fsas.primergy.irmc_email_alert` role and creates an E-mail alerting profile.
+    - Used within the `fsas.primergy.irmc_email_alert` role to call the `fsas.primergy.irmc_profiles` module.
   options:
     data:
       description:
-        - Dictionary containing the parameters applied to the `fsas_temp_ns.primergy.irmc_email_alert` role.
+        - Dictionary containing the parameters applied to the `fsas.primergy.irmc_email_alert` role.
       required: true
       type: dict
 
 RETURN:
   _result:
     description:
-      - Dictionary containing the E-mail alerting profile to be applied to the `fsas_temp_ns.primergy.irmc_profiles` module.
+      - Dictionary containing the E-mail alerting profile to be applied to the `fsas.primergy.irmc_profiles` module.
     type: dict
 
 EXAMPLES: |
@@ -27,7 +27,7 @@ EXAMPLES: |
   import json
   import yaml
 
-  # Parameters to be specified for the `fsas_temp_ns.primergy.irmc_email_alert` role
+  # Parameters to be specified for the `fsas.primergy.irmc_email_alert` role
   s = '''
   email_alert:
     enabled: true
@@ -71,5 +71,5 @@ EXAMPLES: |
 
   result = email_alert_profile_filter(params)
 
-  # JSON-formatted profile to be applied to the "import" command of the `fsas_temp_ns.primergy.irmc_profiles` module
+  # JSON-formatted profile to be applied to the "import" command of the `fsas.primergy.irmc_profiles` module
   print(json.dumps(result, indent=2))

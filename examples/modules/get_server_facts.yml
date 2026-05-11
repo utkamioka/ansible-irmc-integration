@@ -23,7 +23,7 @@
   tasks:
     # Get basic server and iRMC facts
     - name: Get basic server and iRMC facts
-      fsas_temp_ns.primergy.irmc_facts:
+      fsas.primergy.irmc_facts:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -37,7 +37,7 @@
 
     # Get Virtual Media data
     - name: Get Virtual Media data
-      fsas_temp_ns.primergy.irmc_getvm:
+      fsas.primergy.irmc_getvm:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

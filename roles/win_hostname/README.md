@@ -31,7 +31,7 @@ Example Playbook
     ---
     - hosts: windows
       roles:
-        - role: fsas_temp_ns.primergy.win_hostname
+        - role: fsas.primergy.win_hostname
           vars:
             hostname: Hostname
 

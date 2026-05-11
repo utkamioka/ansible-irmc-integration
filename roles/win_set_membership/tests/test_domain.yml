@@ -2,9 +2,9 @@
 - name: Join a domain
   hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_set_membership
+    - role: fsas.primergy.win_set_membership
       vars:
         state: domain
-        domain: fti.test
+        domain_name: fti.test
         username: FTI\Administrator
         password: Admin000

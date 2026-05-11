@@ -27,7 +27,7 @@
         - get
       block:
         - name: Get SSL certificates
-          fsas_temp_ns.primergy.irmc_certificate:
+          fsas.primergy.irmc_certificate:
             irmc_url: "{{ inventory_hostname }}"
             irmc_username: "{{ irmc_user }}"
             irmc_password: "{{ irmc_password }}"
@@ -40,7 +40,7 @@
             var: certificates.certificates
 
     - name: Set SSL certificates
-      fsas_temp_ns.primergy.irmc_certificate:
+      fsas.primergy.irmc_certificate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

@@ -58,7 +58,7 @@ options:
 EXAMPLES = r'''
 - block:
   - name: List iRMC InternalEventLog
-    fsas_temp_ns.primergy.irmc_eventlog:
+    fsas.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -76,7 +76,7 @@ EXAMPLES = r'''
 # List iRMC SystemEventLog
 - block:
   - name: List iRMC SystemEventLog
-    fsas_temp_ns.primergy.irmc_eventlog:
+    fsas.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -95,7 +95,7 @@ EXAMPLES = r'''
 # Add '-e "id=xx"' to the command line argument of Playbook.
 - block:
   - name: Get specific InternalEventLog entry information
-    fsas_temp_ns.primergy.irmc_eventlog:
+    fsas.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -115,7 +115,7 @@ EXAMPLES = r'''
 # Add '-e "id=xx"' to the command line argument of Playbook.
 - block:
   - name: Get specific SystemEventLog entry information
-    fsas_temp_ns.primergy.irmc_eventlog:
+    fsas.primergy.irmc_eventlog:
       irmc_url: "{{ inventory_hostname }}"
       irmc_username: "{{ irmc_user }}"
       irmc_password: "{{ irmc_password }}"
@@ -133,7 +133,7 @@ EXAMPLES = r'''
 
 # Clear iRMC InternalEventLog
 - name: Clear iRMC InternalEventLog
-  fsas_temp_ns.primergy.irmc_eventlog:
+  fsas.primergy.irmc_eventlog:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -146,7 +146,7 @@ EXAMPLES = r'''
 
 # Clear iRMC SystemEventLog
 - name: Clear iRMC SystemEventLog
-  fsas_temp_ns.primergy.irmc_eventlog:
+  fsas.primergy.irmc_eventlog:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
@@ -217,9 +217,9 @@ details:
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.helpers import dig
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.irmc_client import iRMC
-from ansible_collections.fsas_temp_ns.primergy.plugins.module_utils.logger import AnsibleLogger
+from ansible_collections.fsas.primergy.plugins.module_utils.helpers import dig
+from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import iRMC
+from ansible_collections.fsas.primergy.plugins.module_utils.logger import AnsibleLogger
 
 
 def irmc_eventlog(module):

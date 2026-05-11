@@ -6,19 +6,19 @@ DOCUMENTATION:
   author: Yutaka Kamioka <yutaka.kamioka@fujitsu.com>
   description:
     - NOT INTENDED FOR STANDALONE USE.
-    - Accepts parameters from the `fsas_temp_ns.primergy.irmc_snmp` role and creates an SNMP profile.
-    - Used within the `fsas_temp_ns.primergy.irmc_snmp` role to call the `fsas_temp_ns.primergy.irmc_profiles` module.
+    - Accepts parameters from the `fsas.primergy.irmc_snmp` role and creates an SNMP profile.
+    - Used within the `fsas.primergy.irmc_snmp` role to call the `fsas.primergy.irmc_profiles` module.
   options:
     data:
       description:
-        - Dictionary containing the parameters applied to the `fsas_temp_ns.primergy.irmc_snmp` role.
+        - Dictionary containing the parameters applied to the `fsas.primergy.irmc_snmp` role.
       required: true
       type: dict
 
 RETURN:
   _result:
     description:
-      - Dictionary containing the SNMP profile to be applied to the `fsas_temp_ns.primergy.irmc_profiles` module.
+      - Dictionary containing the SNMP profile to be applied to the `fsas.primergy.irmc_profiles` module.
     type: dict
 
 EXAMPLES: |
@@ -27,7 +27,7 @@ EXAMPLES: |
   import json
   import yaml
 
-  # Parameters to be specified for the `fsas_temp_ns.primergy.irmc_snmp` role
+  # Parameters to be specified for the `fsas.primergy.irmc_snmp` role
   s = '''
   snmp:
     enabled: true
@@ -52,5 +52,5 @@ EXAMPLES: |
 
   result = snmp_profile_filter(params)
 
-  # JSON-formatted profile to be applied to the "import" command of the `fsas_temp_ns.primergy.irmc_profiles` module
+  # JSON-formatted profile to be applied to the "import" command of the `fsas.primergy.irmc_profiles` module
   print(json.dumps(result, indent=2))

@@ -34,7 +34,7 @@
     # Get server ID LED state
     - block:
       - name: Get ID LED state
-        fsas_temp_ns.primergy.irmc_idled:
+        fsas.primergy.irmc_idled:
           irmc_url: "{{ inventory_hostname }}"
           irmc_username: "{{ irmc_user }}"
           irmc_password: "{{ irmc_password }}"
@@ -50,7 +50,7 @@
 
     # Set server ID LED state
     - name: Set server ID LED state
-      fsas_temp_ns.primergy.irmc_idled:
+      fsas.primergy.irmc_idled:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"

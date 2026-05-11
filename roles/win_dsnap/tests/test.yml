@@ -2,7 +2,7 @@
 - name: Set up DSNAP
   hosts: windows
   roles:
-    - role: fsas_temp_ns.primergy.win_dsnap
+    - role: fsas.primergy.win_dsnap
       vars:
         language: Japanese
         path: /path/to/dsnapfile/SVS15.24.06.03.iso

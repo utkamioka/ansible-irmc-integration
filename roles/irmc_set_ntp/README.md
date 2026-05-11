@@ -35,7 +35,7 @@ playbook.yml:
       hosts: iRMC_group
       gather_facts: false
       roles:
-        - role: fsas_temp_ns.primergy.irmc_set_ntp
+        - role: fsas.primergy.irmc_set_ntp
           vars:
             ntp_server_primary: 192.0.2.1
             ntp_server_secondary: 192.0.2.2

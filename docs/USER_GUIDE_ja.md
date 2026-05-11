@@ -1,17 +1,17 @@
-# Ansibleコレクション `fsas_temp_ns.primergy` ユーザーガイド
+# Ansibleコレクション `fsas.primergy` ユーザーガイド
 
 **ご注意**：
 このドキュメントは、<https://galaxy.ansible.com/>上で閲覧する際に、
 レイアウトが崩れる場合があります。
-そのため[github.com](https://github.com/{{ NEW_ORG }}/ansible-irmc-integration)
+そのため[github.com](https://github.com/fujitsu/ansible-irmc-integration)
 上で閲覧することを推奨します。
 
 ## 1. はじめに
 
-このドキュメントはAnsibleコレクション`fsas_temp_ns.primergy`の利用者に向けたガイドです。
+このドキュメントはAnsibleコレクション`fsas.primergy`の利用者に向けたガイドです。
 Ansibleコレクションとは、Ansibleのプレイブックやモジュール、
 ロール、プラグイン、ドキュメントなどをまとめたパッケージです。
-Ansibleコレクション`fsas_temp_ns.primergy`では、
+Ansibleコレクション`fsas.primergy`では、
 PRIMERGYの「環境設定シート」に基づいた設定作業の自動化を目的とし、
 Ansibleのロールやモジュールを提供しています。
 
@@ -37,11 +37,11 @@ Ansibleコレクションのセットアップ方法やロールの使用例、
 
 #### Pythonモジュール
 
-- `ansible` >= 8.0.0
+- `ansible` >= 10.7.0
 - `pywinrm` >= 0.5.0
-- `requests` >= 2.32.0
+- `requests` >= 2.33.1
 - `requests_toolbelt` >= 1.0.0
-- `urllib3` >= 2.5.0
+- `urllib3` >= 2.6.3
 
 ### Ansible実行環境のセットアップ
 
@@ -49,16 +49,16 @@ Pythonの仮想環境（venv）を作成・有効化してから、
 Ansibleを含む必要なPythonモジュールをインストールします：
 
 ```shell
-$ mkdir -p ~/ansible/primergy && cd $_  # 任意のディレクトリを作成し移動
-$ python -m venv venv && . $_/bin/activate
-(venv) $ python -m pip install ansible pywinrm requests requests_toolbelt urllib3
+mkdir -p ~/ansible/primergy && cd $_  # 任意のディレクトリを作成し移動
+python -m venv venv && . $_/bin/activate
+python -m pip install ansible pywinrm requests requests_toolbelt urllib3
 ```
 
 仮想環境（venv）にインストールしたAnsibleを使って、
-<https://galaxy.ansible.com/>からAnsibleコレクション`fsas_temp_ns.primergy`をインストールします：
+<https://galaxy.ansible.com/>からAnsibleコレクション`fsas.primergy`をインストールします：
 
 ```bash
-(venv) $ ansible-galaxy collection install fsas_temp_ns.primergy
+ansible-galaxy collection install fsas.primergy
 ```
 
 ### インベントリファイルの設定例
@@ -103,7 +103,7 @@ ansible_winrm_server_cert_validation=ignore
 指定したiRMC機器の構成・設定などを取得し表示します：
 
 ```shell
-$ ansible localhost -m fsas_temp_ns.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
+$ ansible localhost -m fsas.primergy.irmc_facts -a "irmc_url=192.0.2.1 irmc_username=admin irmc_password=P@ssw0rd! validate_certs=false"
 localhost | SUCCESS => {
     "changed": false,
     "facts": {
@@ -146,13 +146,13 @@ New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Ena
 ### コレクションの全体構成
 
 このコレクションの詳細なモジュールやロールの一覧については、
-[Ansible Galaxyのコレクションページ](https://galaxy.ansible.com/fsas_temp_ns/primergy)
+[Ansible Galaxyのコレクションページ](https://galaxy.ansible.com/fsas/primergy)
 を参照してください。
 
 ### ロールの使い方
 
 [設定ガイド](./CONFIGURATION_ja.md)
-（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/CONFIGURATION_ja/)）
+（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/CONFIGURATION_ja/)）
 を参照してください。
 
 ### サンプルプレイブックの説明
@@ -161,7 +161,7 @@ New-NetFirewallRule -Name "WinRM HTTP" -DisplayName "Allow WinRM over HTTP" -Ena
 
 使い方については、
 [サンプルプレイブック説明書](./EXAMPLE_PLAYBOOKS_ja.md)
-（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/docs/EXAMPLE_PLAYBOOKS_ja/)）
+（link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/EXAMPLE_PLAYBOOKS_ja/)）
 を参照してください。
 
 ### トラブルシューティング
@@ -194,7 +194,7 @@ Red Hat製品やAnsibleの利用方法、仕様に関するご質問は、本窓
 #### GitHub Issues
 
 公開のフィードバックや貢献のご提案は、GitHubの「Issues」ページにて受け付けています。  
-GitHub Issues: <https://github.com/{{ NEW_ORG }}/ansible-irmc-integration/issues>
+GitHub Issues: <https://github.com/fujitsu/ansible-irmc-integration/issues>
 
 #### フィードバックの際のお願い
 
@@ -228,7 +228,7 @@ Windows Subsystem for Linux（WSL）では実行できますが、
 ### Ansible Galaxy
 
 - <https://galaxy.ansible.com/>
-- <https://galaxy.ansible.com/ui/repo/published/fsas_temp_ns/primergy/>
+- <https://galaxy.ansible.com/ui/repo/published/fsas/primergy/>
 
 ### Ansible
 

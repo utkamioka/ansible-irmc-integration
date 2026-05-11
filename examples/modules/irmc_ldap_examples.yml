@@ -24,7 +24,7 @@
   tasks:
     # Get LDAP data
     - name: Get LDAP data
-      fsas_temp_ns.primergy.irmc_ldap:
+      fsas.primergy.irmc_ldap:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
@@ -38,7 +38,7 @@
 
     # Set LDAP data
     - name: Set LDAP data
-      fsas_temp_ns.primergy.irmc_ldap:
+      fsas.primergy.irmc_ldap:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
