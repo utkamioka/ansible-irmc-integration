@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # example playbook for module 'irmc_license'
-# to manage iRMC user accounts
+# to manage iRMC license keys
 
 # variables not defined in this playbook are expected to be provided
 # elsewhere, e.g. in group_vars/all
@@ -22,12 +22,12 @@
   gather_facts: false
 
   tasks:
-    # Get iRMC license key
-    - name: Get and show iRMC license key
+    # Get iRMC licenses
+    - name: Get and show iRMC licenses
       tags:
         - get
       block:
-        - name: Get iRMC license key
+        - name: Get iRMC licenses
           fsas.primergy.irmc_license:
             irmc_url: "{{ inventory_hostname }}"
             irmc_username: "{{ irmc_user }}"
@@ -37,9 +37,9 @@
           register: license
           delegate_to: localhost
 
-        - name: Show certificates
+        - name: Show iRMC licenses
           ansible.builtin.debug:
-            var: license.license_key
+            var: license.licenses
 
 
     # Set iRMC license key

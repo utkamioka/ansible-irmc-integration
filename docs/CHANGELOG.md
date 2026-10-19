@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `irmc_license` module now uses the iRMC Redfish API instead of the deprecated SCCI API (`/config`).
+  - **Breaking change**: `command: get` no longer returns `license_key`, because the license key string cannot be read via Redfish.
+    It returns `licenses` (list of `name`, `type` and `remaining_time_h`) instead.
+  - The `license_key` parameter is now treated as sensitive (`no_log`).
+
+### Fixed
+
+- Fixed the short description of the `irmc_license` module ("manage iRMC user accounts" → "manage iRMC license keys").
+
 ## [3.1.0] - 2026-08-24
 
 ### Changed

@@ -105,7 +105,7 @@ The following modules are part of this project:
 - [irmc_getvm](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_getvm/) - get iRMC Virtual Media Data
 - [irmc_idled](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_idled/) - get or set server ID LED
 - [irmc_ldap](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_ldap/) - manage iRMC LDAP settings
-- [irmc_license](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_license/) - manage iRMC user accounts
+- [irmc_license](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_license/) - manage iRMC license keys
 - [irmc_ntp](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_ntp/) - manage iRMC time options
 - [irmc_powerstate](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_powerstate/) - get or set server power state
 - [irmc_profiles](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_profiles/) - handle iRMC profiles

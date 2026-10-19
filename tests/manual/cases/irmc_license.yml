@@ -8,21 +8,22 @@
 #       ライセンスは購入物で、失っても Ansible では復元できない。
 # ############################################################################
 #
-# 電源操作もサーバ再起動も不要。SCCI 1往復(ConfBMCLicenseKey / opcodeext 0x1980)で数秒。
+# 電源操作もサーバ再起動も不要。Redfish API 1往復で数秒。
+#   get: GET  /redfish/v1/Managers/iRMC/Oem/{vendor}/iRMCConfiguration/Licenses
+#   set: POST /redfish/v1/Managers/iRMC/Actions/Oem/{oem_prefix}Manager.AddLicense
+#   (vendor / oem_prefix は ts_fujitsu / FTS が M7以前、Fsas / Fsas が M8以降)
 #
-# 実機で get が空文字列を返すことを確認している(failed=0 で成功はする)。
-# ライセンス未導入なのか読み出しが塞がれているのかはモジュールのコードからは区別できない。
+# get はライセンスの一覧(licenses: name / type / remaining_time_h)を返す。
+# ライセンスキーの文字列そのものは Redfish では読み出せない。
 # そのため「get で読んだ自機のキーを set で書き戻す」往復は行えず、
 # 無効キーが拒否されることをもって set 経路の検証としている。
 #
-# set の正常系はテストできない。ライセンスは復元できず、モジュールの notes によれば
-# キーは system-locked なので他機のものは使えない。
-#
-#   A license key which was read from an iRMC is 'system-locked'.
-#   It can imported to the same iRMC, but not to another iRMC.
+# set の正常系はテストできない。ライセンスは購入物で復元できず、
+# 旧モジュール(SCCI 版)の notes によればキーは system-locked なので他機のものは使えない。
 #
 # 使っている無効キーは書式だけ実物に似せたプレースホルダ。署名検証まで到達することが
 # 期待でき、かつ明らかに実在しない値になっている。
+# 実機では HTTP 400 "Invalid license key value provided." で拒否されることを確認している。
 #
 # ############################################################################
 # reject の act は「失敗を期待するステップ」。expect_recap に failed: 1 を書くと
@@ -34,7 +35,7 @@
 # ############################################################################
 #
 # before / after の get は、往復してもライセンスが壊れていないことの確認。
-# 両方とも同じ値(現状は空文字列)になるのが正常。
+# 両方とも同じ licenses(同じ name / type)になるのが正常。
 
 - module: irmc_license
   name: get
