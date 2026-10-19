@@ -12,10 +12,15 @@
 #   - rtc_mode と time_zone_location は機体ごとに値が異なっていた(RX2450 M2 は
 #     "UTC/GMT" + "UTC" 運用)。このケースを流すと act の値で上書きされ、そのまま残る
 #
-# irmc_ntp は現在値に関わらず changed=True を返すため、expect_recap の changed: 1 は
-# 「タスクが走った」ことしか示さない。実質的なエビデンスは before/after の5項目の差。
+# irmc_ntp は現在値と比べて差分がある項目だけを変更し、差分が無ければ changed=False を返す。
+# arrange で act とは違う値にしておくので、act の changed: 1 は「実際に変更が起きた」ことを示す。
+# 変更内容そのもののエビデンスは before/after の5項目の差。
 #
-# time_mode の "MMB NTP" はブレードシャーシの管理ブレード用なのでここでは使わない。
+# time_mode / rtc_mode は旧仕様の表記("System RTC" / "local time" など)と Redfish の表記
+# ("iRMC" / "LocalTime" など)のどちらでも指定できる。このケースは旧仕様の表記で書いている
+# (role irmc_set_ntp が旧仕様の表記で渡すため、その経路を確かめる意味もある)。
+# get の結果は Redfish の表記で返る。旧仕様の表記で見たい場合は vars に legacy_output: true を渡す。
+# (time_mode の "MMB NTP" は PRIMERGY に存在しない機能なので廃止した)
 
 - module: irmc_ntp
   name: get

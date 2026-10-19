@@ -34,6 +34,7 @@
             irmc_password: "{{ irmc_password }}"
             validate_certs: "{{ validate_certificate }}"
             command: "get"
+            legacy_output: "{{ legacy_output | default(omit) }}"
           register: time
           delegate_to: localhost
         - name: Show iRMC time settings

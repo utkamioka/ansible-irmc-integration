@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `irmc_ntp` module now uses the iRMC Redfish API instead of the deprecated SCCI API (`/config`).
+  - `command: set` now changes only the options that differ from the current settings,
+    and reports `changed: false` when nothing needs to be changed.
+  - `command: set` now also returns `time_settings` with the settings after the change.
+  - **Breaking change**: `time_mode` and `rtc_mode` in the returned `time_settings` are now the Redfish values
+    (`iRMC`, `NTP`, `LocalTime`, `UTC`) instead of the legacy values (`System RTC`, `NTP`, `local time`, `UTC/GMT`).
+    Set the new option `legacy_output: true` to get the legacy values as before.
+    The `irmc_set_ntp` role is not affected.
+
+### Added
+
+- `irmc_ntp`: `time_mode` and `rtc_mode` now also accept the Redfish values
+  (`iRMC` for `System RTC`, `LocalTime` for `local time`, `UTC` for `UTC/GMT`).
+- `irmc_ntp`: `legacy_output` option to return `time_mode` and `rtc_mode` with the legacy values.
+
+### Removed
+
+- `irmc_ntp`: the `MMB NTP` choice of `time_mode` has been removed, because PRIMERGY servers do not have this feature.
+
+### Fixed
+
+- `irmc_ntp`: `command: set` without any option to change reported `changed: true` although nothing was changed.
+  It now reports `changed: false`.
+
 ## [3.1.0] - 2026-08-24
 
 ### Changed
