@@ -10,6 +10,8 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from unittest.mock import Mock, patch, MagicMock
+
+import pytest
 from requests.structures import CaseInsensitiveDict
 
 from ansible_collections.fsas.primergy.plugins.module_utils.irmc_client import (
@@ -1218,3 +1220,164 @@ class TestContentTypeAutoDetection:
 
         # レスポンスの検証
         assert response.status == 200
+
+
+def _mock_session(mock_session_class, status=200, body=None):
+    """requests.Sessionのモックを組み立てて返します。"""
+    body = {'data': 'test'} if body is None else body
+    mock_session = Mock()
+    mock_response = Mock()
+    mock_response.status_code = status
+    mock_response.json.return_value = body
+    mock_response.headers = {}
+    mock_response.text = '{"data": "test"}'
+    mock_response.connection = Mock()
+    mock_session.request.return_value = mock_response
+    mock_session_class.return_value = mock_session
+    return mock_session
+
+
+class TestIRMCCacheInvalidation:
+    """書き込み系リクエストによるキャッシュ破棄のテスト"""
+
+    @pytest.mark.parametrize('method', ['post', 'put', 'patch'])
+    @patch('requests.Session')
+    def test_write_with_body_clears_cache(self, mock_session_class, method):
+        """POST / PUT / PATCH の後は、同じパスのGETが再送される"""
+        mock_session = _mock_session(mock_session_class)
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+
+        irmc.get('/redfish/v1/Systems/0')
+        getattr(irmc, method)('/redfish/v1/Systems/0', {'key': 'value'})
+        irmc.get('/redfish/v1/Systems/0')
+
+        # GET, 書き込み, GET の3回
+        assert mock_session.request.call_count == 3
+
+    @patch('requests.Session')
+    def test_delete_clears_cache(self, mock_session_class):
+        """DELETE の後は、同じパスのGETが再送される"""
+        mock_session = _mock_session(mock_session_class)
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+
+        irmc.get('/redfish/v1/Systems/0')
+        irmc.delete('/redfish/v1/Systems/0/Something')
+        irmc.get('/redfish/v1/Systems/0')
+
+        assert mock_session.request.call_count == 3
+
+    @patch('requests.Session')
+    def test_write_to_other_path_clears_whole_cache(self, mock_session_class):
+        """アクションへのPOSTでも、別のパスのキャッシュまで捨てられる"""
+        mock_session = _mock_session(mock_session_class)
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+
+        irmc.get('/redfish/v1/Managers/iRMC/NetworkProtocol/HTTPS/Certificates/Certificate0')
+        irmc.post('/redfish/v1/Managers/iRMC/NetworkProtocol/HTTPS/Certificates/Certificate0/Actions/X', '')
+        irmc.get('/redfish/v1/Managers/iRMC/NetworkProtocol/HTTPS/Certificates/Certificate0')
+
+        assert mock_session.request.call_count == 3
+
+    @patch('requests.Session')
+    def test_get_only_keeps_cache(self, mock_session_class):
+        """GETだけならキャッシュは使われ続ける"""
+        mock_session = _mock_session(mock_session_class)
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+
+        irmc.get('/redfish/v1/Systems/0')
+        irmc.get('/redfish/v1/Managers/iRMC')
+        irmc.get('/redfish/v1/Systems/0')
+
+        assert mock_session.request.call_count == 2
+
+    @patch('requests.Session')
+    def test_write_failure_clears_cache(self, mock_session_class):
+        """送信中に例外が起きても（iRMC側で反映済みの可能性があるため）キャッシュは捨てられる"""
+        mock_session = _mock_session(mock_session_class)
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+        irmc.get('/redfish/v1/Systems/0')
+
+        ok_response = mock_session.request.return_value
+        mock_session.request.side_effect = [ConnectionError('connection refused'), ok_response]
+        irmc.patch('/redfish/v1/Systems/0', {'key': 'value'})
+        irmc.get('/redfish/v1/Systems/0')
+
+        # GET, PATCH(例外), GET
+        assert mock_session.request.call_count == 3
+
+    def test_clear_cache(self):
+        """clear_cache() でキャッシュが空になる"""
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+        irmc._cache[('/redfish/v1', frozenset())] = Response({}, {}, 200)
+
+        irmc.clear_cache()
+
+        assert irmc._cache == {}
+
+
+class TestIRMCWaitUntilAvailable:
+    """wait_until_available() のテスト"""
+
+    class FakeClock:
+        """sleep() で進むだけの時計です。"""
+
+        def __init__(self):
+            self.now = 0.0
+            self.sleeps = []
+
+        def sleep(self, seconds):
+            self.sleeps.append(seconds)
+            self.now += seconds
+
+        def __call__(self):
+            return self.now
+
+    @pytest.fixture
+    def clock(self):
+        """FakeClockを返すfixtureです。"""
+        return self.FakeClock()
+
+    @pytest.fixture
+    def irmc(self):
+        """GETをモックに差し替えたiRMCを返すfixtureです。"""
+        irmc = iRMC('192.0.2.1', 'admin', 'password')
+        irmc.get = Mock()
+        return irmc
+
+    def test_available_immediately(self, irmc, clock):
+        """最初のGETで200なら、待たずにTrue"""
+        irmc.get.return_value = Response({}, {}, 200)
+
+        assert irmc.wait_until_available(sleep=clock.sleep, clock=clock) is True
+        irmc.get.assert_called_once_with('/redfish/v1', use_cache=False)
+        assert clock.sleeps == []
+
+    def test_initial_delay(self, irmc, clock):
+        """initial_delay秒待ってから最初のGETをする"""
+        irmc.get.return_value = Response({}, {}, 200)
+
+        assert irmc.wait_until_available(initial_delay=10, sleep=clock.sleep, clock=clock) is True
+        assert clock.sleeps == [10]
+
+    def test_available_after_errors(self, irmc, clock):
+        """接続エラーや200以外の間は、interval秒おきに再試行する"""
+        irmc.get.side_effect = [
+            ConnectionError('connection refused'),
+            Response({}, {}, 503),
+            Response({}, {}, 200),
+        ]
+
+        assert irmc.wait_until_available(path='/redfish/v1/Managers/iRMC', interval=5,
+                                         sleep=clock.sleep, clock=clock) is True
+        assert irmc.get.call_count == 3
+        irmc.get.assert_called_with('/redfish/v1/Managers/iRMC', use_cache=False)
+        assert clock.sleeps == [5, 5]
+
+    def test_timeout(self, irmc, clock):
+        """timeoutまでに200が返らなければFalse"""
+        irmc.get.side_effect = ConnectionError('connection refused')
+
+        assert irmc.wait_until_available(timeout=20, interval=5, sleep=clock.sleep, clock=clock) is False
+        # 0, 5, 10, 15, 20 秒の5回試行し、待ちの合計は timeout を超えない
+        assert irmc.get.call_count == 5
+        assert sum(clock.sleeps) == 20

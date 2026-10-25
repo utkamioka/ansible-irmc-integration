@@ -3,7 +3,7 @@
 # スキーマは tests/manual/README_ja.md を参照。
 #
 # ############################################################################
-# 警告: このケースは iRMC の SSL 証明書を実際に置き換える。
+# 警告: このケースは iRMC の SSL サーバ証明書と CA 証明書を実際に置き換える。
 #       Ansible にはデフォルトの証明書に戻す手段が無い(command は get / set のみ)。
 #       システム既定へ戻すには iRMC の Web UI を使う必要がある。
 # ############################################################################
@@ -13,19 +13,30 @@
 # 生成方法と Subject の意味はそのディレクトリの README.md を参照。
 #
 # ファイルパスが "../../tests/manual/assets/certs/..." になっているのは、モジュールが
-# read_keyfile() で素の open() を使っており、カレントディレクトリが playbook のある
+# 素の open() でファイルを読み、カレントディレクトリが playbook のある
 # examples/modules/ になるため。リポジトリルートからの相対ではない。
 #
-# arrange で server1、act で server2 を登録して before/after に差を出している。
-# irmc_certificate の set は現在値を見ずに常に changed を返すため、同じ証明書を
-# 登録し続けると before と after が同一になりエビデンスにならない。
-# 同じ理由で expect_recap の changed: 1 は「タスクが走った」ことしか示さない。
-# 実質的なエビデンスは before/after の ssl_certificate の差で、確認方法は
-# tests/manual/README_ja.md に記載してある。
+# example の set はサーバ証明書(タグ set_server_cert)と CA 証明書(タグ set_ca_cert)に
+# 分かれているので、ケースもそれぞれに分けている。
 #
-# 証明書を実際に反映するには iRMC の再起動が必要(モジュールの DOCUMENTATION の注記)。
-# ただし get は SCCI で設定値を読むため再起動前でも新しい証明書を返し、
+# irmc_certificate の set は、証明書の SHA1 フィンガープリントを iRMC に登録済みのものと比べ、
+# 違うものだけを登録する(同じなら changed=False)。そのため、arrange で act とは別の証明書を
+# 登録しておき、act の changed: 1 で「実際に登録された」ことを確かめる。
+# act (again) で同じ証明書をもう一度 set し、changed: 0 になることで冪等性を確かめる。
+#
+# get は PEM ではなく、iRMC の Redfish が返す証明書の情報(certificates.HttpsCertificate /
+# certificates.CACertificate。フィンガープリント、Subject、有効期限など)を返す。
+# 実質的なエビデンスは before/after の FingerPrint(サーバ証明書)/
+# SHA1FingerPrint(CA 証明書)の差。
+#
+# set_server_cert: 新しいサーバ証明書が実際に使われるのは iRMC の再起動後
+# (モジュールの DOCUMENTATION の注記)。get / set の結果は再起動前でも登録済みの証明書を示し、
 # テストは validate_certs: false なので再起動しなくても通る。
+# 再起動まで確かめる場合は role irmc_set_certificate を使う。
+#
+# set_ca_cert: CA 証明書を登録すると iRMC の Web サーバが再起動するため、モジュールは
+# 応答が戻るまで待つ(最大で約70秒)。act のたびにこの待ちも試される。
+# act の後は ca1.crt(サーバ証明書を署名した CA)が登録された状態で終わる。
 #
 # 電源操作は不要。
 
@@ -38,26 +49,58 @@
       expect_recap: {failed: 0}
 
 - module: irmc_certificate
-  name: set
+  name: set_server_cert
   playbook: irmc_certificate_examples.yml
   steps:
     - name: arrange
       description: act とは別のサーバ証明書(server1)を登録し、before/after に差が出るようにする
-      tag: set
+      tag: set_server_cert
       vars:
-        private_key_path: "../../tests/manual/assets/certs/server1.key"
         ssl_cert_path: "../../tests/manual/assets/certs/server1.crt"
-        ssl_ca_cert_path: "../../tests/manual/assets/certs/ca.crt"
+        private_key_path: "../../tests/manual/assets/certs/server1.key"
     - name: before
       tag: get
     - name: act
-      description: server2 の証明書を登録する
-      tag: set
+      description: server2 のサーバ証明書を登録する
+      tag: set_server_cert
       vars:
-        private_key_path: "../../tests/manual/assets/certs/server2.key"
         ssl_cert_path: "../../tests/manual/assets/certs/server2.crt"
-        ssl_ca_cert_path: "../../tests/manual/assets/certs/ca.crt"
+        private_key_path: "../../tests/manual/assets/certs/server2.key"
       expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: act と同じサーバ証明書をもう一度 set し、登録されない(冪等である)ことを確認する
+      tag: set_server_cert
+      vars:
+        ssl_cert_path: "../../tests/manual/assets/certs/server2.crt"
+        private_key_path: "../../tests/manual/assets/certs/server2.key"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      tag: get
+      expect_recap: {failed: 0}
+
+- module: irmc_certificate
+  name: set_ca_cert
+  playbook: irmc_certificate_examples.yml
+  steps:
+    - name: arrange
+      description: act とは別の CA 証明書(ca2)を登録し、before/after に差が出るようにする
+      tag: set_ca_cert
+      vars:
+        ssl_ca_cert_path: "../../tests/manual/assets/certs/ca2.crt"
+    - name: before
+      tag: get
+    - name: act
+      description: ca1 の CA 証明書を登録する(登録後に iRMC の応答待ちが入る)
+      tag: set_ca_cert
+      vars:
+        ssl_ca_cert_path: "../../tests/manual/assets/certs/ca1.crt"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: act と同じ CA 証明書をもう一度 set し、登録されない(冪等である)ことを確認する
+      tag: set_ca_cert
+      vars:
+        ssl_ca_cert_path: "../../tests/manual/assets/certs/ca1.crt"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
     - name: after
       tag: get
       expect_recap: {failed: 0}

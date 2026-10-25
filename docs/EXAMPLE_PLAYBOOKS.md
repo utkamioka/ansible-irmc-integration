@@ -135,10 +135,7 @@ refer to each section in the [Configuration Guide](./CONFIGURATION.md)
     (such as `role`=`Administrator` or `ipmi.lan_privilege`=`OEM`) carelessly,
     as this may cause subsequent configuration tasks to fail.
   - **SSL Certificate and CA Certificate Configuration `fsas.primergy.irmc_set_certificate`**:
-    The file specified in the `ssl_private_key_path` parameter will be directly modified
-    to have headers and footers in OpenSSL 3.x format.
-    If you do not want the original file to be altered, please be careful.
-    Additionally, write permissions to the specified file are required.
+    If the certificates are changed, iRMC is rebooted to apply them.
   - **iRMC License Registration `fsas.primergy.irmc_set_license`**:
     Since licenses are issued per device,
     the `license_keys` parameter in `fsas.primergy.irmc_set_license` must be specified

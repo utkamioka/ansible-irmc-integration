@@ -139,9 +139,8 @@ Configure the SSL certificate and CA certificate of iRMC.
 
 **Note**:
 
-- On some M8 generation devices, certificate configuration may fail.
-  In this case, please configure certificates manually using the iRMC Web UI.
-  For details, refer to the `irmc_certificate` module documentation (`known_issues_on_M8` section).
+- The registered certificates are used after iRMC is rebooted.
+  The role reboots iRMC only when the certificates are changed, and waits until iRMC is back.
 
 ```yaml
 ---

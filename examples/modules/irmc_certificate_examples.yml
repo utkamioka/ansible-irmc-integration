@@ -39,16 +39,28 @@
           ansible.legacy.debug:
             var: certificates.certificates
 
-    - name: Set SSL certificates
+    # The SSL server certificate is used after iRMC is rebooted
+    - name: Set SSL server certificate
       fsas.primergy.irmc_certificate:
         irmc_url: "{{ inventory_hostname }}"
         irmc_username: "{{ irmc_user }}"
         irmc_password: "{{ irmc_password }}"
         validate_certs: "{{ validate_certificate }}"
         command: "set"
-        private_key_path: "{{ private_key_path }}"
         ssl_cert_path: "{{ ssl_cert_path }}"
+        private_key_path: "{{ private_key_path }}"
+      delegate_to: localhost
+      tags:
+        - set_server_cert
+
+    - name: Set CA certificate
+      fsas.primergy.irmc_certificate:
+        irmc_url: "{{ inventory_hostname }}"
+        irmc_username: "{{ irmc_user }}"
+        irmc_password: "{{ irmc_password }}"
+        validate_certs: "{{ validate_certificate }}"
+        command: "set"
         ssl_ca_cert_path: "{{ ssl_ca_cert_path }}"
       delegate_to: localhost
       tags:
-        - set
+        - set_ca_cert

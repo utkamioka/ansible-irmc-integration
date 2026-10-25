@@ -119,8 +119,8 @@ The following modules are part of this project:
 
 ### Known Issues
 
-The `irmc_certificate` and `irmc_user` modules have usage restrictions on some M8 generation devices.
-For details, refer to each module's documentation (`known_issues_on_M8` section).
+The `irmc_user` module has usage restrictions on some M8 generation devices.
+For details, refer to the module's documentation (`known_issues_on_M8` section).
 
 ## Change log
 

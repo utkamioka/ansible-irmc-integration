@@ -142,10 +142,7 @@ OSインストールが必要ない場合は`primergy_setup.yml`を使用して�
     権限（`role`=`Administrator`や`ipmi.lan_privilege`=`OEM`）を不用意に変更すると、
     それ以降の設定タスクがエラーになる可能性がありますのでご注意ください。
   - **SSL証明書・CA証明書設定 `fsas.primergy.irmc_set_certificate`**：
-    パラメタ`ssl_private_key_path`で指定したファイルは
-    ヘッダとフッタをOpenSSL3.x形式にするため直接書き換えられます。
-    オリジナルファイルを書き換えられたく無い場合はご注意ください。
-    また、指定したファイルへの書き込み権限が必要です。
+    証明書を変更した場合、反映のためiRMCが再起動されます。
   - **ライセンス登録 `fsas.primergy.irmc_set_license`**：
     iRMCのライセンスは機器ごとに発行されるため、
     パラメタ`license_keys`はiRMC機器ごとに記述する必要があります。

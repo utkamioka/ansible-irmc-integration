@@ -1,3 +1,4 @@
 ---
 # defaults file for ./roles/irmc_set_certificate
 irmc_set_certificate_sec_until_timeout: 600 # 最大待ち時間（秒）
+irmc_set_certificate_force_reboot: false # 証明書に変更が無くても再起動するか

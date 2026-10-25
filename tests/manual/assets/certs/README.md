@@ -13,7 +13,7 @@ cd tests/manual/assets/certs
 make
 ```
 
-`make` は CA と2枚のサーバ証明書を作り、`verify` まで実行します。数秒で終わります。
+`make` は2枚の CA と2枚のサーバ証明書を作り、`verify` まで実行します。数秒で終わります。
 作り直したいときは `make clean && make` です。生成物は `.gitignore` で除外されているので、
 何度作り直しても git に差分は出ません。
 
@@ -25,35 +25,37 @@ make
 
 | ファイル | 用途 |
 | --- | --- |
-| `ca.crt` / `ca.key` | 自己署名 CA。2枚のサーバ証明書を署名する |
-| `server1.crt` / `server1.key` | ケースの `arrange` で登録する |
-| `server2.crt` / `server2.key` | ケースの `act` で登録する |
+| `ca1.crt` / `ca1.key` | 自己署名 CA。2枚のサーバ証明書を署名する。`set_ca_cert` ケースの `act` で登録する |
+| `ca2.crt` / `ca2.key` | 何も署名しない2枚目の自己署名 CA。`set_ca_cert` ケースの `arrange` で登録する |
+| `server1.crt` / `server1.key` | `set_server_cert` ケースの `arrange` で登録する |
+| `server2.crt` / `server2.key` | `set_server_cert` ケースの `act` で登録する |
 | `*.csr` / `*.ext` | 生成の中間ファイル |
 
-openssl 3.x は既定でランダムなシリアル番号を使うため `ca.srl` は生成されません
+openssl 3.x は既定でランダムなシリアル番号を使うため `ca1.srl` は生成されません
 （古い openssl では生成されます。`make clean` はどちらでも動くようにしてあります）。
 
 ## やってはいけないこと
 
-**`ca.crt` を OS・ブラウザ・CI ランナーの信頼ストアに追加しないでください。**
-この CA は `CA:TRUE` / `keyCertSign` を持つため、`ca.key` を持つ者は任意の名前の
+**`ca1.crt` / `ca2.crt` を OS・ブラウザ・CI ランナーの信頼ストアに追加しないでください。**
+この CA は `CA:TRUE` / `keyCertSign` を持つため、`ca1.key` を持つ者は任意の名前の
 証明書を発行できます。信頼ストアに入れた端末は、その証明書を本物として受け入れます。
 iRMC の証明書警告を消す目的でも追加しないでください。
 
 **テスト iRMC で証明書ベース認証（CBA）を有効にしないでください。**
-ケースは `ssl_ca_cert_path` でこの `ca.crt` を iRMC の CA スロット
-（`ConfBMCSslCaCertificate`）へ登録します。CBA を有効にしていると、
+`set_ca_cert` ケースは `ssl_ca_cert_path` でこの `ca1.crt` / `ca2.crt` を iRMC の CA 証明書として
+登録します。CBA を有効にしていると、
 この CA が署名したクライアント証明書でログインできてしまいます。
 
 なお、この鍵で保護されるものは何もありません。テスト iRMC は
 `validate_certificate=false` で運用しており、証明書は検証されていません。
 **「ちゃんとした証明書を入れたから検証を有効にしてよい」とは考えないでください。**
 
-## サーバ証明書が2枚ある理由
+## サーバ証明書と CA が2枚ずつある理由
 
-`irmc_certificate` の `set` は現在値を見ずに常に `changed` を返します。同じ証明書を登録し続けると
-`before` と `after` が同一になり、エビデンスとして意味がなくなります。
-`arrange` で `server1`、`act` で `server2` を登録することで、何回実行しても差が出ます。
+`irmc_certificate` の `set` は、登録済みと同じ証明書なら何もしません（`changed=False`）。
+同じ証明書だけでは `act` で変更が起きず、`before` と `after` も同一になってエビデンスになりません。
+`set_server_cert` ケースは `arrange` で `server1`、`act` で `server2` を、
+`set_ca_cert` ケースは `arrange` で `ca2`、`act` で `ca1` を登録することで、何回実行しても差が出ます。
 
 ## Subject から出所を辿れます
 
@@ -76,11 +78,12 @@ openssl s_client -connect <host>:443 </dev/null 2>/dev/null \
 ドメインは RFC 2606 で文書用に予約されている `example.com` 配下を使っています。
 組織名・地名は実在のものと衝突しない値にしてあります。
 
-### 注意: `openssl genrsa -traditional` が必須
+### 秘密鍵の形式
 
-iRMC は openssl 3.x 形式の秘密鍵を受け付けません。ヘッダが
-`-----BEGIN RSA PRIVATE KEY-----` である必要があります（`-----BEGIN PRIVATE KEY-----` は不可）。
-`Makefile` は `-traditional` を付けたうえで、生成のたびにヘッダを確認しています。
+秘密鍵は PKCS#8（`-----BEGIN PRIVATE KEY-----`）で作ります。openssl 3.x の既定の形式で、
+利用者が普通に作る鍵と同じ形式でテストするためです。
+`openssl genrsa` は openssl 1.1 では PKCS#1 を出力するので、版によらず PKCS#8 になる
+`openssl genpkey` を使い、生成のたびにヘッダを確認しています。
 
 ### 注意: Subject の `/` はエスケープが必要
 

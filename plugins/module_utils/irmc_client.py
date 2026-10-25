@@ -14,7 +14,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from http import HTTPStatus
-from typing import Dict, Any, Optional, Tuple, Mapping, TYPE_CHECKING
+from typing import Callable, Dict, Any, Optional, Tuple, Mapping, TYPE_CHECKING
 
 from ansible_collections.fsas.primergy.plugins.module_utils.irmc_session_information import SessionInformation
 
@@ -119,6 +119,7 @@ class iRMC:
 
     このクラスは、iRMCのRedfish APIに対してHTTPリクエストを送信し、
     レスポンスをキャッシュする機能を提供します。
+    書き込み系のリクエスト（POST / PUT / PATCH / DELETE）を送ると、GETのキャッシュは捨てられます。
 
     引数:
         ipaddress - iRMCのIPアドレスまたはホスト名
@@ -129,6 +130,9 @@ class iRMC:
         logger - ログ出力用のLoggerインスタンス（オプション）
         raise_on_error - エラー時に例外を送出するか（デフォルト: False、既存動作維持）
     """
+
+    # GETのキャッシュを捨てる契機になるHTTPメソッド
+    WRITE_METHODS = frozenset({'POST', 'PUT', 'PATCH', 'DELETE'})
 
     def __init__(
         self,
@@ -199,6 +203,15 @@ class iRMC:
         """
         if self.logger:
             self.logger.debug(message)
+
+    def clear_cache(self) -> None:
+        """GETのレスポンスキャッシュをすべて捨てます。
+
+        書き込み系のリクエストを送ると自動的に呼ばれます。
+        """
+        if self._cache:
+            self._debug(f'iRMC Cache Cleared: {len(self._cache)} entries')
+        self._cache.clear()
 
     def _get_session(self) -> requests.Session:
         """HTTPセッションを取得または作成します。
@@ -288,6 +301,12 @@ class iRMC:
         """
         # パスを正規化（以降はこの正規化されたpathを使用）
         path = self._normalize_path(path)
+
+        # 書き込み系のリクエストはGETのキャッシュを丸ごと捨てる
+        # アクションへのPOSTが別のリソースを変えることがあるため、パス単位ではなく全体を捨てる
+        # 送信中に例外が起きてもiRMC側では反映済みのことがあるので、送信前に捨てる
+        if method in self.WRITE_METHODS:
+            self.clear_cache()
 
         url = self._build_url(path)
         session = self._get_session()
@@ -511,6 +530,56 @@ class iRMC:
             Response - レスポンスオブジェクト
         """
         return self._request('OPTIONS', path, headers=headers)
+
+    def wait_until_available(
+        self,
+        path: str = '/redfish/v1',
+        timeout: float = 60,
+        interval: float = 5,
+        initial_delay: float = 0,
+        sleep: Callable[[float], None] = time.sleep,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> bool:
+        """iRMCがリクエストに応答するようになるまで待ちます。
+
+        証明書の登録などでiRMCのWebサーバーが再起動し、一時的に接続できなくなる場合に使います。
+        initial_delay秒待った後、pathをキャッシュを使わずにGETし、200が返るまで
+        interval秒おきに再試行します。接続エラー（例外）も再試行の対象です。
+
+        引数:
+            path - 応答を確認するパス（デフォルト: '/redfish/v1'）
+            timeout - 待ち時間の上限（秒、initial_delayは含まない）
+            interval - 再試行の間隔（秒）
+            initial_delay - 最初のGETの前に待つ時間（秒）
+            sleep - 待機に使う関数（テストで差し替えるためのもの）
+            clock - 経過時間の計測に使う関数（テストで差し替えるためのもの）
+
+        戻り値:
+            bool - 200が返ればTrue、timeoutまでに返らなければFalse
+
+        注意事項:
+            - 1回のGETにかかる時間はtimeoutの判定に含まれるが、GET自体は中断しないため、
+              実際の待ち時間はtimeoutを超えることがある
+        """
+        if initial_delay > 0:
+            sleep(initial_delay)
+
+        deadline = clock() + timeout
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                response = self.get(path, use_cache=False)
+                if response.status == HTTPStatus.OK:
+                    self._debug(f'iRMC is available: GET {path} (attempt {attempt})')
+                    return True
+                self._debug(f'iRMC is not available yet: GET {path} -> {response.status} (attempt {attempt})')
+            except Exception as e:  # 接続断などは再試行する
+                self._debug(f'iRMC is not available yet: GET {path} -> {e} (attempt {attempt})')
+
+            if clock() + interval > deadline:
+                return False
+            sleep(interval)
 
     @property
     def vendor(self) -> Optional[str]:

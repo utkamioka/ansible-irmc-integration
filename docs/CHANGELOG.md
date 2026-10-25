@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `irmc_certificate` module now uses the iRMC Redfish API instead of the deprecated SCCI API (`/config`).
+  - **Breaking change**: `command: get` no longer returns the certificates in PEM format
+    (`certificates.ssl_certificate` / `certificates.ssl_ca_certificate`), because they cannot be read via Redfish.
+    It returns the certificate information provided by Redfish instead:
+    `certificates.HttpsCertificate` and `certificates.CACertificate` (fingerprint, subject, issuer, validity, ...).
+  - `command: set` registers only the certificates whose SHA1 fingerprint differs from the registered one,
+    and reports `changed: false` when nothing needs to be registered or no certificate is given.
+    It also returns `certificates` with the registered certificates.
+  - Private keys in PKCS#8 format (the default of OpenSSL 3.x) can be used as they are.
+  - The known issue on some M8 generation devices (`known_issues_on_M8`) no longer applies and has been removed.
+- iRMC Redfish client (`module_utils`): cached GET responses are discarded after POST / PUT / PATCH / DELETE requests,
+  so that a GET after a change always returns the current state.
+- `irmc_set_certificate` role:
+  - Reboots iRMC with the Redfish API (`Manager.Reset`) instead of the deprecated `/rest` API.
+  - Reboots iRMC only when the certificates were changed.
+    Set the new variable `force_reboot: true` to reboot iRMC even if they were not changed
+    (e.g. when a previous run registered the certificates but failed to reboot iRMC).
+  - No longer rewrites the header and footer of the file given in `ssl_private_key_path`.
+    Private keys in PKCS#8 format (the default of OpenSSL 3.x) can be used as they are.
+  - The health check after the reboot now times out each request after 10 seconds,
+    so that the overall `sec_until_timeout` is kept even if iRMC does not respond while rebooting.
+
+### Fixed
+
+- `irmc_set_certificate` role: the descriptions of `ssl_cert_path` and `ssl_ca_cert_path` in the README were swapped.
+
 ## [3.1.0] - 2026-08-24
 
 ### Changed

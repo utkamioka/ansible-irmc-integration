@@ -20,16 +20,18 @@ L  ?= Example
 O  ?= iRMC Manual Test
 OU ?= tests\/manual
 
-CA_CN      ?= ca.irmc-test.example.com
+CA1_CN     ?= ca1.irmc-test.example.com
+CA2_CN     ?= ca2.irmc-test.example.com
 SERVER1_CN ?= server1.irmc-test.example.com
 SERVER2_CN ?= server2.irmc-test.example.com
 
-CA_SUBJ := /C=$(C)/ST=$(ST)/L=$(L)/O=$(O)/OU=$(OU)/CN=$(CA_CN)
+CA1_SUBJ := /C=$(C)/ST=$(ST)/L=$(L)/O=$(O)/OU=$(OU)/CN=$(CA1_CN)
+CA2_SUBJ := /C=$(C)/ST=$(ST)/L=$(L)/O=$(O)/OU=$(OU)/CN=$(CA2_CN)
 
 # サーバ証明書を2組作るのは、手動テストの arrange と act で別々の証明書を登録し、
 # 何回実行しても before と after に差が出るようにするため。
-# irmc_certificate の set は現在値を見ずに常に changed を返すので、同じ証明書を
-# 登録し続けると before と after が同一になりエビデンスにならない。
+# irmc_certificate の set は登録済みと同じ証明書なら何もしない(changed=False)ので、
+# 同じ証明書だけでは act で変更が起きず、エビデンスにならない。
 SERVERS := server1 server2
 CRTS    := $(addsuffix .crt,$(SERVERS))
 KEYS    := $(addsuffix .key,$(SERVERS))
@@ -41,16 +43,20 @@ NAMEOPT := -nameopt RFC2253
 
 .PHONY: all clean verify inspect
 
-all: ca.crt $(CRTS) verify
+all: ca1.crt ca2.crt $(CRTS) verify
 
 # --- CA(明示ルールなので下のパターンルールより優先される) ---
-ca.key:
-	openssl genrsa -traditional -out $@ $(BITS)
-	test "$$(head -n 1 $@)" = "-----BEGIN RSA PRIVATE KEY-----"
+# ca1 はサーバ証明書を署名する CA。ca2 は何も署名しない2枚目の CA で、
+# 手動テストの set_ca_cert ケースで arrange に登録し、act の ca1 との間で差を出すためだけに使う。
+ca1.key ca2.key:
+	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:$(BITS) -out $@
+	test "$$(head -n 1 $@)" = "-----BEGIN PRIVATE KEY-----"
 
-ca.crt: ca.key
+ca1.crt: SUBJ = $(CA1_SUBJ)
+ca2.crt: SUBJ = $(CA2_SUBJ)
+ca1.crt ca2.crt: %.crt: %.key
 	openssl req -new -x509 -key $< -sha256 -days $(CA_DAYS) -out $@ \
-	  -subj "$(CA_SUBJ)" \
+	  -subj "$(SUBJ)" \
 	  -addext "basicConstraints=critical,CA:TRUE" \
 	  -addext "keyUsage=critical,keyCertSign,cRLSign" \
 	  -addext "subjectKeyIdentifier=hash"
@@ -59,11 +65,12 @@ ca.crt: ca.key
 server1.csr server1.ext: CN = $(SERVER1_CN)
 server2.csr server2.ext: CN = $(SERVER2_CN)
 
-# iRMC は openssl 3.x 形式の秘密鍵を受け付けないため -traditional が必須。
-# ヘッダが "-----BEGIN RSA PRIVATE KEY-----" であることを毎回確認する。
+# 秘密鍵は PKCS#8 (-----BEGIN PRIVATE KEY-----) で作る。openssl 3.x の既定の形式で、
+# 利用者が普通に作る鍵と同じ形式でテストするため。
+# genrsa は openssl 1.1 では PKCS#1 を出力するので、版によらず PKCS#8 になる genpkey を使う。
 %.key:
-	openssl genrsa -traditional -out $@ $(BITS)
-	test "$$(head -n 1 $@)" = "-----BEGIN RSA PRIVATE KEY-----"
+	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:$(BITS) -out $@
+	test "$$(head -n 1 $@)" = "-----BEGIN PRIVATE KEY-----"
 
 %.csr: %.key
 	openssl req -new -key $< -out $@ \
@@ -77,28 +84,30 @@ server2.csr server2.ext: CN = $(SERVER2_CN)
 	  'subjectAltName=DNS:$(CN)' \
 	  > $@
 
-%.crt: %.csr %.ext ca.crt ca.key
-	openssl x509 -req -in $< -CA ca.crt -CAkey ca.key -CAcreateserial \
+%.crt: %.csr %.ext ca1.crt ca1.key
+	openssl x509 -req -in $< -CA ca1.crt -CAkey ca1.key -CAcreateserial \
 	  -out $@ -days $(SERVER_DAYS) -sha256 -extfile $*.ext
 
-verify: ca.crt $(CRTS) $(KEYS)
+verify: ca1.crt ca2.crt $(CRTS) $(KEYS)
 	# Subject の '/' をエスケープし忘れると CN ごと欠落し、server1 と server2 が
 	# 区別できなくなる。黙って壊れるので必ず確認する。
-	openssl x509 -in ca.crt      -noout -subject $(NAMEOPT) | grep -qF "CN=$(CA_CN)"
+	openssl x509 -in ca1.crt      -noout -subject $(NAMEOPT) | grep -qF "CN=$(CA1_CN)"
+	openssl x509 -in ca2.crt     -noout -subject $(NAMEOPT) | grep -qF "CN=$(CA2_CN)"
+	openssl verify -CAfile ca2.crt ca2.crt
 	openssl x509 -in server1.crt -noout -subject $(NAMEOPT) | grep -qF "CN=$(SERVER1_CN)"
 	openssl x509 -in server2.crt -noout -subject $(NAMEOPT) | grep -qF "CN=$(SERVER2_CN)"
 	openssl x509 -in server1.crt -noout -subject $(NAMEOPT) | grep -qF "OU=tests/manual"
 	for s in $(SERVERS); do
-	  openssl verify -CAfile ca.crt $$s.crt
-	  test "$$(head -n 1 $$s.key)" = "-----BEGIN RSA PRIVATE KEY-----"
+	  openssl verify -CAfile ca1.crt $$s.crt
+	  test "$$(head -n 1 $$s.key)" = "-----BEGIN PRIVATE KEY-----"
 	  diff -u <(openssl x509 -in $$s.crt -noout -pubkey) \
-	          <(openssl rsa -in $$s.key -pubout 2>/dev/null)
+	          <(openssl pkey -in $$s.key -pubout)
 	done
 	echo "OK"
 
-inspect: ca.crt $(CRTS)
+inspect: ca1.crt $(CRTS)
 	echo "== CA =="
-	openssl x509 -in ca.crt -noout -subject -issuer -dates
+	openssl x509 -in ca1.crt -noout -subject -issuer -dates
 	for s in $(SERVERS); do
 	  echo
 	  echo "== $$s =="
@@ -106,5 +115,5 @@ inspect: ca.crt $(CRTS)
 	done
 
 clean:
-	rm -f ca.key ca.crt ca.srl $(addsuffix .key,$(SERVERS)) \
+	rm -f ca1.key ca1.crt ca1.srl ca2.key ca2.crt $(addsuffix .key,$(SERVERS)) \
 	      $(addsuffix .csr,$(SERVERS)) $(addsuffix .ext,$(SERVERS)) $(CRTS)
