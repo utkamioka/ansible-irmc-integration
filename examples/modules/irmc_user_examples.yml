@@ -23,6 +23,7 @@
 
   tasks:
     # Create new user account
+    #   'password' has no default, so that a user is not created with a default password
     - name: "Create new user account"
       fsas.primergy.irmc_user:
         irmc_url: "{{ inventory_hostname }}"
@@ -31,7 +32,7 @@
         validate_certs: "{{ validate_certificate }}"
         command: "create"
         name: "{{ username | default('ansibleuser') }}"
-        password: "{{ password | default('StrongP@ssw0rd') }}"
+        password: "{{ password }}"
         description: "{{ description | default(omit) }}"
       delegate_to: localhost
       tags:

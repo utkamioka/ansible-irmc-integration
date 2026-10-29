@@ -1,2 +1,22 @@
 ---
 # vars file for ./roles/irmc_account_admin
+
+# The role variables keep the values of the deprecated module 'irmc_user' (SCCI) for compatibility.
+# The module 'irmc_account' (Redfish) uses the values of the iRMC Redfish interface, so the values which differ
+# are converted with the tables below. Values not in a table are passed as they are,
+# so the values of the iRMC Redfish interface (e.g. 'Oem') can also be given.
+
+# access.ipmi.lan_privilege / access.ipmi.serial_privilege
+irmc_account_admin_privileges:
+  OEM: Oem
+
+# email.general.format
+# 'SMS' (SMS format in the Web UI) is 'REMCS' in the iRMC Redfish interface
+irmc_account_admin_email_formats:
+  Fixed Subject: FixedSubject
+  ITS-Format: ITS
+  SMS: REMCS
+
+# email.general.server
+irmc_account_admin_mail_servers:
+  Automatic: Auto

@@ -8,39 +8,63 @@
   when: password is defined
 
 - name: Change admin configurations
-  fsas.primergy.irmc_user:
+  fsas.primergy.irmc_account:
     irmc_url: "{{ inventory_hostname }}"
     irmc_username: "{{ irmc_user }}"
     irmc_password: "{{ irmc_password }}"
     validate_certs: "{{ validate_certificate }}"
-    command: change
+    command: set
     name: admin
     password: "{{ new_user_password | default(omit) }}"
-    description: "{{ description | default(omit) }}"
-    redfish_enabled: "{{ access.redfish.enable | default(omit) }}"
-    redfish_role: "{{ access.redfish.role | default(omit) }}"
-    lan_privilege: "{{ access.ipmi.lan_privilege | default(omit) }}"
-    serial_privilege: "{{ access.ipmi.serial_privilege | default(omit) }}"
-    config_user_enabled: "{{ access.ipmi.enable_user_account_conf | default(omit) }}"
-    config_bmc_enabled: "{{ access.ipmi.enable_irmc_settings_conf | default(omit) }}"
-    avr_enabled: "{{ access.avr.enable_avr | default(omit) }}"
-    storage_enabled: "{{ access.avr.enable_remote_storage | default(omit) }}"
-    snmpv3_enabled: "{{ snmpv3.enable | default(omit) }}"
-    email_enabled: "{{ email.general.enable | default(omit) }}"
-    email_type: "{{ email.general.format | default(omit) }}"
-    email_server: "{{ email.general.server | default(omit) }}"
-    email_address: "{{ email.general.address | default(omit) }}"
-    alert_fans: "{{ email.alert.fan | default(omit) }}"
-    alert_temperatures: "{{ email.alert.temperature | default(omit) }}"
-    alert_hwerrors: "{{ email.alert.hardware_error | default(omit) }}"
-    alert_syshang: "{{ email.alert.system_hang | default(omit) }}"
-    alert_posterrors: "{{ email.alert.post_error | default(omit) }}"
-    alert_security: "{{ email.alert.security | default(omit) }}"
-    alert_sysstatus: "{{ email.alert.status | default(omit) }}"
-    alert_hderrors: "{{ email.alert.disk | default(omit) }}"
-    alert_network: "{{ email.alert.network | default(omit) }}"
-    alert_remote: "{{ email.alert.remote | default(omit) }}"
-    alert_power: "{{ email.alert.power | default(omit) }}"
-    alert_memory: "{{ email.alert.memory | default(omit) }}"
-    alert_others: "{{ email.alert.other | default(omit) }}"
+    # The role variables keep the values of the deprecated module 'irmc_user'.
+    # The values which differ in the iRMC Redfish interface are converted with the tables in vars/main.yml.
+    account:
+      Description: "{{ description | default(omit) }}"
+      Enabled: "{{ access.redfish.enable | default(omit) }}"
+      RoleId: "{{ access.redfish.role | default(omit) }}"
+      Permissions:
+        Standard:
+          # Convert the value with the table in vars/main.yml only if the variable is given:
+          #   - '<table>.get(value, value)' returns the converted value, or the value as it is if not in the table
+          #   - 'if ... is defined else omit' omits the key if the variable (or 'access' / 'access.ipmi') is not given
+          # Written in one expression with '>-' (folded into one line without a trailing newline).
+          Lan: >-
+            {{ irmc_account_admin_privileges.get(access.ipmi.lan_privilege, access.ipmi.lan_privilege)
+               if access.ipmi.lan_privilege is defined else omit }}
+          Serial: >-
+            {{ irmc_account_admin_privileges.get(access.ipmi.serial_privilege, access.ipmi.serial_privilege)
+               if access.ipmi.serial_privilege is defined else omit }}
+        Extended:
+          ConfigureUsers: "{{ access.ipmi.enable_user_account_conf | default(omit) }}"
+          ConfigureIrmc: "{{ access.ipmi.enable_irmc_settings_conf | default(omit) }}"
+          UseVideoRedirection: "{{ access.avr.enable_avr | default(omit) }}"
+          UseRemoteStorage: "{{ access.avr.enable_remote_storage | default(omit) }}"
+      SnmpV3:
+        ServiceEnabled: "{{ snmpv3.enable | default(omit) }}"
+      Email:
+        # 'Enable email alerting' in the Web UI. In the iRMC Redfish interface, the values of
+        # 'AlertChassisEventsUser' and 'PagingEnabled' are swapped (see the module irmc_account)
+        AlertChassisEventsUser: "{{ email.general.enable | default(omit) }}"
+        # Converted in the same way as 'Permissions.Standard.Lan'
+        Layout: >-
+          {{ irmc_account_admin_email_formats.get(email.general.format, email.general.format)
+             if email.general.format is defined else omit }}
+        PreferredMailServer: >-
+          {{ irmc_account_admin_mail_servers.get(email.general.server, email.general.server)
+             if email.general.server is defined else omit }}
+        Address: "{{ email.general.address | default(omit) }}"
+        AlertFilter:
+          Fans: "{{ email.alert.fan | default(omit) }}"
+          Temperature: "{{ email.alert.temperature | default(omit) }}"
+          Hardware: "{{ email.alert.hardware_error | default(omit) }}"
+          SystemHang: "{{ email.alert.system_hang | default(omit) }}"
+          Post: "{{ email.alert.post_error | default(omit) }}"
+          Security: "{{ email.alert.security | default(omit) }}"
+          SystemStatus: "{{ email.alert.status | default(omit) }}"
+          Harddisk: "{{ email.alert.disk | default(omit) }}"
+          NetworkError: "{{ email.alert.network | default(omit) }}"
+          RemoteManagement: "{{ email.alert.remote | default(omit) }}"
+          PowerSupply: "{{ email.alert.power | default(omit) }}"
+          Memory: "{{ email.alert.memory | default(omit) }}"
+          Others: "{{ email.alert.other | default(omit) }}"
   delegate_to: localhost

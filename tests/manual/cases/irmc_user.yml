@@ -35,8 +35,10 @@
 # 詳細は tests/manual/README_ja.md の「失敗することを検証する」を参照。
 # ############################################################################
 #
-# password はケースに書かず、playbook 側の password | default('StrongP@ssw0rd') に任せている。
-# ケースファイルに新たな認証情報を持ち込まないため。
+# example の create は password に既定値が無い(既定のパスワードでユーザーを作らないため)。
+# そのためケースに、明らかにテスト用の使い捨てと分かるパスワード 'Not-A-Secret-Test#01' を書いている。
+# iRMC のパスワードの制限(12〜20文字、大文字・小文字・数字・記号のうち3種類以上)を満たす。
+# 上限は AccountService の MaxPasswordLength(68・73 とも 20)。超えると POST が 400 になる。
 #
 # get 以外は無条件に changed=True を返す(冪等判定は無い)。
 #
@@ -65,7 +67,7 @@
       expect_recap: {failed: 1}
     - name: act
       tag: create
-      vars: {username: "ansibleuser"}
+      vars: {username: "ansibleuser", password: "Not-A-Secret-Test#01"}
       expect_recap: {changed: 1, failed: 0, skipped: 0}
     - name: after
       tag: get
@@ -79,7 +81,7 @@
     - name: arrange
       description: 取得対象を確実に存在させる(既にいれば skip)
       tag: create
-      vars: {username: "ansibleuser"}
+      vars: {username: "ansibleuser", password: "Not-A-Secret-Test#01"}
     - name: act
       tag: get
       vars: {username: "ansibleuser"}
@@ -92,7 +94,7 @@
     - name: arrange
       description: 変更対象を確実に存在させる(既にいれば skip)
       tag: create
-      vars: {username: "ansibleuser"}
+      vars: {username: "ansibleuser", password: "Not-A-Secret-Test#01"}
     - name: arrange (description)
       description: act とは別の説明を設定し、before/after に差が出るようにする
       tag: change
@@ -116,7 +118,7 @@
     - name: arrange
       description: 削除対象を確実に存在させる(既にいれば skip)
       tag: create
-      vars: {username: "ansibleuser"}
+      vars: {username: "ansibleuser", password: "Not-A-Secret-Test#01"}
     - name: before
       tag: get
       vars: {username: "ansibleuser"}

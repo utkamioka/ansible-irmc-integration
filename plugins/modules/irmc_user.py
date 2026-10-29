@@ -9,10 +9,13 @@ DOCUMENTATION = r'''
 ---
 module: irmc_user
 
-short_description: manage iRMC user accounts
+short_description: manage iRMC user accounts (deprecated, use irmc_account)
 
 description:
     - Ansible module to manage iRMC user accounts via iRMC remote scripting interface.
+    - This module is deprecated, because it uses the iRMC remote scripting interface (SCCI),
+      which will be removed from the iRMC. Use the module 'irmc_account' instead,
+      which uses the iRMC Redfish interface.
     - Module Version V1.3.0.
 
 requirements:
@@ -207,6 +210,7 @@ options:
 
 EXAMPLES = r'''
 # Create new user account
+#   'password' has no default, so that a user is not created with a default password
 - name: "Create new user account"
   fsas.primergy.irmc_user:
     irmc_url: "{{ inventory_hostname }}"
@@ -215,7 +219,7 @@ EXAMPLES = r'''
     validate_certs: "{{ validate_certificate }}"
     command: "create"
     name: "{{ username | default('ansibleuser') }}"
-    password: "{{ password | default('StrongP@ssw0rd') }}"
+    password: "{{ password }}"
     description: "{{ description | default(omit) }}"
   delegate_to: localhost
   tags:

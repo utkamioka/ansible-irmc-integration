@@ -4,7 +4,13 @@ irmc_account_admin
 Change admin configurations.
 
 Note:  
-At least one role variable must be set.
+At least one role variable must be set.  
+This role uses the module `irmc_account` (iRMC Redfish interface).
+The role variables and their values are the same as before (the values of the deprecated module `irmc_user`);
+they are converted to the values of the iRMC Redfish interface in the role.  
+Only the settings which differ are changed, and the role reports no change if nothing differs.
+If `password` is the same as the current one, it is confirmed by logging in as `admin`,
+so `admin` has to be allowed to use Redfish (`access.redfish.enable: true`).
 
 Requirements
 ------------
