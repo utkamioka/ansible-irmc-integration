@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `irmc_account` module to get, create, change or delete an iRMC local user account via the iRMC Redfish API.
+  It replaces the `irmc_user` module.
+  - The settings are given and returned in the structure of the iRMC Redfish API,
+    so that the returned `account` can be passed to another user as it is (e.g. to copy a user).
+  - `command: set` creates the user if it does not exist, and changes only the settings which differ.
+    It reports `changed: false` when the given password is the same as the current one.
+  - Settings which the `irmc_user` module did not support can be changed,
+    e.g. `PasswordChangeRequired`, two-factor authentication and the additional email alerting settings.
+  - SSH public keys and S/MIME certificates are registered only when their fingerprint differs.
+
+### Deprecated
+
+- `irmc_user` module, because it uses the SCCI API, which will be removed from the iRMC.
+  Use the `irmc_account` module instead. The `irmc_user` module still works and is not removed yet.
+  See [MODULE_MIGRATION_GUIDE.md](MODULE_MIGRATION_GUIDE.md) for the correspondence of the parameters.
+
 ### Changed
 
 - `irmc_certificate` module now uses the iRMC Redfish API instead of the deprecated SCCI API (`/config`).

@@ -1,0 +1,441 @@
+---
+# irmc_account の手動テストケース定義。
+# スキーマは tests/manual/README_ja.md を参照。
+#
+# ############################################################################
+# 警告: このケースは iRMC のユーザーアカウントを作成・変更・削除する。
+#       対象は ansibleuser と ansibleuser2 固定。username / new_username を書き換えるときは、
+#       inventory の irmc_user(認証に使うアカウント)と違うことを必ず確認すること。
+#       認証アカウントを変更・削除するとロックアウトされ、Ansible からは復旧できない。
+# ############################################################################
+#
+# example playbook の delete タグだけは name: "{{ username }}" と default が無く、
+# 未定義なら未定義変数エラーで止まる。うっかり削除できない安全設計になっている(irmc_user と同じ)。
+#
+# 電源操作もサーバ再起動も不要。
+#
+# irmc_account の set は、ユーザーがいなければ作成し、いれば指定された設定のうち違うものだけを変える。
+# get はユーザーがいなければ失敗する。delete はユーザーがいなければ changed=False。
+#
+# example の set / copy / import は、ユーザー名とパスワードに既定値が無い
+# (既定のパスワードでユーザーを作ったり、既存のユーザーをうっかり変えたりしないため)。
+# そのためケースに、明らかにテスト用の使い捨てと分かるパスワード 'Not-A-Secret-Test#01' を書いている。
+# iRMC のパスワードの制限(12〜20文字、大文字・小文字・数字・記号のうち3種類以上)を満たす。
+# 上限は AccountService の MaxPasswordLength(68・73 とも 20)。超えると POST が 400 になる。
+# example の set は毎回 password を送る。iRMC は現在と同じパスワードを 500 で拒否するので、
+# モジュールはそのユーザーでログインできるかで「同じパスワード」と判断し、changed=False にする。
+# act (again) の changed: 0 は、この確認も含めて冪等であることを示す
+# (example の set は account.Enabled: true なので、対象ユーザーは Redfish にログインできる)。
+#
+# create の before と delete の after に expect_recap: {failed: 1} を使っている。
+# get は対象がいないと失敗するので、「ユーザーが存在しない」ことを示すため。
+# 詳細は tests/manual/README_ja.md の「失敗することを検証する」を参照。
+#
+# set_all は、account の全項目を項目ごとの変数(role_id、email_address など)で受けるタスク。
+# 指定した変数の項目だけがモジュールに渡る。ケースでは、iRMC 全体の設定に依存しない項目だけを使う
+# (SNMPv3 は iRMC 全体の SNMP が無効だと 409 になる。二要素認証を有効にすると、
+#  同じパスワードの確認のためのログインが通らなくなる恐れがある)。
+#
+# export は get の account を JSON のファイル(account_file)に書き出し、import はそのファイルで set する。
+# account_file は "../../tests/manual/results/irmc_account/ansibleuser.json"。
+# 結果のフォルダはランナーがステップの実行前に作る。書き出したファイルはエビデンスとしても残る(gitignore 済み)。
+# カレントディレクトリが playbook のある examples/modules/ になるため、リポジトリルートからの相対ではない。
+#
+# copy と export_import で写るのは account(設定値)だけで、account_info は写らない。
+# 特に account_info.SnmpV3.AccessType は、iRMC の Redfish では変更できず、ユーザーを削除しても
+# Id ごとに以前の値が残る。そのため複製元と複製先で値が違うことがあるが、想定どおり
+# (68 では Id 3 の ansibleuser が ReadWrite、新しく作った ansibleuser2 が ReadOnly だった)。
+#
+# ssh_public_key / smime_certificate は、SSH 公開鍵と S/MIME 証明書の登録(set_all タグの
+# ssh_public_key_path / smime_certificate_path)を確かめる。登録する鍵と証明書は git 管理下に無いので、
+# 実行前に "tests/manual/assets/account/" で make すること。未生成だとファイルが読めずに failed になる。
+# 生成方法と2組ある理由はそのディレクトリの README.md を参照。
+# モジュールでは登録した鍵と証明書を削除できないため、この2つのケースは最初に ansibleuser を削除して
+# まっさらな状態から始め、最後にユーザーごと削除する。ほかのケースとも互いにも依存しない。
+# 登録されたもののフィンガープリントは get の account_info.SSHv2KeyFingerprint /
+# account_info.SMIMECertificate.SHA1FingerPrint で見られる。手元のファイルの値は
+# ssh-keygen -l -E md5 -f ssh2.pub / openssl x509 -in smime2.crt -noout -fingerprint -sha1 で確かめられる。
+# ただし M8以降の世代の SSH のフィンガープリントは MD5 ではなく、鍵のデータの SHA-256 の先頭16バイト
+# (確かめ方は tests/manual/assets/account/README.md を参照)。
+#
+# ケースは create -> change -> set_all -> get -> copy -> export_import -> delete
+# -> ssh_public_key -> smime_certificate の順。
+# delete と、ssh_public_key / smime_certificate の cleanup で ansibleuser が消え、
+# copy と export_import の cleanup で ansibleuser2 が消えるため、流し終わりにユーザーは残らない。
+
+- module: irmc_account
+  name: create
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: 既にいると作成にならないため先に削除する(いなければ changed=False)
+      tag: delete
+      vars:
+        username: "ansibleuser"
+    - name: before
+      description: 作成前は存在しないので get は失敗する(失敗を期待するステップ)
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 1}
+    - name: act
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: 同じ内容でもう一度 set し、変更されない(冪等である)ことを確認する
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+
+- module: irmc_account
+  name: change
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: act とは別の説明を設定し、before/after に差が出るようにする(いなければ作成する)
+      tag: set
+      vars:
+        username: "ansibleuser"
+        description: "manual test before"
+        password: "Not-A-Secret-Test#01"
+    - name: before
+      tag: get
+      vars:
+        username: "ansibleuser"
+    - name: act
+      tag: set
+      vars:
+        username: "ansibleuser"
+        description: "manual test after"
+        password: "Not-A-Secret-Test#01"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: 同じ内容でもう一度 set し、変更されない(冪等である)ことを確認する
+      tag: set
+      vars:
+        username: "ansibleuser"
+        description: "manual test after"
+        password: "Not-A-Secret-Test#01"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+
+- module: irmc_account
+  name: set_all
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: act とは別の値を設定し、before/after に差が出るようにする(いなければ作成する)
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: arrange (values)
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        role_id: "ReadOnly"
+        lan_privilege: "User"
+        email_address: "before@example.com"
+        email_alert_fans: "None"
+    - name: before
+      tag: get
+      vars:
+        username: "ansibleuser"
+    - name: act
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        role_id: "Operator"
+        lan_privilege: "Operator"
+        email_address: "after@example.com"
+        email_alert_fans: "All"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: 同じ内容でもう一度 set_all し、変更されない(冪等である)ことを確認する
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        role_id: "Operator"
+        lan_privilege: "Operator"
+        email_address: "after@example.com"
+        email_alert_fans: "All"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+
+- module: irmc_account
+  name: get
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: 取得対象を確実に存在させる
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: act
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {changed: 0, failed: 0}
+
+- module: irmc_account
+  name: copy
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: 複製元を確実に存在させる
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: arrange (delete copy)
+      description: 複製先が既にいると作成にならないため先に削除する(いなければ changed=False)
+      tag: delete
+      vars:
+        username: "ansibleuser2"
+    - name: act
+      description: ansibleuser の設定で ansibleuser2 を作成する
+      tag: copy
+      vars:
+        username: "ansibleuser"
+        new_username: "ansibleuser2"
+        new_password: "Not-A-Secret-Test#01"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: もう一度複製し、変更されない(複製元と同じ設定になっている)ことを確認する
+      tag: copy
+      vars:
+        username: "ansibleuser"
+        new_username: "ansibleuser2"
+        new_password: "Not-A-Secret-Test#01"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after (source)
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+    - name: after (copy)
+      description: account が after (source) と同じであることを目で確認する(account_info は写らないので比べない)
+      tag: get
+      vars:
+        username: "ansibleuser2"
+      expect_recap: {failed: 0}
+    - name: cleanup
+      description: 複製先を削除する
+      tag: delete
+      vars:
+        username: "ansibleuser2"
+      expect_recap: {changed: 1, failed: 0}
+
+- module: irmc_account
+  name: export_import
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: 書き出す元のユーザーを確実に存在させる
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: arrange (delete import target)
+      description: 読み込み先が既にいると作成にならないため先に削除する(いなければ changed=False)
+      tag: delete
+      vars:
+        username: "ansibleuser2"
+    - name: act (export)
+      description: ansibleuser の設定をファイルに書き出す
+      tag: export
+      vars:
+        username: "ansibleuser"
+        account_file: "../../tests/manual/results/irmc_account/ansibleuser.json"
+      expect_recap: {failed: 0}
+    - name: act (import)
+      description: 書き出したファイルの設定で ansibleuser2 を作成する
+      tag: import
+      vars:
+        username: "ansibleuser2"
+        password: "Not-A-Secret-Test#01"
+        account_file: "../../tests/manual/results/irmc_account/ansibleuser.json"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (import again)
+      description: もう一度読み込み、変更されない(ファイルの設定になっている)ことを確認する
+      tag: import
+      vars:
+        username: "ansibleuser2"
+        password: "Not-A-Secret-Test#01"
+        account_file: "../../tests/manual/results/irmc_account/ansibleuser.json"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after (source)
+      description: 書き出し元の account。ファイルの内容と同じであることを目で確認する
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+    - name: after (import)
+      description: account が after (source) およびファイルの内容と同じであることを目で確認する(account_info は比べない)
+      tag: get
+      vars:
+        username: "ansibleuser2"
+      expect_recap: {failed: 0}
+    - name: cleanup
+      description: 読み込み先を削除する
+      tag: delete
+      vars:
+        username: "ansibleuser2"
+      expect_recap: {changed: 1, failed: 0}
+
+- module: irmc_account
+  name: delete
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange
+      description: 削除対象を確実に存在させる
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: before
+      tag: get
+      vars:
+        username: "ansibleuser"
+    - name: act
+      tag: delete
+      vars:
+        username: "ansibleuser"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: もう一度削除し、いなければ変更されない(冪等である)ことを確認する
+      tag: delete
+      vars:
+        username: "ansibleuser"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      description: 削除後は存在しないので get は失敗する(失敗を期待するステップ)
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 1}
+
+- module: irmc_account
+  name: ssh_public_key
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange (delete)
+      description: 前のケースで登録された鍵・証明書を持ち込まないため、ユーザーを削除してまっさらな状態から始める
+      tag: delete
+      vars:
+        username: "ansibleuser"
+    - name: arrange
+      description: ユーザーを作る
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: arrange (ssh1.pub)
+      description: act とは別のSSH 公開鍵(ssh1.pub)を登録し、before/after に差が出るようにする
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        ssh_public_key_path: "../../tests/manual/assets/account/ssh1.pub"
+    - name: before
+      description: account_info.SSHv2KeyFingerprint が ssh1.pub のものであることを確認する
+      tag: get
+      vars:
+        username: "ansibleuser"
+    - name: act
+      description: SSH 公開鍵(ssh2.pub)を登録する
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        ssh_public_key_path: "../../tests/manual/assets/account/ssh2.pub"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: 同じSSH 公開鍵をもう一度 set_all し、登録されない(冪等である)ことを確認する
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        ssh_public_key_path: "../../tests/manual/assets/account/ssh2.pub"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      description: account_info.SSHv2KeyFingerprint が ssh2.pub のものであることを確認する
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+    - name: cleanup
+      description: モジュールではSSH 公開鍵を削除できないので、ユーザーごと削除して後に残さない
+      tag: delete
+      vars:
+        username: "ansibleuser"
+      expect_recap: {changed: 1, failed: 0}
+
+- module: irmc_account
+  name: smime_certificate
+  playbook: irmc_account_examples.yml
+  steps:
+    - name: arrange (delete)
+      description: 前のケースで登録された鍵・証明書を持ち込まないため、ユーザーを削除してまっさらな状態から始める
+      tag: delete
+      vars:
+        username: "ansibleuser"
+    - name: arrange
+      description: ユーザーを作る
+      tag: set
+      vars:
+        username: "ansibleuser"
+        password: "Not-A-Secret-Test#01"
+    - name: arrange (smime1.crt)
+      description: act とは別のS/MIME 証明書(smime1.crt)を登録し、before/after に差が出るようにする
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        smime_certificate_path: "../../tests/manual/assets/account/smime1.crt"
+    - name: before
+      description: account_info.SMIMECertificate.SHA1FingerPrint が smime1.crt のものであることを確認する
+      tag: get
+      vars:
+        username: "ansibleuser"
+    - name: act
+      description: S/MIME 証明書(smime2.crt)を登録する
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        smime_certificate_path: "../../tests/manual/assets/account/smime2.crt"
+      expect_recap: {changed: 1, failed: 0, skipped: 0}
+    - name: act (again)
+      description: 同じS/MIME 証明書をもう一度 set_all し、登録されない(冪等である)ことを確認する
+      tag: set_all
+      vars:
+        username: "ansibleuser"
+        smime_certificate_path: "../../tests/manual/assets/account/smime2.crt"
+      expect_recap: {changed: 0, failed: 0, skipped: 0}
+    - name: after
+      description: account_info.SMIMECertificate.SHA1FingerPrint が smime2.crt のものであることを確認する
+      tag: get
+      vars:
+        username: "ansibleuser"
+      expect_recap: {failed: 0}
+    - name: cleanup
+      description: モジュールではS/MIME 証明書を削除できないので、ユーザーごと削除して後に残さない
+      tag: delete
+      vars:
+        username: "ansibleuser"
+      expect_recap: {changed: 1, failed: 0}

@@ -8,6 +8,9 @@
 /tests/manual/assets/certs/*
 !/tests/manual/assets/certs/Makefile
 !/tests/manual/assets/certs/README.md
+/tests/manual/assets/account/*
+!/tests/manual/assets/account/Makefile
+!/tests/manual/assets/account/README.md
 /fujitsu-primergy-*.tar.gz
 /fsas_temp_ns-primergy-*.tar.gz
 /fsas-primergy-*.tar.gz

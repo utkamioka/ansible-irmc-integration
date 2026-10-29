@@ -91,6 +91,7 @@ See Configuration Guide for more details.
 
 The following modules are part of this project:
 
+- [irmc_account](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_account/) - manage iRMC user accounts
 - [irmc_biosbootorder](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_biosbootorder/) - configure iRMC to force next boot to specified option
 - [irmc_cas](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_cas/) - manage iRMC CAS settings
 - [irmc_certificate](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_certificate/) - manage iRMC certificates
@@ -115,7 +116,14 @@ The following modules are part of this project:
 - [irmc_setnextboot](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_setnextboot/) - configure iRMC to force next boot to specified option
 - [irmc_setvm](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_setvm/) - set iRMC Virtual Media Data
 - [irmc_task](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_task/) - handle iRMC tasks
-- [irmc_user](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_user/) - manage iRMC user accounts
+- [irmc_user](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/content/module/irmc_user/) - manage iRMC user accounts (deprecated, use irmc_account)
+
+To move from deprecated modules (e.g. `irmc_user`) to the modules that replace them, see Module Migration Guide.
+
+- [Module Migration Guide (English)](./docs/MODULE_MIGRATION_GUIDE.md)
+  (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/MODULE_MIGRATION_GUIDE/))
+- [Module Migration Guide (Japanese)](./docs/MODULE_MIGRATION_GUIDE_ja.md)
+  (link to [galaxy.ansible.com](https://galaxy.ansible.com/ui/repo/published/fsas/primergy/docs/MODULE_MIGRATION_GUIDE_ja/))
 
 ### Known Issues
 

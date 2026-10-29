@@ -1,0 +1,223 @@
+---
+# Copyright 2018-2026 Fsas Technologies Inc.
+# GNU General Public License v3.0+ (see [LICENSE.md](LICENSE.md) or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# example playbook for module 'irmc_account'
+# to manage iRMC user accounts
+
+# variables not defined in this playbook are expected to be provided
+# elsewhere, e.g. in group_vars/all
+
+- name: Usage examples for irmc_account
+  connection: local
+  hosts: iRMC_group
+
+  # vars:
+  #   # iRMC login credentials
+  #   irmc_user: "<username>"
+  #   irmc_password: "<password>"
+  #   # Note: set validate_certificate to false for self-signed certificate
+  #   validate_certificate: false
+
+  gather_facts: false
+
+  tasks:
+    # Get user account data
+    - name: Get and show user account
+      tags:
+        - get
+      block:
+        - name: Get user account
+          fsas.primergy.irmc_account:
+            irmc_url: "{{ inventory_hostname }}"
+            irmc_username: "{{ irmc_user }}"
+            irmc_password: "{{ irmc_password }}"
+            validate_certs: "{{ validate_certificate }}"
+            command: "get"
+            name: "{{ username | default('ansibleuser') }}"
+          register: user
+          delegate_to: localhost
+        - name: Show user account
+          ansible.builtin.debug:
+            msg:
+              account: "{{ user.account }}"
+              account_info: "{{ user.account_info }}"
+
+    # Create the user account if it does not exist, and change only the settings which differ
+    #   'username' and 'password' have no default, so that a user is not created with a default password
+    - name: Create or change user account
+      fsas.primergy.irmc_account:
+        irmc_url: "{{ inventory_hostname }}"
+        irmc_username: "{{ irmc_user }}"
+        irmc_password: "{{ irmc_password }}"
+        validate_certs: "{{ validate_certificate }}"
+        command: "set"
+        name: "{{ username }}"
+        password: "{{ password }}"
+        account:
+          Description: "{{ description | default('ansible user description') }}"
+          Enabled: true
+          RoleId: "Operator"
+          BaseValues:
+            Enabled: true
+          Permissions:
+            Standard:
+              Lan: "Operator"
+              Serial: "Operator"
+      delegate_to: localhost
+      tags:
+        - set
+
+    # Create or change user account, with all parameters given by variables
+    # Only the given variables are passed to the module, e.g.
+    #   --tags set_all -e role_id=ReadOnly -e email_address=user@example.com
+    # The variable names are the keys of 'account' in snake case
+    # (prefixed with 'email_' for 'Email', and 'email_alert_' for 'Email.AlertFilter').
+    # Some of them follow the parameter names of the deprecated module 'irmc_user'
+    # (redfish_enabled, enabled, lan_privilege, serial_privilege, snmpv3_enabled).
+    # Note: 'AlertChassisEventsUser' is 'Enable email alerting' in the Web UI.
+    - name: Create or change user account with all parameters
+      fsas.primergy.irmc_account:
+        irmc_url: "{{ inventory_hostname }}"
+        irmc_username: "{{ irmc_user }}"
+        irmc_password: "{{ irmc_password }}"
+        validate_certs: "{{ validate_certificate }}"
+        command: "set"
+        name: "{{ username | default('ansibleuser') }}"
+        password: "{{ password | default(omit) }}"
+        account:
+          Description: "{{ description | default(omit) }}"
+          Enabled: "{{ redfish_enabled | default(omit) }}"
+          RoleId: "{{ role_id | default(omit) }}"
+          PasswordChangeRequired: "{{ password_change_required | default(omit) }}"
+          BaseValues:
+            Enabled: "{{ enabled | default(omit) }}"
+            Shell: "{{ shell | default(omit) }}"
+          Permissions:
+            Standard:
+              Lan: "{{ lan_privilege | default(omit) }}"
+              Serial: "{{ serial_privilege | default(omit) }}"
+            Extended:
+              ConfigureUsers: "{{ configure_users | default(omit) }}"
+              ConfigureIrmc: "{{ configure_irmc | default(omit) }}"
+              UseVideoRedirection: "{{ use_video_redirection | default(omit) }}"
+              UseRemoteStorage: "{{ use_remote_storage | default(omit) }}"
+          SnmpV3:
+            ServiceEnabled: "{{ snmpv3_enabled | default(omit) }}"
+            AuthPrivType: "{{ snmpv3_auth_priv_type | default(omit) }}"
+          Email:
+            AlertChassisEventsUser: "{{ email_alert_chassis_events_user | default(omit) }}"
+            PagingEnabled: "{{ email_paging_enabled | default(omit) }}"
+            Address: "{{ email_address | default(omit) }}"
+            Layout: "{{ email_layout | default(omit) }}"
+            PreferredMailServer: "{{ email_preferred_mail_server | default(omit) }}"
+            SendEncryptedAlerts: "{{ email_send_encrypted_alerts | default(omit) }}"
+            AttachSystemReport: "{{ email_attach_system_report | default(omit) }}"
+            ExtraSubjectEnabled: "{{ email_extra_subject_enabled | default(omit) }}"
+            ExtraSubject: "{{ email_extra_subject | default(omit) }}"
+            AlertFilter:
+              Fans: "{{ email_alert_fans | default(omit) }}"
+              Temperature: "{{ email_alert_temperature | default(omit) }}"
+              Hardware: "{{ email_alert_hardware | default(omit) }}"
+              SystemHang: "{{ email_alert_system_hang | default(omit) }}"
+              Post: "{{ email_alert_post | default(omit) }}"
+              Security: "{{ email_alert_security | default(omit) }}"
+              SystemStatus: "{{ email_alert_system_status | default(omit) }}"
+              Harddisk: "{{ email_alert_harddisk | default(omit) }}"
+              NetworkError: "{{ email_alert_network_error | default(omit) }}"
+              RemoteManagement: "{{ email_alert_remote_management | default(omit) }}"
+              PowerSupply: "{{ email_alert_power_supply | default(omit) }}"
+              Spare: "{{ email_alert_spare | default(omit) }}"
+              Memory: "{{ email_alert_memory | default(omit) }}"
+              Others: "{{ email_alert_others | default(omit) }}"
+          TwoFactorAuth:
+            Enabled: "{{ two_factor_auth_enabled | default(omit) }}"
+        ssh_public_key_path: "{{ ssh_public_key_path | default(omit) }}"
+        smime_certificate_path: "{{ smime_certificate_path | default(omit) }}"
+      delegate_to: localhost
+      tags:
+        - set_all
+
+    # Create or change a user account with the same settings as another user account
+    #   Only 'account' (the settings) is copied. 'account_info' (e.g. SnmpV3.AccessType),
+    #   the SSH public key and the S/MIME certificate are not copied.
+    #   'new_username' and 'new_password' have no default, so that a user is not created with a default password
+    - name: Copy user account
+      tags:
+        - copy
+      block:
+        - name: Get settings of the source user
+          fsas.primergy.irmc_account:
+            irmc_url: "{{ inventory_hostname }}"
+            irmc_username: "{{ irmc_user }}"
+            irmc_password: "{{ irmc_password }}"
+            validate_certs: "{{ validate_certificate }}"
+            command: "get"
+            name: "{{ username | default('ansibleuser') }}"
+          register: source
+          delegate_to: localhost
+        - name: Create or change the new user with the same settings
+          fsas.primergy.irmc_account:
+            irmc_url: "{{ inventory_hostname }}"
+            irmc_username: "{{ irmc_user }}"
+            irmc_password: "{{ irmc_password }}"
+            validate_certs: "{{ validate_certificate }}"
+            command: "set"
+            name: "{{ new_username }}"
+            password: "{{ new_password }}"
+            account: "{{ source.account }}"
+          delegate_to: localhost
+
+    # Export the settings of a user account to a file in JSON format
+    #   Only 'account' (the settings) is copied. 'account_info' (e.g. SnmpV3.AccessType),
+    #   the SSH public key and the S/MIME certificate are not copied.
+    #   make sure not to overwrite the file 'account_file' if you do not intend to
+    - name: Export user account to file
+      tags:
+        - export
+      block:
+        - name: Get user account
+          fsas.primergy.irmc_account:
+            irmc_url: "{{ inventory_hostname }}"
+            irmc_username: "{{ irmc_user }}"
+            irmc_password: "{{ irmc_password }}"
+            validate_certs: "{{ validate_certificate }}"
+            command: "get"
+            name: "{{ username | default('ansibleuser') }}"
+          register: user
+          delegate_to: localhost
+        - name: Write settings of user account to file
+          ansible.builtin.copy:
+            content: "{{ user.account | to_nice_json }}"
+            dest: "{{ account_file }}"
+            mode: "0600"
+          delegate_to: localhost
+
+    # Create or change a user account with the settings in a file exported above
+    #   'username' and 'password' have no default, so that an existing user is not changed by mistake
+    - name: Import user account from file
+      fsas.primergy.irmc_account:
+        irmc_url: "{{ inventory_hostname }}"
+        irmc_username: "{{ irmc_user }}"
+        irmc_password: "{{ irmc_password }}"
+        validate_certs: "{{ validate_certificate }}"
+        command: "set"
+        name: "{{ username }}"
+        password: "{{ password }}"
+        account: "{{ lookup('ansible.builtin.file', account_file) | from_json }}"
+      delegate_to: localhost
+      tags:
+        - import
+
+    # Delete user account
+    - name: Delete user account
+      fsas.primergy.irmc_account:
+        irmc_url: "{{ inventory_hostname }}"
+        irmc_username: "{{ irmc_user }}"
+        irmc_password: "{{ irmc_password }}"
+        validate_certs: "{{ validate_certificate }}"
+        command: "delete"
+        name: "{{ username }}"
+      delegate_to: localhost
+      tags:
+        - delete
