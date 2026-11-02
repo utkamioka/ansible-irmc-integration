@@ -11,6 +11,8 @@
 /fujitsu-primergy-*.tar.gz
 /fsas_temp_ns-primergy-*.tar.gz
 /fsas-primergy-*.tar.gz
+# Created by ansible-lint (collections and roles installed for linting)
+/.ansible/
 
 # Created by https://www.toptal.com/developers/gitignore/api/osx,vim,emacs,linux,eclipse,windows,visualstudio,jetbrains+all,visualstudiocode,python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=osx,vim,emacs,linux,eclipse,windows,visualstudio,jetbrains+all,visualstudiocode,python,venv
